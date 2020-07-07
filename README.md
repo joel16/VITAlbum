@@ -18,6 +18,7 @@ A simple file browser for PS Vita homebrew that is used for viewing various imag
 # Todo:
 - Ability to resize images.
 - Load animated GIFs.
+- Support opening files from other partitions.
 
 # Credits:
 - Rinnegatamante for [vitaGL](https://github.com/Rinnegatamante/vitaGL)
