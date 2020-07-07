@@ -1,5 +1,5 @@
-#ifndef _VITASTUDIO_TEXTURES_H_
-#define _VITASTUDIO_TEXTURES_H_
+#ifndef _VITALBUM_TEXTURES_H_
+#define _VITALBUM_TEXTURES_H_
 
 #include <vitaGL.h>
 #include <string>

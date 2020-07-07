@@ -1,5 +1,5 @@
-#ifndef _VITASTUDIO_LOG_H_
-#define _VITASTUDIO_LOG_H_
+#ifndef _VITALBUM_LOG_H_
+#define _VITALBUM_LOG_H_
 
 namespace Log {
     int OpenHande(void);

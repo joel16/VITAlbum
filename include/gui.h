@@ -1,5 +1,5 @@
-#ifndef _VITASTUDIO_GUI_H_
-#define _VITASTUDIO_GUI_H_
+#ifndef _VITALBUM_GUI_H_
+#define _VITALBUM_GUI_H_
 
 namespace GUI {
     void MainMenu(void);

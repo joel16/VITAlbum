@@ -1,5 +1,5 @@
-#ifndef _VITASTUDIO_FS_H_
-#define _VITASTUDIO_FS_H_
+#ifndef _VITALBUM_FS_H_
+#define _VITALBUM_FS_H_
 
 #include <psp2/io/dirent.h>
 #include <psp2/types.h>

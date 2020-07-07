@@ -1,5 +1,5 @@
-#ifndef _VITASTUDIO_UTILS_H_
-#define _VITASTUDIO_UTILS_H_
+#ifndef _VITALBUM_UTILS_H_
+#define _VITALBUM_UTILS_H_
 
 #include <psp2/ctrl.h>
 
