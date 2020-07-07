@@ -1,6 +1,7 @@
 # VITAAlbum
 
 A simple file browser for PS Vita homebrew that is used for viewing various image formats.
+<img src="https://i.imgur.com/KI6woYJ.jpg" alt="3DShell Screenshot" width="640" height="362"/>
 
 # Supported Formats:
 - BMP
