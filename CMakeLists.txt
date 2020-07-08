@@ -66,6 +66,7 @@ add_executable(${PROJECT_NAME}
   libs/libnsgif/lzw.c
   source/fs.cpp
   source/gui.cpp
+  source/keyboard.cpp
   source/log.cpp
   source/main.cpp
   source/textures.cpp
