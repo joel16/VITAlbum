@@ -2,7 +2,7 @@
 #include <vitaGL.h>
 
 #include "gui.h"
-#include "log.h"
+//#include "log.h"
 #include "textures.h"
 #include "utils.h"
 
@@ -66,6 +66,8 @@ namespace Services {
 	}
 
 	void Init(void) {
+		//Log::OpenHandle();
+
 		// Initalize vitaGL and imGui contexts
 		vglInit(0x100000);
 		ImGui::CreateContext();
@@ -76,7 +78,6 @@ namespace Services {
 		ImGui_ImplVitaGL_GamepadUsage(true);
 
 		Textures::Init();
-		Log::OpenHande();
 		Utils::InitAppUtil();
 		SCE_CTRL_ENTER = Utils::GetEnterButton();
 		SCE_CTRL_CANCEL = Utils::GetCancelButton();
@@ -84,19 +85,12 @@ namespace Services {
 
 	void Exit(void) {
 		// Clean up
-		Log::Debug("Before Utils::EndAppUtil();\n");
 		Utils::EndAppUtil();
-		Log::Debug("Before Textures::Exit();\n");
-		//Log::CloseHandle();
 		Textures::Exit();
-		Log::Debug("Before ImGui_ImplVitaGL_Shutdown();\n");
 		ImGui_ImplVitaGL_Shutdown();
-		Log::Debug("Before ImGui::DestroyContext();\n");
 		ImGui::DestroyContext();
-		Log::Debug("Before vglEnd();\n");
 		vglEnd();
-		Log::Debug("Before Log::CloseHandle();\n");
-		Log::CloseHandle();
+		//Log::CloseHandle();
 	}
 }
 

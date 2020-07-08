@@ -7,7 +7,7 @@
 namespace Log {
     SceUID log_handle = 0;
 
-    int OpenHande(void) {
+    int OpenHandle(void) {
         int ret = 0;
         
         if (R_FAILED(ret = log_handle = sceIoOpen("ux0:/vpk/debug.log", SCE_O_WRONLY | SCE_O_CREAT | SCE_O_APPEND, 0777)))
