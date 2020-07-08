@@ -7,7 +7,6 @@
 #include <filesystem>
 
 #include "fs.h"
-#include "log.h"
 #include "utils.h"
 
 namespace FS {
@@ -66,16 +65,11 @@ namespace FS {
         SceUID dir = 0;
 
         entry_count = CountFiles(path) + ((path == "ux0:")? 0 : 1);
-        Log::Debug("entry_count(%s) = %llu\n", path.c_str(), entry_count);
 
-        if (R_FAILED(dir = sceIoDopen(path.c_str()))) {
-            Log::Debug("sceIoDopen failed 0x%08x\n", dir);
+        if (R_FAILED(dir = sceIoDopen(path.c_str())))
             return dir;
-        }
-
-        Log::Debug("Before malloc\n");
+        
         SceIoDirent *entries = new SceIoDirent[entry_count * sizeof(entries)];
-        Log::Debug("After malloc\n");
 
         // Add parent directory entry if not on root path
         if (path != "ux0:") {
@@ -90,10 +84,9 @@ namespace FS {
 
         std::qsort(entries, entry_count, sizeof(SceIoDirent), sort);
         
-        if (R_FAILED(ret = sceIoDclose(dir))) {	
-            Log::Debug("sceIoDopen failed 0x%08x\n", ret);
-            delete entries;	
-            return ret;	
+        if (R_FAILED(ret = sceIoDclose(dir))) {
+            delete entries;
+            return ret;
         }
         
         *entriesp = entries;
