@@ -85,7 +85,7 @@ namespace FS {
         std::qsort(entries, entry_count, sizeof(SceIoDirent), sort);
         
         if (R_FAILED(ret = sceIoDclose(dir))) {
-            delete entries;
+            delete[] entries;
             return ret;
         }
         
@@ -102,7 +102,7 @@ namespace FS {
             return -1;
             
         // Free entries and change the current working directory.
-        delete *entries;
+        delete[] *entries;
         CWD = path;
         *entries = new_entries;
         return num_entries;
