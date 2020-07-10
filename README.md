@@ -11,6 +11,7 @@ A simple homebrew file browser that is used for viewing various image formats on
 - PCX
 - PNG
 - PGM/PPM
+- PSD
 - TGA
 - TIFF
 - WEBP

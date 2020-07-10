@@ -142,7 +142,8 @@ namespace GUI {
                         std::string ext = FS::GetFileExt(filename);
                         
                         if ((ext == ".BMP") || (ext == ".GIF") || (ext == ".ICO") || (ext == ".JPG") || (ext == ".JPEG") || (ext == ".PCX")
-                            || (ext == ".PNG") || (ext == ".PGM") || (ext == ".PPM") || (ext == ".TGA") || (ext == ".TIFF") || (ext == ".WEBP"))
+                            || (ext == ".PNG") || (ext == ".PGM") || (ext == ".PPM") || (ext == ".PSD") || (ext == ".TGA") || (ext == ".TIFF")
+                            || (ext == ".WEBP"))
                             ImGui::Image((void *)(intptr_t)image_texture.id, ImVec2(image_texture.width, image_texture.height));
                         else
                             ImGui::Image((void *)(intptr_t)file_texture.id, ImVec2(file_texture.width, file_texture.height));
@@ -169,7 +170,7 @@ namespace GUI {
                                 gui_state = GUI_STATE_IMAGE_PREVIEW;
                             }
                             else if ((ext == ".JPG") || (ext == ".JPEG") || (ext == ".PNG") || (ext == ".PGM") || (ext == ".PPM")
-                                || (ext == ".TGA")) {
+                                || (ext == ".PSD") || (ext == ".TGA")) {
                                 SceBool image_ret = Textures::LoadImageFile(path, &texture);
                                 IM_ASSERT(image_ret);
                                 gui_state = GUI_STATE_IMAGE_PREVIEW;
