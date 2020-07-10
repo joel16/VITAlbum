@@ -162,7 +162,7 @@ namespace FS {
             return ret;
         
         *size = sceIoLseek(file, 0, SEEK_END);
-        *buffer = (unsigned char *)std::malloc(*size);
+        *buffer = new unsigned char[*size];
 
         if (R_FAILED(ret = sceIoPread(file, *buffer, *size, SCE_SEEK_SET)))
             return ret;

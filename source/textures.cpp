@@ -128,9 +128,8 @@ namespace ICO {
 namespace Textures {
     bool LoadImage(unsigned char *data, int *width, int *height, Tex *texture, void (*free_func)(void *)) {    
         // Create a OpenGL texture identifier
-        GLuint image;
-        glGenTextures(1, &image);
-        glBindTexture(GL_TEXTURE_2D, image);
+        glGenTextures(1, &texture->id);
+        glBindTexture(GL_TEXTURE_2D, texture->id);
         
         // Setup filtering parameters for display
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -142,23 +141,23 @@ namespace Textures {
         if (*free_func)
             free_func(data);
 
-        texture->id = image;
         texture->width = *width;
         texture->height = *height;
         return true;
     }
 
     bool LoadImageFile(const std::string &path, Tex *texture) {
-        unsigned char *data = nullptr;
         SceOff size = 0;
-        
+        unsigned char *data = nullptr, *image = nullptr;
+
         if (R_FAILED(FS::ReadFile(path, &data, &size)))
             return false;
             
         int width = 0, height = 0;
-        data = stbi_load_from_memory(data, size, &width, &height, nullptr, BYTES_PER_PIXEL);
-        return LoadImage(data, &width, &height, texture, drpcx_free);
-        return false;
+        image = stbi_load_from_memory(data, size, &width, &height, nullptr, BYTES_PER_PIXEL);
+        bool ret = LoadImage(image, &width, &height, texture, stbi_image_free);
+        delete[] data;
+        return ret;
     }
 
     bool LoadImageBMP(const std::string &path, Tex *texture) {
@@ -181,7 +180,7 @@ namespace Textures {
         code = bmp_analyse(&bmp, size, data);
         if (code != BMP_OK) {
             bmp_finalise(&bmp);
-            free(data);
+            delete[] data;
             return false;
         }
 
@@ -189,22 +188,22 @@ namespace Textures {
         if (code != BMP_OK) {
             if ((code != BMP_INSUFFICIENT_DATA) && (code != BMP_DATA_ERROR)) {
                 bmp_finalise(&bmp);
-                free(data);
+                delete[] data;
                 return false;
             }
             
             /* skip if the decoded image would be ridiculously large */
             if ((bmp.width * bmp.height) > 200000) {
                 bmp_finalise(&bmp);
-                free(data);
+                delete[] data;
                 return false;
             }
         }
 
-        LoadImage((unsigned char *)bmp.bitmap, (int *)&bmp.width, (int *)&bmp.height, texture, nullptr);
+        bool ret = LoadImage((unsigned char *)bmp.bitmap, (int *)&bmp.width, (int *)&bmp.height, texture, nullptr);
         bmp_finalise(&bmp);
-        free(data);
-        return true;
+        delete[] data;
+        return ret;
     }
 
     bool LoadImageGIF(const std::string &path, Tex *texture, unsigned int *frames) {
@@ -230,7 +229,7 @@ namespace Textures {
             code = gif_initialise(&gif, size, data);
             if (code != GIF_OK && code != GIF_WORKING) {
                 gif_finalise(&gif);
-                free(data);
+                delete[] data;
                 return false;
             }
         } while (code != GIF_OK);
@@ -244,17 +243,17 @@ namespace Textures {
             for (unsigned int i = 0; i < gif.frame_count; i++) {
                 code = gif_decode_frame(&gif, i);
                 if (code != GIF_OK) {
-                    free(data);
+                    delete[] data;
                     return false;
                 }
 
-                //LoadImage((unsigned char *)gif.frame_image, (int *)&gif.width, (int *)&gif.height, texture[i], nullptr);
+                //LoadImage((unsigned char *)gif.frame_image, (int *)&gif.width, (int *)&gif.height, texture[i]);
             }
         }
         else {
             code = gif_decode_frame(&gif, 0);
             if (code != GIF_OK) {
-                free(data);
+                delete[] data;
                 return false;
             }
             
@@ -262,7 +261,7 @@ namespace Textures {
         }
 
         gif_finalise(&gif);
-        free(data);
+        delete[] data;
         
         return true;
     }
@@ -289,7 +288,7 @@ namespace Textures {
         code = ico_analyse(&ico, size, data);
         if (code != BMP_OK) {
             ico_finalise(&ico);
-            free(data);
+            delete[] data;
             return false;
         }
 
@@ -300,22 +299,22 @@ namespace Textures {
         if (code != BMP_OK) {
             if ((code != BMP_INSUFFICIENT_DATA) && (code != BMP_DATA_ERROR)) {
                 ico_finalise(&ico);
-                free(data);
+                delete[] data;
                 return false;
             }
             
             /* skip if the decoded image would be ridiculously large */
             if ((bmp->width * bmp->height) > 200000) {
                 ico_finalise(&ico);
-                free(data);
+                delete[] data;
                 return false;
             }
         }
 
-        LoadImage((unsigned char *)bmp->bitmap, (int *)&bmp->width, (int *)&bmp->height, texture, nullptr);
+        bool ret = LoadImage((unsigned char *)bmp->bitmap, (int *)&bmp->width, (int *)&bmp->height, texture, nullptr);
         ico_finalise(&ico);
-        free(data);
-        return true;
+        delete[] data;
+        return ret;
     }
 
     bool LoadImagePCX(const std::string &path, Tex *texture) {
@@ -327,8 +326,9 @@ namespace Textures {
             
         int width = 0, height = 0;
         data = drpcx_load_memory(data, size, DRPCX_FALSE, &width, &height, nullptr, BYTES_PER_PIXEL);
-        return LoadImage(data, &width, &height, texture, drpcx_free);
-        return false;
+        bool ret = LoadImage(data, &width, &height, texture, nullptr);
+        delete[] data;
+        return ret;
     }
 
     bool LoadImageTIFF(const std::string &path, Tex *texture) {
@@ -342,7 +342,7 @@ namespace Textures {
             TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
             num_pixels = width * height;
 
-            raster = (uint32*) _TIFFmalloc(num_pixels * sizeof (uint32));
+            raster = (uint32 *)_TIFFmalloc(num_pixels * sizeof (uint32));
             if (raster != nullptr) {
                 if (TIFFReadRGBAImage(tif, width, height, raster, 0))
                     LoadImage((unsigned char *)raster, (int *)&width, (int *)&height, texture, _TIFFfree);
@@ -363,8 +363,9 @@ namespace Textures {
             
         int width = 0, height = 0;
         data = WebPDecodeRGBA(data, size, &width, &height);
-        return LoadImage(data, &width, &height, texture, free);
-        return false;
+        bool ret = LoadImage(data, &width, &height, texture, nullptr);
+        delete[] data;
+        return ret;
     }
 
     void Free(Tex *texture) {

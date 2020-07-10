@@ -5,9 +5,9 @@
 #include <string>
 
 typedef struct {
-    GLuint id = 0;
-    int width = 0;
-    int height = 0;
+    GLuint id;
+    int width;
+    int height;
 } Tex;
 
 extern Tex folder_texture, file_texture, image_texture;
