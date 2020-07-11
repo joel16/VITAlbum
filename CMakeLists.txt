@@ -78,6 +78,7 @@ target_link_libraries(${PROJECT_NAME}
   tiff
   webp
   jpeg
+  png
   pthread
   lzma
   z

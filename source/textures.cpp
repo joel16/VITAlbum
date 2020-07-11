@@ -1,13 +1,18 @@
-// PCX
-#define DR_PCX_IMPLEMENTATION
-#define DR_PCX_NO_STDIO
-#include "dr_pcx.h"
+#include <cstring>
 
 // BMP
 #include "libnsbmp.h"
 
 // GIF
 #include "libnsgif.h"
+
+// PCX
+#define DR_PCX_IMPLEMENTATION
+#define DR_PCX_NO_STDIO
+#include "dr_pcx.h"
+
+// PNG
+#include <png.h>
 
 // STB
 #define STB_IMAGE_IMPLEMENTATION
@@ -16,6 +21,7 @@
 #define STBI_NO_GIF
 #define STBI_NO_HDR
 #define STBI_NO_PIC
+#define STBI_NO_PNG
 #define STBI_ONLY_JPEG
 #define STBI_ONLY_PNG
 #define STBI_ONLY_PNM
@@ -331,6 +337,40 @@ namespace Textures {
         return ret;
     }
 
+    bool LoadImagePNG(const std::string &path, Tex *texture) {
+        unsigned char *data = nullptr;
+        SceOff size = 0;
+        
+        if (R_FAILED(FS::ReadFile(path, &data, &size)))
+            return false;
+
+        png_image image;
+        std::memset(&image, 0, (sizeof image));
+        image.version = PNG_IMAGE_VERSION;
+
+        if (R_FAILED(png_image_begin_read_from_memory(&image, data, size))) {
+            delete[] data;
+            return false;
+        }
+
+        image.format = PNG_FORMAT_RGBA;
+        png_bytep buffer = new png_byte[PNG_IMAGE_SIZE(image)];
+
+        if (buffer != nullptr) {
+            if (R_FAILED(png_image_finish_read(&image, nullptr, buffer, 0, nullptr))) {
+                png_image_free(&image);
+                delete[] buffer;
+                delete[] data;
+                return false;
+            }
+        }
+
+        bool ret = LoadImage(buffer, (int *)&image.width, (int *)&image.height, texture, nullptr);
+        delete[] buffer;
+        delete[] data;
+        return ret;
+    }
+
     bool LoadImageTIFF(const std::string &path, Tex *texture) {
         TIFF *tif = TIFFOpen(path.c_str(), "r");
         if (tif) {
@@ -373,13 +413,13 @@ namespace Textures {
     }
 
     void Init(void) {
-        bool image_ret = LoadImageFile("app0:res/file.png", &file_texture);
+        bool image_ret = LoadImagePNG("app0:res/file.png", &file_texture);
         IM_ASSERT(image_ret);
         
-        image_ret = LoadImageFile("app0:res/folder.png", &folder_texture);
+        image_ret = LoadImagePNG("app0:res/folder.png", &folder_texture);
         IM_ASSERT(image_ret);
         
-        image_ret = LoadImageFile("app0:res/image.png", &image_texture);
+        image_ret = LoadImagePNG("app0:res/image.png", &image_texture);
         IM_ASSERT(image_ret);
     }
 
