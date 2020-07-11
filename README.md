@@ -31,5 +31,7 @@ A simple homebrew file browser that is used for viewing various image formats on
 - libtiff contributors for [libtiff](http://www.libtiff.org/)
 - libnsbmp contributors for [libnsbmp](https://www.netsurf-browser.org/projects/libnsbmp/)
 - libnsgif contributors for [libnsgif](https://www.netsurf-browser.org/projects/libnsgif/)
+- libpng contributors for [libpng](http://www.libpng.org/pub/png/libpng.html)
+- turbojpeg contributors for [turbojpeg](https://libjpeg-turbo.org/)
 - TheIronUniverse for the LiveArea Assets
 - [vitasdk](https://github.com/vitasdk)
