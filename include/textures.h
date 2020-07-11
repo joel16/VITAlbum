@@ -17,6 +17,7 @@ namespace Textures {
     bool LoadImageBMP(const std::string &path, Tex *texture);
     bool LoadImageGIF(const std::string &path, Tex *texture, unsigned int *frames);
     bool LoadImageICO(const std::string &path, Tex *texture);
+    bool LoadImageJPEG(const std::string &path, Tex *texture);
     bool LoadImagePCX(const std::string &path, Tex *texture);
     bool LoadImagePNG(const std::string &path, Tex *texture);
     bool LoadImageTIFF(const std::string &path, Tex *texture);

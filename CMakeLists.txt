@@ -42,6 +42,7 @@ include_directories(
   libs/libnsbmp
   libs/libnsgif
   libs/libtiff
+  libs/turbojpeg
   libs
   include
 )
@@ -77,6 +78,7 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   tiff
   webp
+  turbojpeg
   jpeg
   png
   pthread

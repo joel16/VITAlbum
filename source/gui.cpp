@@ -169,8 +169,7 @@ namespace GUI {
                                 IM_ASSERT(image_ret);
                                 gui_state = GUI_STATE_IMAGE_PREVIEW;
                             }
-                            else if ((ext == ".JPG") || (ext == ".JPEG") || (ext == ".PGM") || (ext == ".PPM") || (ext == ".PSD")
-                                || (ext == ".TGA")) {
+                            else if ((ext == ".PGM") || (ext == ".PPM") || (ext == ".PSD") || (ext == ".TGA")) {
                                 SceBool image_ret = Textures::LoadImageFile(path, &texture);
                                 IM_ASSERT(image_ret);
                                 gui_state = GUI_STATE_IMAGE_PREVIEW;
@@ -185,6 +184,11 @@ namespace GUI {
                             }
                             else if (ext == ".ICO") {
                                 SceBool image_ret = Textures::LoadImageICO(path, &texture);
+                                IM_ASSERT(image_ret);
+                                gui_state = GUI_STATE_IMAGE_PREVIEW;
+                            }
+                            else if ((ext == ".JPG") || (ext == ".JPEG")) {
+                                SceBool image_ret = Textures::LoadImageJPEG(path, &texture);
                                 IM_ASSERT(image_ret);
                                 gui_state = GUI_STATE_IMAGE_PREVIEW;
                             }

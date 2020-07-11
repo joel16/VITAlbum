@@ -6,6 +6,9 @@
 // GIF
 #include "libnsgif.h"
 
+// JPEG
+#include "turbojpeg.h"
+
 // PCX
 #define DR_PCX_IMPLEMENTATION
 #define DR_PCX_NO_STDIO
@@ -20,9 +23,9 @@
 #define STBI_NO_BMP
 #define STBI_NO_GIF
 #define STBI_NO_HDR
+#define STBI_NO_JPEG
 #define STBI_NO_PIC
 #define STBI_NO_PNG
-#define STBI_ONLY_JPEG
 #define STBI_ONLY_PNM
 #define STBI_ONLY_PSD
 #define STBI_ONLY_TGA
@@ -318,6 +321,25 @@ namespace Textures {
 
         bool ret = LoadImage((unsigned char *)bmp->bitmap, (int *)&bmp->width, (int *)&bmp->height, texture, nullptr);
         ico_finalise(&ico);
+        delete[] data;
+        return ret;
+    }
+
+    bool LoadImageJPEG(const std::string &path, Tex *texture) {
+        unsigned char *data = nullptr, *buffer = nullptr;
+        SceOff size = 0;
+        
+        if (R_FAILED(FS::ReadFile(path, &data, &size)))
+            return false;
+            
+        tjhandle jpeg = tjInitDecompress();
+        int width = 0, height = 0, jpegsubsamp = 0;
+        tjDecompressHeader2(jpeg, data, size, &width, &height, &jpegsubsamp);
+        buffer = new unsigned char[width * height * 4];
+        tjDecompress2(jpeg, data, size, buffer, width, 0, height, TJPF_RGBA, TJFLAG_FASTDCT);
+        bool ret = LoadImage(buffer, &width, &height, texture, nullptr);
+        tjDestroy(jpeg);
+        delete[] buffer;
         delete[] data;
         return ret;
     }
