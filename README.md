@@ -1,7 +1,7 @@
 # VITAlbum
 
 A simple homebrew file browser that is used for viewing various image formats on the PlayStation VITA.
-<img src="https://i.imgur.com/KI6woYJ.jpg" alt="3DShell Screenshot" width="640" height="362"/>
+<img src="https://i.imgur.com/KI6woYJ.jpg" alt="VITAlbum Screenshot" width="640" height="362"/>
 
 # Supported Formats:
 - BMP
@@ -30,7 +30,7 @@ A simple homebrew file browser that is used for viewing various image formats on
 - libwebp contributors for [libwebp](https://developers.google.com/speed/webp)
 - libtiff contributors for [libtiff](http://www.libtiff.org/)
 - libnsbmp contributors for [libnsbmp](https://www.netsurf-browser.org/projects/libnsbmp/)
-- libnsgif contributors for [libnsgif](https://www.netsurf-browser.org/projects/libnsgif/)
+- giflib contributors for [giflib](http://giflib.sourceforge.net/)
 - libpng contributors for [libpng](http://www.libpng.org/pub/png/libpng.html)
 - turbojpeg contributors for [turbojpeg](https://libjpeg-turbo.org/)
 - TheIronUniverse for the LiveArea Assets
