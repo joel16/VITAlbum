@@ -39,7 +39,7 @@ set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1")
 # Add any additional include paths here
 include_directories(
   libs/imgui
-  libs/libgif
+  libs/giflib
   libs/libnsbmp
   libs/libtiff
   libs/turbojpeg
