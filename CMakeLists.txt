@@ -39,8 +39,8 @@ set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1")
 # Add any additional include paths here
 include_directories(
   libs/imgui
+  libs/libgif
   libs/libnsbmp
-  libs/libnsgif
   libs/libtiff
   libs/turbojpeg
   libs
@@ -63,8 +63,6 @@ add_executable(${PROJECT_NAME}
   libs/imgui/imgui_vita_touch.cpp
   libs/imgui/imgui_widgets.cpp
   libs/libnsbmp/libnsbmp.c
-  libs/libnsgif/libnsgif.c
-  libs/libnsgif/lzw.c
   source/fs.cpp
   source/gui.cpp
   source/keyboard.cpp
@@ -78,6 +76,7 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   tiff
   webp
+  gif
   turbojpeg
   jpeg
   png

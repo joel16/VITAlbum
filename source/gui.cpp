@@ -37,7 +37,7 @@ namespace GUI {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 
         if (ImGui::Begin(entry->d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
-            ImGui::Image((void *)(intptr_t)texture->id, ImVec2(texture->width, texture->height));
+            ImGui::Image((void *)texture->id, ImVec2(texture->width, texture->height));
         
         ImGui::End();
         ImGui::PopStyleVar();
@@ -48,10 +48,10 @@ namespace GUI {
         ImGui::SetNextWindowSize({960.0f, 544.0f}, ImGuiCond_Once);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
         if (ImGui::Begin(entry->d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
-            // for (unsigned int i = 0; i < *frames; i++) {
-            //     ImGui::Image((void *)(intptr_t)texture[i]->id, ImVec2(texture[i]->width, texture[i]->height));
-            // }
-            ImGui::Image((void *)(intptr_t)texture[0]->id, ImVec2(texture[0]->width, texture[0]->height));
+            for (unsigned int i = 0; i < *frames; i++) {
+                //ImGui::SetCursorPosY(1.0f);
+                ImGui::Image((void *)(intptr_t)texture[i]->id, ImVec2(texture[i]->width, texture[i]->height));
+            }
         }
         ImGui::End();
         ImGui::PopStyleVar();
@@ -175,9 +175,9 @@ namespace GUI {
                                 gui_state = GUI_STATE_IMAGE_PREVIEW;
                             }
                             else if (ext == ".GIF") {
-                                //SceBool image_ret = Textures::LoadImageGIF(path, &textures, &frames);
-                                //IM_ASSERT(image_ret);
-                                //gui_state = GUI_STATE_GIF_PREVIEW;
+                                // SceBool image_ret = Textures::LoadImageGIF(path, &textures, &frames);
+                                // IM_ASSERT(image_ret);
+                                // gui_state = GUI_STATE_GIF_PREVIEW;
                                 SceBool image_ret = Textures::LoadImageGIF(path, &texture, &frames);
                                 IM_ASSERT(image_ret);
                                 gui_state = GUI_STATE_IMAGE_PREVIEW;
