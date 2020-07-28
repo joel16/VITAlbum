@@ -84,17 +84,18 @@ target_link_libraries(${PROJECT_NAME}
   lzma
   z
   vitaGL
+  vitashark
   mathneon
-  SceCommonDialog_stub
-  SceLibKernel_stub
-	SceDisplay_stub
-  SceGxm_stub
-  SceSysmodule_stub
-  SceCtrl_stub
-	SceTouch_stub
-  m
   SceAppMgr_stub
   SceAppUtil_stub
+  SceCommonDialog_stub
+  SceCtrl_stub
+  SceDisplay_stub
+  SceGxm_stub
+  SceLibKernel_stub
+  SceShaccCg_stub
+  SceSysmodule_stub
+	SceTouch_stub
 )
 
 ## Create Vita files
