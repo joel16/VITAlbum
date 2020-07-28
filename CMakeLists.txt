@@ -95,7 +95,7 @@ target_link_libraries(${PROJECT_NAME}
   SceLibKernel_stub
   SceShaccCg_stub
   SceSysmodule_stub
-	SceTouch_stub
+  SceTouch_stub
 )
 
 ## Create Vita files
