@@ -4,7 +4,7 @@
 #include <string>
 
 namespace Keyboard {
-    int GetText(const std::u16string &title);
+    std::string GetText(const std::string &title, const std::string &initial_text);
 }
 
 #endif

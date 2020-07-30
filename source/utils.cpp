@@ -1,4 +1,5 @@
 #include <psp2/apputil.h>
+#include <psp2/common_dialog.h>
 #include <psp2/system_param.h>
 #include <cstring>
 #include <cstdio>
@@ -20,6 +21,18 @@ namespace Utils {
         int ret = 0;
         
         if (R_FAILED(ret = sceAppUtilInit(&init, &boot)))
+            return ret;
+        
+        SceCommonDialogConfigParam param;
+        sceCommonDialogConfigParamInit(&param);
+
+        if (R_FAILED(ret = sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_LANG, (int *)&param.language)))
+            return ret;
+
+        if (R_FAILED(ret = sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON, (int *)&param.enterButtonAssign)))
+            return ret;
+
+        if (R_FAILED(ret = sceCommonDialogSetConfigParam(&param)))
             return ret;
         
         return 0;
