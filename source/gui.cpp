@@ -3,6 +3,7 @@
 
 #include "fs.h"
 #include "imgui_internal.h"
+#include "keyboard.h"
 #include "textures.h"
 #include "utils.h"
 
@@ -60,6 +61,7 @@ namespace GUI {
     static void PropertiesWindow(bool *window, const std::string &cwd, SceIoDirent *entry, Tex *texture) {
         ImGui::OpenPopup("Properties");
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(20, 20));
+        std::string new_width, new_height;
         if (ImGui::BeginPopupModal("Properties", window, ImGuiWindowFlags_AlwaysAutoResize)) {
             std::string parent_text = "Parent: ";
             parent_text.append(cwd);
@@ -88,7 +90,9 @@ namespace GUI {
             width_text.append("px");
             ImGui::Text(width_text.c_str());
             ImGui::SameLine(0.0f, 10.0f);
-            ImGui::Button("Edit width");
+            if (ImGui::Button("Edit width")) {
+                new_width = Keyboard::GetText("Enter width", std::to_string(texture->width));
+            }
 
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 
@@ -97,14 +101,29 @@ namespace GUI {
             height_text.append("px");
             ImGui::Text(height_text.c_str());
             ImGui::SameLine(0.0f, 10.0f);
-            ImGui::Button("Edit height");
+            if (ImGui::Button("Edit height")) {
+                new_height = Keyboard::GetText("Enter height", std::to_string(texture->height));
+            }
 
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+
+            /*if (ImGui::Button("Apply changes", ImVec2(120, 0))) {
+                // int new_width_int = std::stoi(new_width);
+                // int new_height_int = std::stoi(new_height);
+                if ((!new_height.empty()) || (!new_width.empty())) {
+                    if (new_width != std::to_string(texture->width))
+                    else if (new_height != std::to_string(texture->height))
+                    
+                }
+            }*/
+
+            ImGui::SameLine();
             
             if (ImGui::Button("OK", ImVec2(120, 0))) {
                 *window = false;
                 ImGui::CloseCurrentPopup();
             }
+
             ImGui::EndPopup();
         }
         ImGui::PopStyleVar();
