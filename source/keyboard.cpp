@@ -5,18 +5,24 @@
 #include <vitaGL.h>
 
 #include "keyboard.h"
-#include "log.h"
 #include "utils.h"
+
+/*
+    Based off of libkdbvita by usineur -> https://github.com/usineur/libkbdvita/blob/master/kbdvita.c
+*/
 
 namespace Keyboard {
     static bool running = false;
     static const int SCE_COMMON_DIALOG_STATUS_CANCELLED = 3;
-    static uint16_t buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH + 1];
+    static uint16_t buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
     std::string text = std::string();
 
     int Init(const std::string &title, const std::string &initial_text) {
         if (running)
             return -1;
+
+        // Clear our text buffer
+        text.clear();
 
         // UTF8 -> UTF16
         std::u16string title_u16 = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(title.data());
@@ -36,10 +42,11 @@ namespace Keyboard {
         param.inputTextBuffer = buffer;
         
         int ret = 0;
-        if (R_SUCCEEDED(ret = sceImeDialogInit(&param)))
-            running = true;
+        if (R_FAILED(ret = sceImeDialogInit(&param)))
+            return ret;
         
-        return ret;
+        running = true;
+        return 0;
     }
 
     SceCommonDialogStatus Update(void) {
@@ -71,14 +78,14 @@ namespace Keyboard {
             return std::string();
         
         bool done = false;
-
         do {
             glClear(GL_COLOR_BUFFER_BIT);
             glClearColor(0, 0, 0, 1);
-            done = true;
-            
-            SceCommonDialogStatus ret = Update();
-            if (ret != SCE_COMMON_DIALOG_STATUS_CANCELLED)
+
+            SceCommonDialogStatus status = Update();
+            if (status == SCE_COMMON_DIALOG_STATUS_FINISHED)
+                done = true;
+            else if (status != SCE_COMMON_DIALOG_STATUS_CANCELLED)
                 done = false;
             
             vglStopRenderingInit();
