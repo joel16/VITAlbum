@@ -96,7 +96,7 @@ namespace ICO {
 }
 
 namespace Textures {
-    bool LoadImage(unsigned char *data, int *width, int *height, GLint format, Tex *texture, void (*free_func)(void *)) {    
+    static bool LoadImage(unsigned char *data, GLint format, Tex *texture, void (*free_func)(void *)) {    
         // Create a OpenGL texture identifier
         glGenTextures(1, &texture->id);
         glBindTexture(GL_TEXTURE_2D, texture->id);
@@ -106,13 +106,11 @@ namespace Textures {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         
         // Upload pixels into texture
-        glTexImage2D(GL_TEXTURE_2D, 0, format, *width, *height, 0, format, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, texture->width, texture->height, 0, format, GL_UNSIGNED_BYTE, data);
 
         if (*free_func)
             free_func(data);
-
-        texture->width = *width;
-        texture->height = *height;
+        
         return true;
     }
 
@@ -122,10 +120,9 @@ namespace Textures {
 
         if (R_FAILED(FS::ReadFile(path, &data, &size)))
             return false;
-            
-        int width = 0, height = 0;
-        image = stbi_load_from_memory(data, size, &width, &height, nullptr, BYTES_PER_PIXEL);
-        bool ret = LoadImage(image, &width, &height, GL_RGBA, texture, stbi_image_free);
+        
+        image = stbi_load_from_memory(data, size, &texture->width, &texture->height, nullptr, BYTES_PER_PIXEL);
+        bool ret = LoadImage(image, GL_RGBA, texture, stbi_image_free);
         delete[] data;
         return ret;
     }
@@ -170,7 +167,9 @@ namespace Textures {
             }
         }
 
-        bool ret = LoadImage((unsigned char *)bmp.bitmap, (int *)&bmp.width, (int *)&bmp.height, GL_RGBA, texture, nullptr);
+        texture->width = bmp.width;
+        texture->height = bmp.height;
+        bool ret = LoadImage((unsigned char *)bmp.bitmap, GL_RGBA, texture, nullptr);
         bmp_finalise(&bmp);
         delete[] data;
         return ret;
@@ -208,8 +207,10 @@ namespace Textures {
                     buffer[4 * j + 3] = (byte == gcb.TransparentColor) ? 0 : 255;
                 }
                 
-                //ret = LoadImage(image, &gif->SWidth, &gif->SHeight, GL_RGBA, &texture[i], nullptr);
-                ret = LoadImage(image, &gif->SWidth, &gif->SHeight, GL_RGBA, texture, nullptr);
+                texture->width = gif->SWidth;
+                texture->height = gif->SHeight;
+                //ret = LoadImage(image, GL_RGBA, &texture[i], nullptr);
+                ret = LoadImage(image, GL_RGBA, texture, nullptr);
                 delete[] image;
             }
         }
@@ -228,8 +229,10 @@ namespace Textures {
                 buffer[4 * i + 2] = colour.Blue;
                 buffer[4 * i + 3] = (byte == gcb.TransparentColor) ? 0 : 255;
             }
-
-            ret = LoadImage(image, &gif->SWidth, &gif->SHeight, GL_RGBA, texture, nullptr);
+            
+            texture->width = gif->SWidth;
+            texture->height = gif->SHeight;
+            ret = LoadImage(image, GL_RGBA, texture, nullptr);
             delete[] image;
         }
 
@@ -282,7 +285,9 @@ namespace Textures {
             }
         }
 
-        bool ret = LoadImage((unsigned char *)bmp->bitmap, (int *)&bmp->width, (int *)&bmp->height, GL_RGBA, texture, nullptr);
+        texture->width = bmp->width;
+        texture->height = bmp->height;
+        bool ret = LoadImage((unsigned char *)bmp->bitmap, GL_RGBA, texture, nullptr);
         ico_finalise(&ico);
         delete[] data;
         return ret;
@@ -296,11 +301,11 @@ namespace Textures {
             return false;
             
         tjhandle jpeg = tjInitDecompress();
-        int width = 0, height = 0, jpegsubsamp = 0;
-        tjDecompressHeader2(jpeg, data, size, &width, &height, &jpegsubsamp);
-        buffer = new unsigned char[width * height * 3];
-        tjDecompress2(jpeg, data, size, buffer, width, 0, height, TJPF_RGB, TJFLAG_FASTDCT);
-        bool ret = LoadImage(buffer, &width, &height, GL_RGB, texture, nullptr);
+        int jpegsubsamp = 0;
+        tjDecompressHeader2(jpeg, data, size, &texture->width, &texture->height, &jpegsubsamp);
+        buffer = new unsigned char[texture->width * texture->height * 3];
+        tjDecompress2(jpeg, data, size, buffer, texture->width, 0, texture->height, TJPF_RGB, TJFLAG_FASTDCT);
+        bool ret = LoadImage(buffer, GL_RGB, texture, nullptr);
         tjDestroy(jpeg);
         delete[] buffer;
         delete[] data;
@@ -313,44 +318,45 @@ namespace Textures {
         
         if (R_FAILED(FS::ReadFile(path, &data, &size)))
             return false;
-            
-        int width = 0, height = 0;
-        data = drpcx_load_memory(data, size, DRPCX_FALSE, &width, &height, nullptr, BYTES_PER_PIXEL);
-        bool ret = LoadImage(data, &width, &height, GL_RGBA, texture, nullptr);
+        
+        data = drpcx_load_memory(data, size, DRPCX_FALSE, &texture->width, &texture->height, nullptr, BYTES_PER_PIXEL);
+        bool ret = LoadImage(data, GL_RGBA, texture, nullptr);
         delete[] data;
         return ret;
     }
 
     bool LoadImagePNG(const std::string &path, Tex *texture) {
+        bool ret = false;
         unsigned char *data = nullptr;
         SceOff size = 0;
         
         if (R_FAILED(FS::ReadFile(path, &data, &size)))
-            return false;
-
+            return ret;
+        
         png_image image;
-        std::memset(&image, 0, (sizeof image));
+        memset(&image, 0, (sizeof image));
         image.version = PNG_IMAGE_VERSION;
-
-        if (R_FAILED(png_image_begin_read_from_memory(&image, data, size))) {
-            delete[] data;
-            return false;
-        }
-
-        image.format = PNG_FORMAT_RGBA;
-        png_bytep buffer = new png_byte[PNG_IMAGE_SIZE(image)];
-
-        if (buffer != nullptr) {
-            if (R_FAILED(png_image_finish_read(&image, nullptr, buffer, 0, nullptr))) {
-                png_image_free(&image);
+        
+        if (png_image_begin_read_from_memory(&image, *data, *size) != 0) {
+            png_bytep buffer;
+            image.format = PNG_FORMAT_RGBA;
+            buffer = new png_byte[PNG_IMAGE_SIZE(image)];
+            
+            if (buffer != nullptr && png_image_finish_read(&image, nullptr, buffer, 0, nullptr) != 0) {
+                texture->width = image.width;
+                texture->height = image.height;
+                ret = Textures::LoadImage(buffer, GL_RGBA, texture, nullptr);
                 delete[] buffer;
-                delete[] data;
-                return false;
+                png_image_free(&image);
+            }
+            else {
+                if (buffer == nullptr)
+                    png_image_free(&image);
+                else
+                    delete[] buffer;
             }
         }
 
-        bool ret = LoadImage(buffer, (int *)&image.width, (int *)&image.height, GL_RGBA, texture, nullptr);
-        delete[] buffer;
         delete[] data;
         return ret;
     }
@@ -358,18 +364,17 @@ namespace Textures {
     bool LoadImageTIFF(const std::string &path, Tex *texture) {
         TIFF *tif = TIFFOpen(path.c_str(), "r");
         if (tif) {
-            uint32 width = 0, height = 0;
             size_t num_pixels = 0;
             uint32 *raster = nullptr;
             
-            TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
-            TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
-            num_pixels = width * height;
+            TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &texture->width);
+            TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &texture->height);
+            num_pixels = texture->width * texture->height;
 
             raster = (uint32 *)_TIFFmalloc(num_pixels * sizeof (uint32));
             if (raster != nullptr) {
-                if (TIFFReadRGBAImage(tif, width, height, raster, 0))
-                    LoadImage((unsigned char *)raster, (int *)&width, (int *)&height, GL_RGBA, texture, _TIFFfree);
+                if (TIFFReadRGBAImage(tif, texture->width, texture->height, raster, 0))
+                    LoadImage((unsigned char *)raster, GL_RGBA, texture, _TIFFfree);
             }
 
             TIFFClose(tif);
@@ -384,10 +389,9 @@ namespace Textures {
         
         if (R_FAILED(FS::ReadFile(path, &data, &size)))
             return false;
-            
-        int width = 0, height = 0;
-        data = WebPDecodeRGBA(data, size, &width, &height);
-        bool ret = LoadImage(data, &width, &height, GL_RGBA, texture, nullptr);
+        
+        data = WebPDecodeRGBA(data, size, &texture->width, &texture->height);
+        bool ret = LoadImage(data, GL_RGBA, texture, nullptr);
         delete[] data;
         return ret;
     }
