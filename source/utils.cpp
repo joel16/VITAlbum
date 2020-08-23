@@ -26,10 +26,10 @@ namespace Utils {
         SceCommonDialogConfigParam param;
         sceCommonDialogConfigParamInit(&param);
 
-        if (R_FAILED(ret = sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_LANG, (int *)&param.language)))
+        if (R_FAILED(ret = sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_LANG, reinterpret_cast<int *>(&param.language))))
             return ret;
 
-        if (R_FAILED(ret = sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON, (int *)&param.enterButtonAssign)))
+        if (R_FAILED(ret = sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON, reinterpret_cast<int *>(&param.enterButtonAssign))))
             return ret;
 
         if (R_FAILED(ret = sceCommonDialogSetConfigParam(&param)))

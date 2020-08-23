@@ -14,7 +14,7 @@ namespace Renderer {
     }
     
     static void End(ImVec4 clear_color) {
-        glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
+        glViewport(0, 0, static_cast<int>(ImGui::GetIO().DisplaySize.x), static_cast<int>(ImGui::GetIO().DisplaySize.y));
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui::Render();
@@ -38,7 +38,7 @@ namespace GUI {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 
         if (ImGui::Begin(entry->d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
-            ImGui::Image((void *)texture->id, ImVec2(texture->width, texture->height));
+            ImGui::Image(reinterpret_cast<ImTextureID>(texture->id), ImVec2(texture->width, texture->height));
         
         ImGui::End();
         ImGui::PopStyleVar();
@@ -51,7 +51,7 @@ namespace GUI {
         if (ImGui::Begin(entry->d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             for (unsigned int i = 0; i < *frames; i++) {
                 //ImGui::SetCursorPosY(1.0f);
-                ImGui::Image((void *)(intptr_t)texture[i]->id, ImVec2(texture[i]->width, texture[i]->height));
+                ImGui::Image(reinterpret_cast<ImTextureID>(texture[i]->id), ImVec2(texture[i]->width, texture[i]->height));
             }
         }
         ImGui::End();
@@ -77,7 +77,7 @@ namespace GUI {
 
             if (!SCE_S_ISDIR(entry->d_stat.st_mode)) {
                 char size[16];
-                Utils::GetSizeString(size, (double)entry->d_stat.st_size);
+                Utils::GetSizeString(size, entry->d_stat.st_size);
                 std::string size_text = "Size: ";
                 size_text.append(size);
                 ImGui::Text(size_text.c_str());
@@ -155,7 +155,7 @@ namespace GUI {
                 ImGui::BeginChild("##FS::GetDirList");
                 for (SceOff i = 0; i < entry_count; i++) {
                     if (SCE_S_ISDIR(entries[i].d_stat.st_mode))
-                        ImGui::Image((void *)(intptr_t)folder_texture.id, ImVec2(folder_texture.width, folder_texture.height));
+                        ImGui::Image(reinterpret_cast<ImTextureID>(folder_texture.id), ImVec2(folder_texture.width, folder_texture.height));
                     else {
                         std::string filename = entries[i].d_name;
                         std::string ext = FS::GetFileExt(filename);
@@ -163,9 +163,9 @@ namespace GUI {
                         if ((ext == ".BMP") || (ext == ".GIF") || (ext == ".ICO") || (ext == ".JPG") || (ext == ".JPEG") || (ext == ".PCX")
                             || (ext == ".PNG") || (ext == ".PGM") || (ext == ".PPM") || (ext == ".PSD") || (ext == ".TGA") || (ext == ".TIFF")
                             || (ext == ".WEBP"))
-                            ImGui::Image((void *)(intptr_t)image_texture.id, ImVec2(image_texture.width, image_texture.height));
+                            ImGui::Image(reinterpret_cast<ImTextureID>(image_texture.id), ImVec2(image_texture.width, image_texture.height));
                         else
-                            ImGui::Image((void *)(intptr_t)file_texture.id, ImVec2(file_texture.width, file_texture.height));
+                            ImGui::Image(reinterpret_cast<ImTextureID>(file_texture.id), ImVec2(file_texture.width, file_texture.height));
                     }
                     
                     ImGui::SameLine();
@@ -242,13 +242,13 @@ namespace GUI {
 
             switch (gui_state) {
                 case GUI_STATE_IMAGE_PREVIEW:
-                    ImageWindow(&entries[selected], &texture);
+                    GUI::ImageWindow(&entries[selected], &texture);
                     if (properties_window)
-                        PropertiesWindow(&properties_window, FS::CWD, &entries[selected], &texture);
+                        GUI::PropertiesWindow(&properties_window, FS::CWD, &entries[selected], &texture);
                     break;
 
                 case GUI_STATE_GIF_PREVIEW:
-                    GifWindow(&entries[selected], &textures, &frames);
+                    GUI::GifWindow(&entries[selected], &textures, &frames);
                     break;
 
                 default:

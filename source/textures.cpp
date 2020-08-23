@@ -51,7 +51,7 @@ namespace BMP {
     static void *bitmap_create(int width, int height, unsigned int state) {
         (void) state;  /* unused */
         /* ensure a stupidly large (>50Megs or so) bitmap is not created */
-        if (((long long)width * (long long)height) > (MAX_IMAGE_BYTES/BYTES_PER_PIXEL))
+        if ((static_cast<long long>(width) * static_cast<long long>(height)) > (MAX_IMAGE_BYTES/BYTES_PER_PIXEL))
             return nullptr;
         
         return calloc(width * height, BYTES_PER_PIXEL);
@@ -59,7 +59,7 @@ namespace BMP {
     
     static unsigned char *bitmap_get_buffer(void *bitmap) {
         assert(bitmap);
-        return (unsigned char *)bitmap;
+        return static_cast<unsigned char *>(bitmap);
     }
     
     static size_t bitmap_get_bpp(void *bitmap) {
@@ -81,7 +81,7 @@ namespace ICO {
     
     static unsigned char *bitmap_get_buffer(void *bitmap) {
         assert(bitmap);
-        return (unsigned char *)bitmap;
+        return static_cast<unsigned char *>(bitmap);
     }
     
     static size_t bitmap_get_bpp(void *bitmap) {
@@ -141,7 +141,7 @@ namespace Textures {
         size_t size = 0;
 
         bmp_create(&bmp, &bitmap_callbacks);
-        if (R_FAILED(FS::ReadFile(path, &data, (SceOff *)&size)))
+        if (R_FAILED(FS::ReadFile(path, &data, reinterpret_cast<SceOff *>(&size))))
             return false;
             
         code = bmp_analyse(&bmp, size, data);
@@ -169,7 +169,7 @@ namespace Textures {
 
         texture->width = bmp.width;
         texture->height = bmp.height;
-        bool ret = LoadImage((unsigned char *)bmp.bitmap, GL_RGBA, texture, nullptr);
+        bool ret = LoadImage(static_cast<unsigned char *>(bmp.bitmap), GL_RGBA, texture, nullptr);
         bmp_finalise(&bmp);
         delete[] data;
         return ret;
@@ -256,7 +256,7 @@ namespace Textures {
         size_t size = 0;
 
         ico_collection_create(&ico, &bitmap_callbacks);
-        if (R_FAILED(FS::ReadFile(path, &data, (SceOff *)&size)))
+        if (R_FAILED(FS::ReadFile(path, &data, reinterpret_cast<SceOff *>(&size))))
             return false;
             
         code = ico_analyse(&ico, size, data);
@@ -287,7 +287,7 @@ namespace Textures {
 
         texture->width = bmp->width;
         texture->height = bmp->height;
-        bool ret = LoadImage((unsigned char *)bmp->bitmap, GL_RGBA, texture, nullptr);
+        bool ret = LoadImage(static_cast<unsigned char *>(bmp->bitmap), GL_RGBA, texture, nullptr);
         ico_finalise(&ico);
         delete[] data;
         return ret;
@@ -337,7 +337,7 @@ namespace Textures {
         memset(&image, 0, (sizeof image));
         image.version = PNG_IMAGE_VERSION;
         
-        if (png_image_begin_read_from_memory(&image, *data, *size) != 0) {
+        if (png_image_begin_read_from_memory(&image, data, size) != 0) {
             png_bytep buffer;
             image.format = PNG_FORMAT_RGBA;
             buffer = new png_byte[PNG_IMAGE_SIZE(image)];
@@ -371,10 +371,10 @@ namespace Textures {
             TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &texture->height);
             num_pixels = texture->width * texture->height;
 
-            raster = (uint32 *)_TIFFmalloc(num_pixels * sizeof (uint32));
+            raster = static_cast<uint32 *>(_TIFFmalloc(num_pixels * sizeof (uint32)));
             if (raster != nullptr) {
                 if (TIFFReadRGBAImage(tif, texture->width, texture->height, raster, 0))
-                    LoadImage((unsigned char *)raster, GL_RGBA, texture, _TIFFfree);
+                    LoadImage(reinterpret_cast<unsigned char *>(raster), GL_RGBA, texture, _TIFFfree);
             }
 
             TIFFClose(tif);

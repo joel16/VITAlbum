@@ -47,7 +47,7 @@ namespace FS {
         return entry_count;
     }
 
-    static int sort(const void *p1, const void *p2) {
+    static int Sort(const void *p1, const void *p2) {
         SceIoDirent *entryA = (SceIoDirent *)p1;
         SceIoDirent *entryB = (SceIoDirent *)p2;
         
@@ -64,7 +64,7 @@ namespace FS {
         SceOff entry_count = 0;
         SceUID dir = 0;
 
-        entry_count = CountFiles(path) + ((path == "ux0:")? 0 : 1);
+        entry_count = FS::CountFiles(path) + ((path == "ux0:")? 0 : 1);
 
         if (R_FAILED(dir = sceIoDopen(path.c_str())))
             return dir;
@@ -82,7 +82,7 @@ namespace FS {
             i++;
         } while (ret > 0);
 
-        std::qsort(entries, entry_count, sizeof(SceIoDirent), sort);
+        std::qsort(entries, entry_count, sizeof(SceIoDirent), FS::Sort);
         
         if (R_FAILED(ret = sceIoDclose(dir))) {
             delete[] entries;
@@ -97,7 +97,7 @@ namespace FS {
     static SceOff ChangeDir(const std::string &path, SceIoDirent **entries) {
         SceIoDirent *new_entries;
         
-        SceOff num_entries = GetDirList(path, &new_entries);
+        SceOff num_entries = FS::GetDirList(path, &new_entries);
         if (num_entries < 0)
             return -1;
             
@@ -136,15 +136,15 @@ namespace FS {
         std::string new_path = CWD;
         new_path.append("/");
         new_path.append(path);
-        return ChangeDir(new_path, entries);
+        return FS::ChangeDir(new_path, entries);
     }
     
     SceOff ChangeDirPrev(SceIoDirent **entries) {
         char new_path[256];
-        if (ChangeDirUp(new_path) < 0)
+        if (FS::ChangeDirUp(new_path) < 0)
             return -1;
         
-        return ChangeDir(std::string(new_path), entries);
+        return FS::ChangeDir(std::string(new_path), entries);
     }
     
     const std::string BuildPath(SceIoDirent *entry) {
