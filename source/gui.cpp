@@ -2,10 +2,12 @@
 #include <vitaGL.h>
 
 #include "fs.h"
-#include "imgui_internal.h"
 #include "keyboard.h"
 #include "textures.h"
 #include "utils.h"
+
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include "imgui_internal.h"
 
 namespace Renderer {
     static void Start(void) {
@@ -21,6 +23,17 @@ namespace Renderer {
         ImGui_ImplVitaGL_RenderDrawData(ImGui::GetDrawData());
         vglStopRendering();
     }
+    
+    void SetupWindow(void) {
+        ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(960.0f, 544.0f), ImGuiCond_Once);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    }
+    
+    void ExitWindow(void) {
+        ImGui::End();
+        ImGui::PopStyleVar();
+    }
 }
 
 namespace GUI {
@@ -30,31 +43,37 @@ namespace GUI {
         GUI_STATE_GIF_PREVIEW
     };
 
-    static int gui_state = GUI_STATE_HOME;
+    static int frame_count = 0;
 
     static void ImageWindow(SceIoDirent *entry, Tex *texture) {
-        ImGui::SetNextWindowPos({0.0f, 0.0f}, ImGuiCond_Once);
-        ImGui::SetNextWindowSize({960.0f, 544.0f}, ImGuiCond_Once);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        Renderer::SetupWindow();
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
-        if (ImGui::Begin(entry->d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
+        if (ImGui::Begin(entry->d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar)) {
+            ImGui::SetCursorPos((ImGui::GetWindowSize() - ImVec2(texture->width, texture->height)) * 0.5f);
             ImGui::Image(reinterpret_cast<ImTextureID>(texture->id), ImVec2(texture->width, texture->height));
+        }
         
-        ImGui::End();
+        Renderer::ExitWindow();
         ImGui::PopStyleVar();
     }
 
-    static void GifWindow(SceIoDirent *entry, Tex **texture, unsigned int *frames) {
-        ImGui::SetNextWindowPos({0.0f, 0.0f}, ImGuiCond_Once);
-        ImGui::SetNextWindowSize({960.0f, 544.0f}, ImGuiCond_Once);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-        if (ImGui::Begin(entry->d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
-            for (unsigned int i = 0; i < *frames; i++) {
-                //ImGui::SetCursorPosY(1.0f);
-                ImGui::Image(reinterpret_cast<ImTextureID>(texture[i]->id), ImVec2(texture[i]->width, texture[i]->height));
-            }
+    static void GifWindow(SceIoDirent *entry, std::vector<Tex> textures) {
+        Renderer::SetupWindow();
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+
+        if (ImGui::Begin(entry->d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar)) {
+            frame_count++;
+            ImGui::SetCursorPos((ImGui::GetWindowSize() - ImVec2(textures[frame_count].width, textures[frame_count].height)) * 0.5f);
+            sceKernelDelayThread(textures[frame_count].delay * 10000);
+            ImGui::Image(reinterpret_cast<ImTextureID>(textures[frame_count].id), ImVec2(textures[frame_count].width, textures[frame_count].height));
+
+            // Reset frame counter
+            if (frame_count == textures.size() - 1)
+                frame_count = 0;
         }
-        ImGui::End();
+        
+        Renderer::ExitWindow();
         ImGui::PopStyleVar();
     }
     
@@ -139,15 +158,13 @@ namespace GUI {
         SceOff selected = 0;
 
         Tex texture; // Common image formats
-        Tex *textures; // GIFs
-        unsigned int frames = 0; // GIFs
+        std::vector<Tex> textures; // GIFs
+
+        int gui_state = GUI_STATE_HOME;
         
         while (window) {
             Renderer::Start();
-            
-            ImGui::SetNextWindowPos({0.0f, 0.0f}, ImGuiCond_Once);
-            ImGui::SetNextWindowSize({960.0f, 544.0f}, ImGuiCond_Once);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+            Renderer::SetupWindow();
             
             if (ImGui::Begin("VITAlbum", &window, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
                 ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), FS::CWD.c_str());
@@ -194,12 +211,9 @@ namespace GUI {
                                 gui_state = GUI_STATE_IMAGE_PREVIEW;
                             }
                             else if (ext == ".GIF") {
-                                // SceBool image_ret = Textures::LoadImageGIF(path, &textures, &frames);
-                                // IM_ASSERT(image_ret);
-                                // gui_state = GUI_STATE_GIF_PREVIEW;
-                                SceBool image_ret = Textures::LoadImageGIF(path, &texture, &frames);
+                                SceBool image_ret = Textures::LoadImageGIF(path, textures);
                                 IM_ASSERT(image_ret);
-                                gui_state = GUI_STATE_IMAGE_PREVIEW;
+                                gui_state = GUI_STATE_GIF_PREVIEW;
                             }
                             else if (ext == ".ICO") {
                                 SceBool image_ret = Textures::LoadImageICO(path, &texture);
@@ -248,15 +262,14 @@ namespace GUI {
                     break;
 
                 case GUI_STATE_GIF_PREVIEW:
-                    GUI::GifWindow(&entries[selected], &textures, &frames);
+                    GUI::GifWindow(&entries[selected], textures);
                     break;
 
                 default:
                     break;
             }
             
-            ImGui::End();
-            ImGui::PopStyleVar();
+            Renderer::ExitWindow();
             Renderer::End(clear_color);
 
             Utils::ReadControls();
@@ -281,9 +294,11 @@ namespace GUI {
 
                 case GUI_STATE_GIF_PREVIEW:
                     if (pressed & SCE_CTRL_CANCEL) {
-                        for (int i = 0; i < frames; i++) {
+                        for (int i = 0; i < textures.size(); i++) {
                             Textures::Free(&textures[i]);
                         }
+                        textures.clear();
+                        frame_count = 0;
                         gui_state = GUI_STATE_HOME;
                     }
                     

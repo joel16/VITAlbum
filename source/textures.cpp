@@ -4,7 +4,7 @@
 #include "libnsbmp.h"
 
 // GIF
-#include "gif_lib.h"
+#include "libnsgif.h"
 
 // JPEG
 #include "turbojpeg.h"
@@ -70,6 +70,44 @@ namespace BMP {
     static void bitmap_destroy(void *bitmap) {
         assert(bitmap);
         std::free(bitmap);
+    }
+}
+
+namespace GIF {
+    static void *bitmap_create(int width, int height) {
+        /* ensure a stupidly large bitmap is not created */
+        if ((static_cast<long long>(width) * static_cast<long long>(height)) > (MAX_IMAGE_BYTES/BYTES_PER_PIXEL))
+            return nullptr;
+        
+        return std::calloc(width * height, BYTES_PER_PIXEL);
+    }
+
+    static void bitmap_set_opaque(void *bitmap, bool opaque) {
+        (void) opaque;  /* unused */
+        (void) bitmap;  /* unused */
+        assert(bitmap);
+    }
+    
+    static bool bitmap_test_opaque(void *bitmap) {
+        (void) bitmap;  /* unused */
+        assert(bitmap);
+        return false;
+    }
+    
+    static unsigned char *bitmap_get_buffer(void *bitmap) {
+        assert(bitmap);
+        return static_cast<unsigned char *>(bitmap);
+    }
+    
+    static void bitmap_destroy(void *bitmap) {
+        assert(bitmap);
+        free(bitmap);
+    }
+    
+    static void bitmap_modified(void *bitmap) {
+        (void) bitmap;  /* unused */
+        assert(bitmap);
+        return;
     }
 }
 
@@ -175,68 +213,67 @@ namespace Textures {
         return ret;
     }
 
-    bool LoadImageGIF(const std::string &path, Tex *texture, unsigned int *frames) {
+    bool LoadImageGIF(const std::string &path, std::vector<Tex> &textures) {
+        gif_bitmap_callback_vt bitmap_callbacks = {
+            GIF::bitmap_create,
+            GIF::bitmap_destroy,
+            GIF::bitmap_get_buffer,
+            GIF::bitmap_set_opaque,
+            GIF::bitmap_test_opaque,
+            GIF::bitmap_modified
+        };
+
         bool ret = false;
-        int error = 0;
-        GifFileType *gif = DGifOpenFileName(path.c_str(), &error);
-        if (!gif)
-            return false;
+        gif_animation gif;
+        SceOff size = 0;
+        gif_result code = GIF_OK;
+        unsigned char *data = nullptr;
 
-        if (DGifSlurp(gif) == GIF_ERROR) {
-            DGifCloseFile(gif, &error);
-            return false;
-        }
+        gif_create(&gif, &bitmap_callbacks);
+        if (R_FAILED(FS::ReadFile(path, &data, &size)))
+            return ret;
+            
+        do {
+            code = gif_initialise(&gif, size, data);
+            if (code != GIF_OK && code != GIF_WORKING) {
+                gif_finalise(&gif);
+                delete[] data;
+                return ret;
+            }
+        } while (code != GIF_OK);
+        
+        bool gif_is_animated = gif.frame_count > 1;
 
-        //*frames = gif->ImageCount;
-        *frames = 0;
-        GraphicsControlBlock gcb;
+        if (gif_is_animated) {
+            textures.resize(gif.frame_count);
 
-        if (*frames > 1) {
-            for(int i = 0; i < *frames; i++) {
-                DGifSavedExtensionToGCB(gif, i, &gcb);
-                int pixels = gif->SavedImages[i].ImageDesc.Width * gif->SavedImages[i].ImageDesc.Height;
-                unsigned char *buffer = new unsigned char[pixels * 4];
-                unsigned char *image = buffer;
-                
-                for (int j = 0; j < pixels; j++) {
-                    GifByteType byte = gif->SavedImages[i].RasterBits[j];
-                    GifColorType colour = gif->SColorMap->Colors[byte];
-                    buffer[4 * j + 0] = colour.Red;
-                    buffer[4 * j + 1] = colour.Green;
-                    buffer[4 * j + 2] = colour.Blue;
-                    buffer[4 * j + 3] = (byte == gcb.TransparentColor) ? 0 : 255;
+            for (unsigned int i = 0; i < gif.frame_count; i++) {
+                code = gif_decode_frame(&gif, i);
+                if (code != GIF_OK) {
+                    delete[] data;
+                    return false;
                 }
-                
-                texture->width = gif->SWidth;
-                texture->height = gif->SHeight;
-                //ret = Textures::LoadImage(image, GL_RGBA, &texture[i], nullptr);
-                ret = Textures::LoadImage(image, GL_RGBA, texture, nullptr);
-                delete[] image;
+
+                textures[i].width = gif.width;
+                textures[i].height = gif.height;
+                textures[i].delay = gif.frames->frame_delay;
+                ret = Textures::LoadImage(static_cast<unsigned char *>(gif.frame_image), GL_RGBA, &textures[i], nullptr);
             }
         }
         else {
-            // Get the first frame
-            DGifSavedExtensionToGCB(gif, 0, &gcb);
-            int pixels = gif->SavedImages[0].ImageDesc.Width * gif->SavedImages[0].ImageDesc.Height;
-            unsigned char *buffer = new unsigned char[pixels * 4];
-            unsigned char *image = buffer;
-            
-            for (int i = 0; i < pixels; i++) {
-                GifByteType byte = gif->SavedImages[0].RasterBits[i];
-                GifColorType colour = gif->SColorMap->Colors[byte];
-                buffer[4 * i + 0] = colour.Red;
-                buffer[4 * i + 1] = colour.Green;
-                buffer[4 * i + 2] = colour.Blue;
-                buffer[4 * i + 3] = (byte == gcb.TransparentColor) ? 0 : 255;
+            code = gif_decode_frame(&gif, 0);
+            if (code != GIF_OK) {
+                delete[] data;
+                return false;
             }
             
-            texture->width = gif->SWidth;
-            texture->height = gif->SHeight;
-            ret = Textures::LoadImage(image, GL_RGBA, texture, nullptr);
-            delete[] image;
+            textures[0].width = gif.width;
+            textures[0].height = gif.height;
+            ret = Textures::LoadImage(static_cast<unsigned char *>(gif.frame_image), GL_RGBA, &textures[0], nullptr);
         }
 
-        DGifCloseFile(gif, &error);
+        gif_finalise(&gif);
+        delete[] data;
         return ret;
     }
 
