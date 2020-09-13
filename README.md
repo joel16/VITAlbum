@@ -1,11 +1,14 @@
-# VITAlbum
+# VITAlbum ![Github latest downloads](https://img.shields.io/github/downloads/joel16/VITAlbum/total.svg)
 
 A simple homebrew file browser that is used for viewing various image formats on the PlayStation VITA.
+
+<p align="center">
 <img src="https://i.imgur.com/KI6woYJ.jpg" alt="VITAlbum Screenshot" width="640" height="362"/>
+</p>
 
 # Supported Formats:
 - BMP
-- GIF
+- GIF (animated & non animated)
 - ICO
 - JPG/JPEG
 - PCX
@@ -18,7 +21,6 @@ A simple homebrew file browser that is used for viewing various image formats on
 
 # Todo:
 - Ability to resize images.
-- Load animated GIFs.
 - Support opening files from other partitions.
 
 # Credits:
@@ -30,7 +32,7 @@ A simple homebrew file browser that is used for viewing various image formats on
 - libwebp contributors for [libwebp](https://developers.google.com/speed/webp)
 - libtiff contributors for [libtiff](http://www.libtiff.org/)
 - libnsbmp contributors for [libnsbmp](https://www.netsurf-browser.org/projects/libnsbmp/)
-- giflib contributors for [giflib](http://giflib.sourceforge.net/)
+- libnsgif contributors for [libnsgif](https://www.netsurf-browser.org/projects/libnsgif/)
 - libpng contributors for [libpng](http://www.libpng.org/pub/png/libpng.html)
 - turbojpeg contributors for [turbojpeg](https://libjpeg-turbo.org/)
 - TheIronUniverse for the LiveArea Assets
