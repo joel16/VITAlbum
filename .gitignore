@@ -31,10 +31,14 @@
 *.app
 *.self
 *.velf
-*
 
 # Cmake
 CMakeCache.txt
 CMakeFiles/
 Makefile
 cmake_install.cmake
+
+# Other binaries
+VITAlbum
+*.vpk
+*.sfo

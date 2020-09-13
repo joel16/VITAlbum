@@ -69,7 +69,7 @@ namespace BMP {
     
     static void bitmap_destroy(void *bitmap) {
         assert(bitmap);
-        free(bitmap);
+        std::free(bitmap);
     }
 }
 
@@ -91,7 +91,7 @@ namespace ICO {
     
     static void bitmap_destroy(void *bitmap) {
         assert(bitmap);
-        free(bitmap);
+        std::free(bitmap);
     }
 }
 
@@ -122,7 +122,7 @@ namespace Textures {
             return false;
         
         image = stbi_load_from_memory(data, size, &texture->width, &texture->height, nullptr, BYTES_PER_PIXEL);
-        bool ret = LoadImage(image, GL_RGBA, texture, stbi_image_free);
+        bool ret = Textures::LoadImage(image, GL_RGBA, texture, stbi_image_free);
         delete[] data;
         return ret;
     }
@@ -169,7 +169,7 @@ namespace Textures {
 
         texture->width = bmp.width;
         texture->height = bmp.height;
-        bool ret = LoadImage(static_cast<unsigned char *>(bmp.bitmap), GL_RGBA, texture, nullptr);
+        bool ret = Textures::LoadImage(static_cast<unsigned char *>(bmp.bitmap), GL_RGBA, texture, nullptr);
         bmp_finalise(&bmp);
         delete[] data;
         return ret;
@@ -209,8 +209,8 @@ namespace Textures {
                 
                 texture->width = gif->SWidth;
                 texture->height = gif->SHeight;
-                //ret = LoadImage(image, GL_RGBA, &texture[i], nullptr);
-                ret = LoadImage(image, GL_RGBA, texture, nullptr);
+                //ret = Textures::LoadImage(image, GL_RGBA, &texture[i], nullptr);
+                ret = Textures::LoadImage(image, GL_RGBA, texture, nullptr);
                 delete[] image;
             }
         }
@@ -232,7 +232,7 @@ namespace Textures {
             
             texture->width = gif->SWidth;
             texture->height = gif->SHeight;
-            ret = LoadImage(image, GL_RGBA, texture, nullptr);
+            ret = Textures::LoadImage(image, GL_RGBA, texture, nullptr);
             delete[] image;
         }
 
@@ -287,7 +287,7 @@ namespace Textures {
 
         texture->width = bmp->width;
         texture->height = bmp->height;
-        bool ret = LoadImage(static_cast<unsigned char *>(bmp->bitmap), GL_RGBA, texture, nullptr);
+        bool ret = Textures::LoadImage(static_cast<unsigned char *>(bmp->bitmap), GL_RGBA, texture, nullptr);
         ico_finalise(&ico);
         delete[] data;
         return ret;
@@ -305,7 +305,7 @@ namespace Textures {
         tjDecompressHeader2(jpeg, data, size, &texture->width, &texture->height, &jpegsubsamp);
         buffer = new unsigned char[texture->width * texture->height * 3];
         tjDecompress2(jpeg, data, size, buffer, texture->width, 0, texture->height, TJPF_RGB, TJFLAG_FASTDCT);
-        bool ret = LoadImage(buffer, GL_RGB, texture, nullptr);
+        bool ret = Textures::LoadImage(buffer, GL_RGB, texture, nullptr);
         tjDestroy(jpeg);
         delete[] buffer;
         delete[] data;
@@ -320,7 +320,7 @@ namespace Textures {
             return false;
         
         data = drpcx_load_memory(data, size, DRPCX_FALSE, &texture->width, &texture->height, nullptr, BYTES_PER_PIXEL);
-        bool ret = LoadImage(data, GL_RGBA, texture, nullptr);
+        bool ret = Textures::LoadImage(data, GL_RGBA, texture, nullptr);
         delete[] data;
         return ret;
     }
@@ -334,7 +334,7 @@ namespace Textures {
             return ret;
         
         png_image image;
-        memset(&image, 0, (sizeof image));
+        std::memset(&image, 0, (sizeof image));
         image.version = PNG_IMAGE_VERSION;
         
         if (png_image_begin_read_from_memory(&image, data, size) != 0) {
@@ -391,7 +391,7 @@ namespace Textures {
             return false;
         
         data = WebPDecodeRGBA(data, size, &texture->width, &texture->height);
-        bool ret = LoadImage(data, GL_RGBA, texture, nullptr);
+        bool ret = Textures::LoadImage(data, GL_RGBA, texture, nullptr);
         delete[] data;
         return ret;
     }
@@ -401,19 +401,19 @@ namespace Textures {
     }
 
     void Init(void) {
-        bool image_ret = LoadImagePNG("app0:res/file.png", &file_texture);
+        bool image_ret = Textures::LoadImagePNG("app0:res/file.png", &file_texture);
         IM_ASSERT(image_ret);
         
-        image_ret = LoadImagePNG("app0:res/folder.png", &folder_texture);
+        image_ret = Textures::LoadImagePNG("app0:res/folder.png", &folder_texture);
         IM_ASSERT(image_ret);
         
-        image_ret = LoadImagePNG("app0:res/image.png", &image_texture);
+        image_ret = Textures::LoadImagePNG("app0:res/image.png", &image_texture);
         IM_ASSERT(image_ret);
     }
 
     void Exit(void) {
-        Free(&image_texture);
-        Free(&folder_texture);
-        Free(&file_texture);
+        Textures::Free(&image_texture);
+        Textures::Free(&folder_texture);
+        Textures::Free(&file_texture);
     }
 }
