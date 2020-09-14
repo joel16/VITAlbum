@@ -263,6 +263,8 @@ namespace GUI {
 
                 case GUI_STATE_GIF_PREVIEW:
                     GUI::GifWindow(&entries[selected], textures);
+                    if (properties_window)
+                        GUI::PropertiesWindow(&properties_window, FS::CWD, &entries[selected], &textures[0]);
                     break;
 
                 default:
@@ -293,13 +295,22 @@ namespace GUI {
                     break;
 
                 case GUI_STATE_GIF_PREVIEW:
-                    if (pressed & SCE_CTRL_CANCEL) {
-                        for (int i = 0; i < textures.size(); i++) {
-                            Textures::Free(&textures[i]);
+                     if (pressed & SCE_CTRL_TRIANGLE)
+                        properties_window = !properties_window;
+                    
+                    if (!properties_window) {
+                        if (pressed & SCE_CTRL_CANCEL) {
+                            for (int i = 0; i < textures.size(); i++)
+                                Textures::Free(&textures[i]);
+                            
+                            textures.clear();
+                            frame_count = 0;
+                            gui_state = GUI_STATE_HOME;
                         }
-                        textures.clear();
-                        frame_count = 0;
-                        gui_state = GUI_STATE_HOME;
+                    }
+                    else {
+                        if (pressed & SCE_CTRL_CANCEL)
+                            properties_window = false;
                     }
                     
                     break;
