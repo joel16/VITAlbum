@@ -67,8 +67,8 @@ namespace GUI {
         if (ImGui::Begin(entry->d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar)) {
             frame_count++;
             
-            if ((texture->width <= 960) && (texture->height <= 544))
-                ImGui::SetCursorPos((ImGui::GetWindowSize() - ImVec2(texture->width, texture->height)) * 0.5f);
+            if ((textures[0].width <= 960) && (textures[0].height <= 544))
+                ImGui::SetCursorPos((ImGui::GetWindowSize() - ImVec2(textures[0].width, textures[0].height)) * 0.5f);
             
             sceKernelDelayThread(textures[frame_count].delay * 10000);
             ImGui::Image(reinterpret_cast<ImTextureID>(textures[frame_count].id), ImVec2(textures[frame_count].width, textures[frame_count].height));
