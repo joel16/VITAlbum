@@ -50,7 +50,9 @@ namespace GUI {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
         if (ImGui::Begin(entry->d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar)) {
-            ImGui::SetCursorPos((ImGui::GetWindowSize() - ImVec2(texture->width, texture->height)) * 0.5f);
+            if ((texture->width <= 960) && (texture->height <= 544))
+                ImGui::SetCursorPos((ImGui::GetWindowSize() - ImVec2(texture->width, texture->height)) * 0.5f);
+            
             ImGui::Image(reinterpret_cast<ImTextureID>(texture->id), ImVec2(texture->width, texture->height));
         }
         
@@ -64,7 +66,10 @@ namespace GUI {
 
         if (ImGui::Begin(entry->d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar)) {
             frame_count++;
-            ImGui::SetCursorPos((ImGui::GetWindowSize() - ImVec2(textures[frame_count].width, textures[frame_count].height)) * 0.5f);
+            
+            if ((texture->width <= 960) && (texture->height <= 544))
+                ImGui::SetCursorPos((ImGui::GetWindowSize() - ImVec2(texture->width, texture->height)) * 0.5f);
+            
             sceKernelDelayThread(textures[frame_count].delay * 10000);
             ImGui::Image(reinterpret_cast<ImTextureID>(textures[frame_count].id), ImVec2(textures[frame_count].width, textures[frame_count].height));
 
