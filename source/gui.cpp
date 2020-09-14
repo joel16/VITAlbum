@@ -80,6 +80,8 @@ namespace GUI {
     static void PropertiesWindow(bool *window, const std::string &cwd, SceIoDirent *entry, Tex *texture) {
         ImGui::OpenPopup("Properties");
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(20, 20));
+        ImGui::SetNextWindowPos(ImVec2(480.0f, 272.0f), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
         std::string new_width, new_height;
         if (ImGui::BeginPopupModal("Properties", window, ImGuiWindowFlags_AlwaysAutoResize)) {
             std::string parent_text = "Parent: ";
@@ -145,6 +147,7 @@ namespace GUI {
 
             ImGui::EndPopup();
         }
+
         ImGui::PopStyleVar();
     }
     
