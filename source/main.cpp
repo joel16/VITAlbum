@@ -62,7 +62,7 @@ namespace Services {
 		colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 		
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		io.FontGlobalScale = 1.5f;
+		io.FontGlobalScale = 1.8f;
 		io.IniFilename = nullptr;
 	}
 
