@@ -63,6 +63,7 @@ namespace Services {
 		
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.FontGlobalScale = 1.5f;
+		io.IniFilename = nullptr;
 	}
 
 	void Init(void) {
