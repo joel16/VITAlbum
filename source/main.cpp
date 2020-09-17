@@ -3,7 +3,7 @@
 
 #include "config.h"
 #include "gui.h"
-//#include "log.h"
+#include "log.h"
 #include "textures.h"
 #include "utils.h"
 
@@ -68,8 +68,6 @@ namespace Services {
 	}
 
 	void Init(void) {
-		//Log::OpenHandle();
-
 		// Initalize vitaGL and imGui contexts
 		vglInit(0x100000);
 		ImGui::CreateContext();
@@ -85,16 +83,17 @@ namespace Services {
 		SCE_CTRL_CANCEL = Utils::GetCancelButton();
 
 		Config::Load();
+		Log::Init();
 	}
 
 	void Exit(void) {
 		// Clean up
+		Log::Exit();
 		Utils::EndAppUtil();
 		Textures::Exit();
 		ImGui_ImplVitaGL_Shutdown();
 		ImGui::DestroyContext();
 		vglEnd();
-		//Log::CloseHandle();
 	}
 }
 

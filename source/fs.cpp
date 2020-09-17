@@ -176,6 +176,19 @@ namespace FS {
         return path;
     }
 
+    int CreateFile(const std::string &path) {
+        int ret = 0;
+        SceUID file = 0;
+        
+        if (R_FAILED(ret = file = sceIoOpen(path.c_str(), SCE_O_WRONLY | SCE_O_CREAT | SCE_O_TRUNC, 0777)))
+            return ret;
+            
+        if (R_FAILED(ret = sceIoClose(file)))
+            return ret;
+            
+        return 0;
+    }
+
     int ReadFile(const std::string &path, unsigned char **buffer, SceOff *size) {
         int ret = 0;
         SceUID file = 0;

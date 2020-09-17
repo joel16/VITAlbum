@@ -14,6 +14,7 @@ namespace FS {
     SceOff ChangeDirNext(const std::string &path, SceIoDirent **entries);
     SceOff ChangeDirPrev(SceIoDirent **entries);
     const std::string BuildPath(SceIoDirent *entry);
+    int CreateFile(const std::string &path);
     int ReadFile(const std::string &path, unsigned char **buffer, SceOff *size);
     int WriteFile(const std::string &path, const void *data, SceSize size);
 }

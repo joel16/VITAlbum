@@ -2,41 +2,62 @@
 #include <cstdarg>
 #include <cstdio>
 
+#include "fs.h"
+#include "config.h"
 #include "utils.h"
 
 namespace Log {
-    SceUID log_handle = 0;
+    static SceUID log_file = 0;
+    static SceOff offset = 0;
 
-    int OpenHandle(void) {
-        int ret = 0;
+    void Init(void) {
+        if (!config.dev_options)
+            return;
         
-        if (R_FAILED(ret = log_handle = sceIoOpen("ux0:/vpk/debug.log", SCE_O_WRONLY | SCE_O_CREAT | SCE_O_APPEND, 0777)))
-            return ret;
+        if (!FS::FileExists("ux0:data/VITAlbum/debug.log"))
+            FS::CreateFile("ux0:data/VITAlbum/debug.log");
+            
+        if (R_FAILED(log_file = sceIoOpen("ux0:data/VITAlbum/debug.log", SCE_O_RDWR | SCE_O_APPEND, 0)))
+            return;
+            
+        SceOff size = sceIoLseek(log_file, 0, SEEK_END);
+        unsigned char *buffer = new unsigned char[size];
         
-        return 0;
+        int bytes_read = 0;
+        if (R_FAILED(bytes_read = sceIoPread(log_file, buffer, size, SCE_SEEK_SET))) {
+            delete[] buffer;
+            return;
+        }
+        
+        delete[] buffer;
+        offset += bytes_read;
     }
 
-    int CloseHandle(void) {
-        int ret = 0;
-        
-        if (R_FAILED(ret = sceIoClose(log_handle)))
-            return ret;
-        
-        return 0;
+    void Exit(void) {
+        if (!config.dev_options)
+            return;
+            
+        if (R_FAILED(sceIoClose(log_file)))
+            return;
     }
-
-    int Debug(const char *format, ...) {
-        va_list list;
-        char string[1024] = {0};
+    
+    void Error(const char *data, ...) {
+        if (!config.dev_options)
+            return;
         
-        va_start(list, format);
-        int length = std::vsprintf(string, format, list);
-        va_end(list);
+        char buf[512];
+        va_list args;
+        va_start(args, data);
+        std::vsnprintf(buf, sizeof(buf), data, args);
+        va_end(args);
         
-        int ret = 0;
-        if (R_FAILED(ret = sceIoWrite(log_handle, string, length)))
-            return ret;
+        std::string error_string = "[ERROR] ";
+        error_string.append(buf);
         
-        return 0;
+        std::printf("%s", error_string.c_str());
+        if (R_FAILED(sceIoPwrite(log_file, error_string.data(), error_string.length(), offset)))
+            return;
+            
+        offset += error_string.length();
     }
 }
