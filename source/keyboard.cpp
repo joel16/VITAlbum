@@ -5,6 +5,7 @@
 #include <vitaGL.h>
 
 #include "keyboard.h"
+#include "log.h"
 #include "utils.h"
 
 /*
@@ -42,8 +43,10 @@ namespace Keyboard {
         param.inputTextBuffer = buffer;
         
         int ret = 0;
-        if (R_FAILED(ret = sceImeDialogInit(&param)))
+        if (R_FAILED(ret = sceImeDialogInit(&param))) {
+            Log::Error("sceImeDialogInit failed: 0x%lx\n", ret);
             return ret;
+        }
         
         running = true;
         return 0;
