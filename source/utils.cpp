@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cstdio>
 
+#include "log.h"
 #include "utils.h"
 
 int SCE_CTRL_ENTER, SCE_CTRL_CANCEL;
@@ -20,20 +21,28 @@ namespace Utils {
         
         int ret = 0;
         
-        if (R_FAILED(ret = sceAppUtilInit(&init, &boot)))
+        if (R_FAILED(ret = sceAppUtilInit(&init, &boot))) {
+            Log::Error("sceAppUtilInit failed: 0x%lx\n", ret);
             return ret;
+        }
         
         SceCommonDialogConfigParam param;
         sceCommonDialogConfigParamInit(&param);
 
-        if (R_FAILED(ret = sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_LANG, reinterpret_cast<int *>(&param.language))))
+        if (R_FAILED(ret = sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_LANG, reinterpret_cast<int *>(&param.language)))) {
+            Log::Error("sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_LANG) failed: 0x%lx\n", ret);
             return ret;
+        }
 
-        if (R_FAILED(ret = sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON, reinterpret_cast<int *>(&param.enterButtonAssign))))
+        if (R_FAILED(ret = sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON, reinterpret_cast<int *>(&param.enterButtonAssign)))) {
+            Log::Error("sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON) failed: 0x%lx\n", ret);
             return ret;
+        }
 
-        if (R_FAILED(ret = sceCommonDialogSetConfigParam(&param)))
+        if (R_FAILED(ret = sceCommonDialogSetConfigParam(&param))) {
+            Log::Error("sceCommonDialogSetConfigParam failed: 0x%lx\n", ret);
             return ret;
+        }
         
         return 0;
     }
@@ -41,8 +50,10 @@ namespace Utils {
     int EndAppUtil(void) {
         int ret = 0;
         
-        if (R_FAILED(ret = sceAppUtilShutdown()))
+        if (R_FAILED(ret = sceAppUtilShutdown())) {
+            Log::Error("sceAppUtilShutdown failed: 0x%lx\n", ret);
             return ret;
+        }
         
         return 0;
     }
@@ -56,8 +67,10 @@ namespace Utils {
 
     int GetEnterButton(void) {
         int button = 0, ret = 0;
-        if (R_FAILED(ret = sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON, &button)))
+        if (R_FAILED(ret = sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON, &button))) {
+            Log::Error("sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON) failed: 0x%lx\n", ret);
             return ret;
+        }
         
         if (button == SCE_SYSTEM_PARAM_ENTER_BUTTON_CIRCLE)
             return SCE_CTRL_CIRCLE;
@@ -69,8 +82,10 @@ namespace Utils {
 
     int GetCancelButton(void) {
         int button = 0, ret = 0;
-        if (R_FAILED(ret = sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON, &button)))
+        if (R_FAILED(ret = sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON, &button))) {
+            Log::Error("sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON) failed: 0x%lx\n", ret);
             return ret;
+        }
         
         if (button == SCE_SYSTEM_PARAM_ENTER_BUTTON_CIRCLE)
             return SCE_CTRL_CROSS;
