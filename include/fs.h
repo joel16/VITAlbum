@@ -6,7 +6,8 @@
 #include <string>
 
 namespace FS {
-    extern std::string CWD;
+    bool FileExists(const std::string &path);
+    bool DirExists(const std::string &path);
     int GetFileSize(const std::string &path, SceOff *size);
     std::string GetFileExt(const std::string &filename);
     SceOff GetDirList(const std::string &path, SceIoDirent **entriesp);
@@ -14,6 +15,7 @@ namespace FS {
     SceOff ChangeDirPrev(SceIoDirent **entries);
     const std::string BuildPath(SceIoDirent *entry);
     int ReadFile(const std::string &path, unsigned char **buffer, SceOff *size);
+    int WriteFile(const std::string &path, const void *data, SceSize size);
 }
 
 #endif

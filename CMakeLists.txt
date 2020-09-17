@@ -65,6 +65,7 @@ add_executable(${PROJECT_NAME}
   libs/libnsbmp/libnsbmp.c
   libs/libnsgif/libnsgif.c
   libs/libnsgif/lzw.c
+  source/config.cpp
   source/fs.cpp
   source/gui.cpp
   source/keyboard.cpp
@@ -76,6 +77,7 @@ add_executable(${PROJECT_NAME}
 
 # Library to link to (drop the  prefix). This will mostly be stubs.
 target_link_libraries(${PROJECT_NAME}
+  jansson
   tiff
   webp
   turbojpeg

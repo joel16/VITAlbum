@@ -1,6 +1,7 @@
 #include <imgui_vita.h>
 #include <vitaGL.h>
 
+#include "config.h"
 #include "gui.h"
 //#include "log.h"
 #include "textures.h"
@@ -82,6 +83,8 @@ namespace Services {
 		Utils::InitAppUtil();
 		SCE_CTRL_ENTER = Utils::GetEnterButton();
 		SCE_CTRL_CANCEL = Utils::GetCancelButton();
+
+		Config::Load();
 	}
 
 	void Exit(void) {

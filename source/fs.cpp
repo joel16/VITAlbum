@@ -6,11 +6,32 @@
 #include <cstring>
 #include <filesystem>
 
+#include "config.h"
 #include "fs.h"
 #include "utils.h"
 
 namespace FS {
-    std::string CWD;
+    bool FileExists(const std::string &path) {
+        SceUID file = 0;
+        
+        if (R_SUCCEEDED(file = sceIoOpen(path.c_str(), SCE_O_RDONLY, 0777))) {
+            sceIoClose(file);
+            return true;
+        }
+        
+        return false;
+    }
+
+    bool DirExists(const std::string &path) {
+        SceUID dir = 0;
+        
+        if (R_SUCCEEDED(dir = sceIoDopen(path.c_str()))) {
+            sceIoDclose(dir);
+            return true;
+        }
+        
+        return false;
+    }
 
     int GetFileSize(const std::string &path, SceOff *size) {
         int ret = 0;
@@ -103,23 +124,24 @@ namespace FS {
             
         // Free entries and change the current working directory.
         delete[] *entries;
-        CWD = path;
+        config.cwd = path;
+        Config::Save(config);
         *entries = new_entries;
         return num_entries;
     }
 
     static int ChangeDirUp(char path[256]) {
-        if (CWD.length() <= 1 && CWD.c_str()[0] == '/')
+        if (config.cwd.length() <= 1 && config.cwd.c_str()[0] == '/')
             return -1;
             
         // Remove upmost directory
         bool copy = false;
         int len = 0;
-        for (ssize_t i = CWD.length(); i >= 0; i--) {
-            if (CWD.c_str()[i] == '/')
+        for (ssize_t i = config.cwd.length(); i >= 0; i--) {
+            if (config.cwd.c_str()[i] == '/')
                 copy = true;
             if (copy) {
-                path[i] = CWD.c_str()[i];
+                path[i] = config.cwd.c_str()[i];
                 len++;
             }
         }
@@ -133,7 +155,7 @@ namespace FS {
     }
     
     SceOff ChangeDirNext(const std::string &path, SceIoDirent **entries) {
-        std::string new_path = CWD;
+        std::string new_path = config.cwd;
         new_path.append("/");
         new_path.append(path);
         return FS::ChangeDir(new_path, entries);
@@ -148,15 +170,15 @@ namespace FS {
     }
     
     const std::string BuildPath(SceIoDirent *entry) {
-        std::string path = CWD;
+        std::string path = config.cwd;
         path.append("/");
         path.append(entry->d_name);
         return path;
     }
 
     int ReadFile(const std::string &path, unsigned char **buffer, SceOff *size) {
-        SceUID file = 0;
         int ret = 0;
+        SceUID file = 0;
 
         if (R_FAILED(ret = file = sceIoOpen(path.c_str(), SCE_O_RDONLY, 0)))
             return ret;
@@ -171,5 +193,23 @@ namespace FS {
             return ret;
 
         return 0;
+    }
+
+    int WriteFile(const std::string &path, const void *data, SceSize size) {
+        int ret = 0, bytes_written = 0;
+        SceUID file = 0;
+
+        if (R_FAILED(ret = file = sceIoOpen(path.c_str(), SCE_O_WRONLY | SCE_O_CREAT | SCE_O_TRUNC, 0777)))
+            return ret;
+
+        if (R_FAILED(ret = bytes_written = sceIoWrite(file, data, size))) {
+            sceIoClose(file);
+            return ret;
+        }
+        
+        if (R_FAILED(ret = sceIoClose(file)))
+            return ret;
+
+        return bytes_written;
     }
 }

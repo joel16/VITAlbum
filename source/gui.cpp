@@ -1,6 +1,7 @@
 #include <imgui_vita.h>
 #include <vitaGL.h>
 
+#include "config.h"
 #include "fs.h"
 #include "keyboard.h"
 #include "textures.h"
@@ -158,10 +159,9 @@ namespace GUI {
     void MainMenu(void) {
         bool window = true, properties_window = false;
         ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-        
-        FS::CWD = "ux0:";
+
         SceIoDirent *entries;
-        SceOff entry_count = FS::GetDirList(FS::CWD, &entries);
+        SceOff entry_count = FS::GetDirList(config.cwd, &entries);
         SceOff selected = 0;
 
         Tex texture; // Common image formats
@@ -174,7 +174,7 @@ namespace GUI {
             Renderer::SetupWindow();
             
             if (ImGui::Begin("VITAlbum", &window, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
-                ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), FS::CWD.c_str());
+                ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), config.cwd.c_str());
                 
                 ImGui::BeginChild("##FS::GetDirList");
                 for (SceOff i = 0; i < entry_count; i++) {
@@ -265,13 +265,13 @@ namespace GUI {
                 case GUI_STATE_IMAGE_PREVIEW:
                     GUI::ImageWindow(&entries[selected], &texture);
                     if (properties_window)
-                        GUI::PropertiesWindow(&properties_window, FS::CWD, &entries[selected], &texture);
+                        GUI::PropertiesWindow(&properties_window, config.cwd, &entries[selected], &texture);
                     break;
 
                 case GUI_STATE_GIF_PREVIEW:
                     GUI::GifWindow(&entries[selected], textures);
                     if (properties_window)
-                        GUI::PropertiesWindow(&properties_window, FS::CWD, &entries[selected], &textures[0]);
+                        GUI::PropertiesWindow(&properties_window, config.cwd, &entries[selected], &textures[0]);
                     break;
 
                 default:
