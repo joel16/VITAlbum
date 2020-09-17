@@ -77,20 +77,20 @@ namespace Services {
 		ImGui::StyleColorsDark();
 		ImGui_ImplVitaGL_GamepadUsage(true);
 
+		Config::Load();
+		Log::Init();
+
 		Textures::Init();
 		Utils::InitAppUtil();
 		SCE_CTRL_ENTER = Utils::GetEnterButton();
 		SCE_CTRL_CANCEL = Utils::GetCancelButton();
-
-		Config::Load();
-		Log::Init();
 	}
 
 	void Exit(void) {
 		// Clean up
-		Log::Exit();
 		Utils::EndAppUtil();
 		Textures::Exit();
+		Log::Exit();
 		ImGui_ImplVitaGL_Shutdown();
 		ImGui::DestroyContext();
 		vglEnd();
