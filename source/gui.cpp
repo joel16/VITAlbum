@@ -65,14 +65,13 @@ namespace GUI {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
         if (ImGui::Begin(entry->d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar)) {
-            frame_count++;
-            
             if ((textures[0].width <= 960) && (textures[0].height <= 544))
                 ImGui::SetCursorPos((ImGui::GetWindowSize() - ImVec2(textures[0].width, textures[0].height)) * 0.5f);
-            
+                
             sceKernelDelayThread(textures[frame_count].delay * 10000);
             ImGui::Image(reinterpret_cast<ImTextureID>(textures[frame_count].id), ImVec2(textures[frame_count].width, textures[frame_count].height));
-
+            frame_count++;
+            
             // Reset frame counter
             if (frame_count == textures.size() - 1)
                 frame_count = 0;
