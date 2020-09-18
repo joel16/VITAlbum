@@ -1,9 +1,8 @@
 #include "imgui.h"
+#include "windows.h"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
-
-#include "windows.h"
 
 namespace Windows {
     void GifWindow(MenuItem *item) {
