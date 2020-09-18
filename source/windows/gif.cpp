@@ -1,3 +1,4 @@
+#include "config.h"
 #include "imgui.h"
 #include "windows.h"
 
@@ -8,8 +9,9 @@ namespace Windows {
     void GifWindow(MenuItem *item) {
         Windows::SetupWindow();
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+        ImGuiWindowFlags_ filename_flag = !config.image_filename? ImGuiWindowFlags_NoTitleBar : ImGuiWindowFlags_None;
         
-        if (ImGui::Begin(item->entries[item->selected].d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar)) {
+        if (ImGui::Begin(item->entries[item->selected].d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | filename_flag)) {
             if ((item->textures[0].width <= 960) && (item->textures[0].height <= 544))
                 ImGui::SetCursorPos((ImGui::GetWindowSize() - ImVec2(item->textures[0].width, item->textures[0].height)) * 0.5f);
                 
