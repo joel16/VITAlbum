@@ -83,10 +83,10 @@ namespace FS {
     }
 
     static int Sort(const void *p1, const void *p2) {
-        SceIoDirent *entryA = (SceIoDirent *)p1;
-        SceIoDirent *entryB = (SceIoDirent *)p2;
         int ret = 0;
-        
+        const SceIoDirent *entryA = reinterpret_cast<const SceIoDirent*>(p1);
+        const SceIoDirent *entryB = reinterpret_cast<const SceIoDirent*>(p2);
+
         if ((SCE_S_ISDIR(entryA->d_stat.st_mode)) && !(SCE_S_ISDIR(entryB->d_stat.st_mode)))
             return -1;
         else if (!(SCE_S_ISDIR(entryA->d_stat.st_mode)) && (SCE_S_ISDIR(entryB->d_stat.st_mode)))
