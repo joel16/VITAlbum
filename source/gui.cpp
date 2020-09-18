@@ -53,6 +53,10 @@ namespace GUI {
                     
                     break;
 
+                case GUI_STATE_SETTINGS:
+                    Windows::SettingsWindow(&item);
+                    break;
+
                 default:
                     break;
             }
@@ -61,6 +65,12 @@ namespace GUI {
             Utils::ReadControls();
 
             switch (item.state) {
+                case GUI_STATE_HOME:
+                    if (pressed & SCE_CTRL_SELECT)
+                        item.state = GUI_STATE_SETTINGS;
+
+                    break;
+                
                 case GUI_STATE_IMAGE_PREVIEW:
                     if (pressed & SCE_CTRL_TRIANGLE)
                         item.image_properties = !item.image_properties;
@@ -97,6 +107,18 @@ namespace GUI {
                             item.image_properties = false;
                     }
                     
+                    break;
+
+                case GUI_STATE_SETTINGS:
+                    if (pressed & SCE_CTRL_CANCEL) {
+                        Config::Save(config);
+                        item.entry_count = FS::GetDirList(config.cwd, &item.entries);
+                        item.state = GUI_STATE_HOME;
+                    }
+
+                    break;
+
+                default:
                     break;
             }
         }

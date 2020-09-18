@@ -77,6 +77,7 @@ add_executable(${PROJECT_NAME}
   source/windows/filebrowser.cpp
   source/windows/gif.cpp
   source/windows/image.cpp
+  source/windows/settings.cpp
 )
 
 # Library to link to (drop the  prefix). This will mostly be stubs.
