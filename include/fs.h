@@ -11,6 +11,7 @@ namespace FS {
     int GetFileSize(const std::string &path, SceOff *size);
     std::string GetFileExt(const std::string &filename);
     SceOff GetDirList(const std::string &path, SceIoDirent **entriesp);
+    void FreeDirEntries(SceIoDirent **entries, SceOff entry_count);
     SceOff ChangeDirNext(const std::string &path, SceIoDirent **entries);
     SceOff ChangeDirPrev(SceIoDirent **entries);
     const std::string BuildPath(SceIoDirent *entry);

@@ -112,6 +112,7 @@ namespace GUI {
                 case GUI_STATE_SETTINGS:
                     if (pressed & SCE_CTRL_CANCEL) {
                         Config::Save(config);
+                        FS::FreeDirEntries(&item.entries, item.entry_count);
                         item.entry_count = FS::GetDirList(config.cwd, &item.entries);
                         item.state = GUI_STATE_HOME;
                     }
@@ -123,6 +124,7 @@ namespace GUI {
             }
         }
 
+        FS::FreeDirEntries(&item.entries, item.entry_count);
         return 0;
     }
 }

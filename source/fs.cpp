@@ -132,6 +132,13 @@ namespace FS {
         *entriesp = entries;
         return entry_count;
     }
+    
+    void FreeDirEntries(SceIoDirent **entries, SceOff entry_count) {
+        if (entry_count > 0)
+            delete[] (*entries);
+            
+        *entries = nullptr;
+	}
 
     //TODO: Clean up change directory impl.
     static SceOff ChangeDir(const std::string &path, SceIoDirent **entries) {
