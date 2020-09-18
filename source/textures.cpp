@@ -39,6 +39,7 @@
 
 #include "fs.h"
 #include "imgui.h"
+#include "log.h"
 #include "textures.h"
 #include "utils.h"
 
@@ -184,6 +185,7 @@ namespace Textures {
             
         code = bmp_analyse(&bmp, size, data);
         if (code != BMP_OK) {
+            Log::Error("bmp_analyse failed: %d\n", code);
             bmp_finalise(&bmp);
             delete[] data;
             return false;
@@ -192,6 +194,7 @@ namespace Textures {
         code = bmp_decode(&bmp);
         if (code != BMP_OK) {
             if ((code != BMP_INSUFFICIENT_DATA) && (code != BMP_DATA_ERROR)) {
+                Log::Error("bmp_decode failed: %d\n", code);
                 bmp_finalise(&bmp);
                 delete[] data;
                 return false;
@@ -199,6 +202,7 @@ namespace Textures {
             
             /* skip if the decoded image would be ridiculously large */
             if ((bmp.width * bmp.height) > 200000) {
+                Log::Error("bmp_decode failed: width*height is over 200000\n");
                 bmp_finalise(&bmp);
                 delete[] data;
                 return false;
@@ -236,6 +240,7 @@ namespace Textures {
         do {
             code = gif_initialise(&gif, size, data);
             if (code != GIF_OK && code != GIF_WORKING) {
+                Log::Error("gif_initialise failed: %d\n", code);
                 gif_finalise(&gif);
                 delete[] data;
                 return ret;
@@ -250,6 +255,7 @@ namespace Textures {
             for (unsigned int i = 0; i < gif.frame_count; i++) {
                 code = gif_decode_frame(&gif, i);
                 if (code != GIF_OK) {
+                    Log::Error("gif_decode_frame failed: %d\n", code);
                     delete[] data;
                     return false;
                 }
@@ -263,6 +269,7 @@ namespace Textures {
         else {
             code = gif_decode_frame(&gif, 0);
             if (code != GIF_OK) {
+                Log::Error("gif_decode_frame failed: %d\n", code);
                 delete[] data;
                 return false;
             }
@@ -298,6 +305,7 @@ namespace Textures {
             
         code = ico_analyse(&ico, size, data);
         if (code != BMP_OK) {
+            Log::Error("ico_analyse failed: %d\n", code);
             ico_finalise(&ico);
             delete[] data;
             return false;
@@ -309,6 +317,7 @@ namespace Textures {
         code = bmp_decode(bmp);
         if (code != BMP_OK) {
             if ((code != BMP_INSUFFICIENT_DATA) && (code != BMP_DATA_ERROR)) {
+                Log::Error("bmp_decode failed: %d\n", code);
                 ico_finalise(&ico);
                 delete[] data;
                 return false;
@@ -316,6 +325,7 @@ namespace Textures {
             
             /* skip if the decoded image would be ridiculously large */
             if ((bmp->width * bmp->height) > 200000) {
+                Log::Error("bmp_decode failed: width*height is over 200000\n");
                 ico_finalise(&ico);
                 delete[] data;
                 return false;
@@ -339,9 +349,22 @@ namespace Textures {
             
         tjhandle jpeg = tjInitDecompress();
         int jpegsubsamp = 0;
-        tjDecompressHeader2(jpeg, data, size, &texture->width, &texture->height, &jpegsubsamp);
+
+        if (R_FAILED(tjDecompressHeader2(jpeg, data, size, &texture->width, &texture->height, &jpegsubsamp))) {
+            Log::Error("tjDecompressHeader2 failed: %s\n", tjGetErrorStr());
+            delete[] data;
+            return false;
+        }
+        
         buffer = new unsigned char[texture->width * texture->height * 3];
-        tjDecompress2(jpeg, data, size, buffer, texture->width, 0, texture->height, TJPF_RGB, TJFLAG_FASTDCT);
+
+        if (R_FAILED(tjDecompress2(jpeg, data, size, buffer, texture->width, 0, texture->height, TJPF_RGB, TJFLAG_FASTDCT))) {
+            Log::Error("tjDecompress2 failed: %s\n", tjGetErrorStr());
+            delete[] buffer;
+            delete[] data;
+            return false;
+        }
+        
         bool ret = Textures::LoadImage(buffer, GL_RGB, texture, nullptr);
         tjDestroy(jpeg);
         delete[] buffer;
@@ -387,12 +410,18 @@ namespace Textures {
                 png_image_free(&image);
             }
             else {
-                if (buffer == nullptr)
+                if (buffer == nullptr) {
+                    Log::Error("png_byte buffer: returned nullptr\n");
                     png_image_free(&image);
-                else
+                }
+                else {
+                    Log::Error("png_image_finish_read failed: %s\n", image.message);
                     delete[] buffer;
+                }
             }
         }
+        else
+            Log::Error("png_image_begin_read_from_memory failed: %s\n", image.message);
 
         delete[] data;
         return ret;
@@ -410,13 +439,21 @@ namespace Textures {
 
             raster = static_cast<uint32 *>(_TIFFmalloc(num_pixels * sizeof (uint32)));
             if (raster != nullptr) {
-                if (TIFFReadRGBAImage(tif, texture->width, texture->height, raster, 0))
+                if (TIFFReadRGBAImage(tif, texture->width, texture->height, raster))
                     LoadImage(reinterpret_cast<unsigned char *>(raster), GL_RGBA, texture, _TIFFfree);
+                else
+                    Log::Error("TIFFReadRGBAImage failed\n");
+
             }
+            else
+                Log::Error("_TIFFmalloc failed\n");
 
             TIFFClose(tif);
             return true;
         }
+        else
+            Log::Error("TIFFOpen failed\n");
+        
         return false;
     }
 
