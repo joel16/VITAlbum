@@ -103,7 +103,7 @@ namespace Services {
 int main(int argc, char *argv[]) {
 	Services::Init();
 	Services::SetDefaultTheme();
-	GUI::MainMenu();
+	GUI::RenderLoop();
 	Services::Exit();
 	return 0;
 }
