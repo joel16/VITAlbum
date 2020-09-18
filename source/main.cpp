@@ -7,6 +7,8 @@
 #include "textures.h"
 #include "utils.h"
 
+int _newlib_heap_size_user = 192 * 1024 * 1024;
+
 namespace Services {
 	void SetDefaultTheme(void) {
 		ImGui::GetStyle().FrameRounding = 4.0f;
@@ -69,7 +71,8 @@ namespace Services {
 
 	void Init(void) {
 		// Initalize vitaGL and imGui contexts
-		vglInit(0x100000);
+		vglInitExtended(0x100000, 960, 544, 0x1000000, SCE_GXM_MULTISAMPLE_4X);
+		vglUseVram(GL_TRUE);
 		ImGui::CreateContext();
 		ImGui_ImplVitaGL_Init();
 
