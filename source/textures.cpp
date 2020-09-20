@@ -55,7 +55,7 @@ namespace BMP {
         if ((static_cast<long long>(width) * static_cast<long long>(height)) > (MAX_IMAGE_BYTES/BYTES_PER_PIXEL))
             return nullptr;
         
-        return calloc(width * height, BYTES_PER_PIXEL);
+        return std::calloc(width * height, BYTES_PER_PIXEL);
     }
     
     static unsigned char *bitmap_get_buffer(void *bitmap) {
@@ -102,7 +102,7 @@ namespace GIF {
     
     static void bitmap_destroy(void *bitmap) {
         assert(bitmap);
-        free(bitmap);
+        std::free(bitmap);
     }
     
     static void bitmap_modified(void *bitmap) {
@@ -115,7 +115,7 @@ namespace GIF {
 namespace ICO {
     static void *bitmap_create(int width, int height, unsigned int state) {
         (void) state;  /* unused */
-        return calloc(width * height, BYTES_PER_PIXEL);
+        return std::calloc(width * height, BYTES_PER_PIXEL);
     }
     
     static unsigned char *bitmap_get_buffer(void *bitmap) {
