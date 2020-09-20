@@ -1,4 +1,4 @@
-#include <jansson.h>
+#include <psp2/json.h>
 #include <psp2/io/fcntl.h>
 #include <psp2/io/stat.h>
 
@@ -6,18 +6,32 @@
 #include "fs.h"
 #include "utils.h"
 
-#define CONFIG_VERSION 1
+#define CONFIG_VERSION 2
 
 config_t config;
 
 namespace Config {
-    static const char *config_file = "{\n\t\"config_ver\": %d,\n\t\"sort\": %d,\n\t\"dev_options\": %d,\n\t\"image_filename\": %d,\n\t\"last_dir\": \"%s\"\n}";
+    static const char *config_file = "{\n\t\"config_ver\": %d,\n\t\"dev_options\": %s,\n\t\"image_filename\": %s,\n\t\"last_dir\": \"%s\",\n\t\"sort\": %d\n}";
     static int config_version_holder = 0;
+    
+    class Allocator : public sce::Json::MemAllocator {
+        public:
+            Allocator() {}
+            
+            virtual void *allocateMemory(size_t size, void *unk) override {
+                return std::malloc(size);
+            }
+            
+            virtual void freeMemory(void *ptr, void *unk) override {
+                std::free(ptr);
+            }
+    };
     
     int Save(config_t config) {
         int ret = 0;
         char *buf = new char[1024];
-        SceSize len = std::snprintf(buf, 1024, config_file, CONFIG_VERSION, config.sort, config.dev_options, config.image_filename, config.cwd.c_str());
+        SceSize len = std::snprintf(buf, 1024, config_file, CONFIG_VERSION, config.dev_options? "true" : "false", 
+            config.image_filename? "true" : "false", config.cwd.c_str(), config.sort);
         
         if (R_FAILED(ret = FS::WriteFile("ux0:data/VITAlbum/config.json", buf, len))) {
             delete[] buf;
@@ -65,29 +79,28 @@ namespace Config {
             delete[] buffer;
             return ret;
         }
-            
-        json_t *root;
-        json_error_t error;
-        root = json_loads(buffer, 0, &error);
-        delete[] buffer;
-        
-        if (!root)
-            return -1;
-            
-        json_t *config_ver = json_object_get(root, "config_ver");
-        config_version_holder = json_integer_value(config_ver);
-        
-        json_t *sort = json_object_get(root, "sort");
-        config.sort = json_integer_value(sort);
-        
-        json_t *dev_options = json_object_get(root, "dev_options");
-        config.dev_options = json_integer_value(dev_options);
-        
-        json_t *image_filename = json_object_get(root, "image_filename");
-        config.image_filename = json_integer_value(image_filename);
-        
-        json_t *last_dir = json_object_get(root, "last_dir");
-        config.cwd = json_string_value(last_dir);
+
+        Allocator *alloc = new Allocator();
+
+        sce::Json::InitParameter params;
+        params.allocator = alloc;
+        params.bufSize = static_cast<SceSize>(size);
+
+        sce::Json::Initializer init = sce::Json::Initializer();
+        init.initialize(&params);
+
+        sce::Json::Value value = sce::Json::Value();
+        sce::Json::Parser::parse(value, buffer, params.bufSize);
+
+        // We know sceJson API loops through the child values in root alphabetically.
+        config_version_holder = value.getValue(0).getInteger();
+        config.dev_options = value.getValue(1).getBoolean();
+        config.image_filename = value.getValue(2).getBoolean();
+        config.cwd = value.getValue(3).getString().c_str();
+        config.sort = value.getValue(4).getInteger();
+
+        init.terminate();
+        delete alloc;
         
         if (!FS::DirExists(config.cwd))
             config.cwd = "ux0:";
@@ -98,8 +111,7 @@ namespace Config {
             Config::SetDefault(&config);
             return Config::Save(config);
         }
-        
-        json_decref(root);
+
         return 0;
     }
 }

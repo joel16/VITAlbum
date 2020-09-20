@@ -32,7 +32,7 @@ set(VITA_VERSION  "01.30")
 ## Flags and includes for building
 # Note that we make sure not to overwrite previous flags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -g -mtune=cortex-a9 -mfpu=neon -Wall")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -std=gnu++17")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti -std=gnu++17")
 # Optional. You can specify more param.sfo flags this way.
 set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1")
 
@@ -82,7 +82,6 @@ add_executable(${PROJECT_NAME}
 
 # Library to link to (drop the  prefix). This will mostly be stubs.
 target_link_libraries(${PROJECT_NAME}
-  jansson
   tiff
   webp
   turbojpeg
@@ -100,6 +99,7 @@ target_link_libraries(${PROJECT_NAME}
   SceCtrl_stub
   SceDisplay_stub
   SceGxm_stub
+  SceLibJson_stub
   SceLibKernel_stub
   SceShaccCg_stub
   SceSysmodule_stub

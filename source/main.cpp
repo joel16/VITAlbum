@@ -80,6 +80,8 @@ namespace Services {
 		ImGui::StyleColorsDark();
 		ImGui_ImplVitaGL_GamepadUsage(true);
 
+		sceSysmoduleLoadModule(SCE_SYSMODULE_JSON);
+
 		Config::Load();
 		Log::Init();
 
@@ -94,6 +96,7 @@ namespace Services {
 		Utils::EndAppUtil();
 		Textures::Exit();
 		Log::Exit();
+		sceSysmoduleUnloadModule(SCE_SYSMODULE_JSON);
 		ImGui_ImplVitaGL_Shutdown();
 		ImGui::DestroyContext();
 		vglEnd();
