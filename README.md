@@ -1,4 +1,4 @@
-# VITAlbum ![Github latest downloads](https://img.shields.io/github/downloads/joel16/VITAlbum/total.svg)
+# VITAlbum [![Build Status](https://travis-ci.org/joel16/VITAlbum.svg?branch=master)](https://travis-ci.org/joel16/VITAlbum) ![Github latest downloads](https://img.shields.io/github/downloads/joel16/VITAlbum/total.svg)
 
 A simple homebrew file browser that is used for viewing various image formats on the PlayStation VITA. This is a stripped down port of NX-Shell (Next) for Nintendo Switch. It only supports viewing images/gifs.
 
