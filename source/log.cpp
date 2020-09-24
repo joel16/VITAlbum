@@ -8,7 +8,6 @@
 
 namespace Log {
     static SceUID log_file = 0;
-    static SceOff offset = 0;
 
     void Init(void) {
         if (!config.dev_options)
@@ -17,20 +16,8 @@ namespace Log {
         if (!FS::FileExists("ux0:data/VITAlbum/debug.log"))
             FS::CreateFile("ux0:data/VITAlbum/debug.log");
             
-        if (R_FAILED(log_file = sceIoOpen("ux0:data/VITAlbum/debug.log", SCE_O_RDWR | SCE_O_APPEND, 0)))
+        if (R_FAILED(log_file = sceIoOpen("ux0:data/VITAlbum/debug.log", SCE_O_WRONLY | SCE_O_APPEND, 0)))
             return;
-            
-        SceOff size = sceIoLseek(log_file, 0, SEEK_END);
-        unsigned char *buffer = new unsigned char[size];
-        
-        int bytes_read = 0;
-        if (R_FAILED(bytes_read = sceIoPread(log_file, buffer, size, SCE_SEEK_SET))) {
-            delete[] buffer;
-            return;
-        }
-        
-        delete[] buffer;
-        offset += bytes_read;
     }
 
     void Exit(void) {
@@ -55,9 +42,7 @@ namespace Log {
         error_string.append(buf);
         
         std::printf("%s", error_string.c_str());
-        if (R_FAILED(sceIoPwrite(log_file, error_string.data(), error_string.length(), offset)))
+        if (R_FAILED(sceIoWrite(log_file, error_string.data(), error_string.length())))
             return;
-            
-        offset += error_string.length();
     }
 }
