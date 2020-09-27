@@ -12,7 +12,7 @@ typedef struct {
     int delay = 0;
 } Tex;
 
-extern Tex folder_texture, file_texture, image_texture;
+extern Tex folder_texture, image_texture;
 
 namespace Textures {
     bool LoadImageFile(unsigned char **data, SceOff *size, Tex *texture);

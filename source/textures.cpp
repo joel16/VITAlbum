@@ -442,29 +442,26 @@ namespace Textures {
     }
 
     void Init(void) {
-        unsigned char *data[3] = { nullptr, nullptr, nullptr };
-        SceOff size[3] = { 0, 0, 0 };
-        std::string filenames[3] = {
-            "app0:res/file.png",
+        const int num_icons = 2;
+        unsigned char *data[num_icons] = { nullptr, nullptr };
+        SceOff size[num_icons] = { 0, 0 };
+        std::string filenames[num_icons] = {
             "app0:res/folder.png",
             "app0:res/image.png"
         };
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < num_icons; i++) {
             if (R_FAILED(FS::ReadFile(filenames[i], &data[i], &size[i])))
                 break;
         }
 
-        bool image_ret = Textures::LoadImagePNG(&data[0], &size[0], &file_texture);
+        bool image_ret = Textures::LoadImagePNG(&data[0], &size[0], &folder_texture);
         IM_ASSERT(image_ret);
         
-        image_ret = Textures::LoadImagePNG(&data[1], &size[1], &folder_texture);
-        IM_ASSERT(image_ret);
-        
-        image_ret = Textures::LoadImagePNG(&data[2], &size[2], &image_texture);
+        image_ret = Textures::LoadImagePNG(&data[1], &size[1], &image_texture);
         IM_ASSERT(image_ret);
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < num_icons; i++) {
             if (data[i])
                 delete[] data[i];
         }
