@@ -59,7 +59,7 @@ namespace Windows {
                             else if (ext == ".PNG")
                                 image_ret = Textures::LoadImagePNG(&data, &size, &item->texture);
                             else if (ext == ".SVG")
-                                image_ret = Textures::LoadImageSVG(path, &item->texture);
+                                image_ret = Textures::LoadImageSVG(&data, &item->texture);
                             else if (ext == ".TIFF")
                                 image_ret = Textures::LoadImageTIFF(path, &item->texture);
                             else if (ext == ".WEBP")

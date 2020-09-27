@@ -382,9 +382,9 @@ namespace Textures {
         return ret;
     }
 
-    bool LoadImageSVG(const std::string &path, Tex *texture) {
+    bool LoadImageSVG(unsigned char **data, Tex *texture) {
         NSVGimage *svg;
-        svg = nsvgParseFromFile(path.c_str(), "px", 96);
+        svg = nsvgParse(reinterpret_cast<char *>(*data), "px", 96);
         
         texture->width = svg->width;
         texture->height = svg->height;
