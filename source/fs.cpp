@@ -53,12 +53,12 @@ namespace FS {
         return ext;
     }
 
-    static bool IsImageType(const std::string &path) {
-        std::string ext = FS::GetFileExt(path);
+    bool IsImageType(const std::string &filename) {
+        std::string ext = FS::GetFileExt(filename);
         
         if ((!ext.compare(".BMP")) || (!ext.compare(".GIF")) || (!ext.compare(".ICO")) || (!ext.compare(".JPG")) || (!ext.compare(".JPEG"))
-            || (!ext.compare(".PGM")) || (!ext.compare(".PPM")) || (!ext.compare(".PNG")) || (!ext.compare(".PSD")) || (!ext.compare(".TGA"))
-            || (!ext.compare(".TIFF")) || (!ext.compare(".WEBP")))
+            || (!ext.compare(".PGM")) || (!ext.compare(".PPM")) || (!ext.compare(".PNG")) || (!ext.compare(".PSD")) || (!ext.compare(".SVG"))
+            || (!ext.compare(".TGA")) || (!ext.compare(".TIFF")) || (!ext.compare(".WEBP")))
             return true;
 
         return false;

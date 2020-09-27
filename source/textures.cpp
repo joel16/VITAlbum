@@ -31,6 +31,13 @@
 #define STBI_ONLY_TGA
 #include "stb_image.h"
 
+// SVG
+#define NANOSVG_ALL_COLOR_KEYWORDS
+#define NANOSVG_IMPLEMENTATION
+#include "nanosvg.h"
+#define NANOSVGRAST_IMPLEMENTATION
+#include "nanosvgrast.h"
+
 // TIFF
 #include "tiffio.h"
 
@@ -372,6 +379,25 @@ namespace Textures {
         else
             Log::Error("png_image_begin_read_from_memory failed: %s\n", image.message);
         
+        return ret;
+    }
+
+    bool LoadImageSVG(const std::string &path, Tex *texture) {
+        NSVGimage *svg;
+        svg = nsvgParseFromFile(path.c_str(), "px", 96);
+        
+        texture->width = svg->width;
+        texture->height = svg->height;
+        
+        NSVGrasterizer *rasterizer = nsvgCreateRasterizer();
+        unsigned char *image = new unsigned char[texture->width * texture->height * 4];
+        nsvgRasterize(rasterizer, svg, 0, 0, 1, image, texture->width, texture->height, texture->width * 4);
+        
+        bool ret = Textures::LoadImage(image, GL_RGBA, texture, nullptr);
+        
+        delete[] image;
+        nsvgDelete(svg);
+        nsvgDeleteRasterizer(rasterizer);
         return ret;
     }
 

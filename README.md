@@ -15,6 +15,7 @@ A simple homebrew file browser that is used for viewing various image formats on
 - PNG
 - PGM/PPM
 - PSD
+- SVG
 - TGA
 - TIFF
 - WEBP
@@ -35,5 +36,6 @@ A simple homebrew file browser that is used for viewing various image formats on
 - libnsgif contributors for [libnsgif](https://www.netsurf-browser.org/projects/libnsgif/)
 - libpng contributors for [libpng](http://www.libpng.org/pub/png/libpng.html)
 - turbojpeg contributors for [turbojpeg](https://libjpeg-turbo.org/)
+- nanosvg contributors for [nanosvg](https://github.com/memononen/nanosvg)
 - TheIronUniverse for the LiveArea Assets
 - [vitasdk](https://github.com/vitasdk)

@@ -15,17 +15,8 @@ namespace Windows {
             for (SceOff i = 0; i < item->entry_count; i++) {
                 if (SCE_S_ISDIR(item->entries[i].d_stat.st_mode))
                     ImGui::Image(reinterpret_cast<ImTextureID>(folder_texture.id), ImVec2(folder_texture.width, folder_texture.height));
-                else {
-                    std::string filename = item->entries[i].d_name;
-                    std::string ext = FS::GetFileExt(filename);
-                    
-                    if ((ext == ".BMP") || (ext == ".GIF") || (ext == ".ICO") || (ext == ".JPG") || (ext == ".JPEG") || (ext == ".PCX")
-                        || (ext == ".PNG") || (ext == ".PGM") || (ext == ".PPM") || (ext == ".PSD") || (ext == ".TGA") || (ext == ".TIFF")
-                        || (ext == ".WEBP"))
-                        ImGui::Image(reinterpret_cast<ImTextureID>(image_texture.id), ImVec2(image_texture.width, image_texture.height));
-                    else
-                        ImGui::Image(reinterpret_cast<ImTextureID>(file_texture.id), ImVec2(file_texture.width, file_texture.height));
-                }
+                else if (FS::IsImageType(item->entries[i].d_name))
+                    ImGui::Image(reinterpret_cast<ImTextureID>(image_texture.id), ImVec2(image_texture.width, image_texture.height));
                 
                 ImGui::SameLine();
                 
@@ -67,6 +58,8 @@ namespace Windows {
                                 image_ret = Textures::LoadImagePCX(&data, &size, &item->texture);
                             else if (ext == ".PNG")
                                 image_ret = Textures::LoadImagePNG(&data, &size, &item->texture);
+                            else if (ext == ".SVG")
+                                image_ret = Textures::LoadImageSVG(path, &item->texture);
                             else if (ext == ".TIFF")
                                 image_ret = Textures::LoadImageTIFF(path, &item->texture);
                             else if (ext == ".WEBP")

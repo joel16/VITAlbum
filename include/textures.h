@@ -22,6 +22,7 @@ namespace Textures {
     bool LoadImageJPEG(unsigned char **data, SceOff *size, Tex *texture);
     bool LoadImagePCX(unsigned char **data, SceOff *size, Tex *texture);
     bool LoadImagePNG(unsigned char **data, SceOff *size, Tex *texture);
+    bool LoadImageSVG(const std::string &path, Tex *texture);
     bool LoadImageTIFF(const std::string &path, Tex *texture);
     bool LoadImageWEBP(unsigned char **data, SceOff *size, Tex *texture);
     void Free(Tex *texture);
