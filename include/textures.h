@@ -15,15 +15,15 @@ typedef struct {
 extern Tex folder_texture, file_texture, image_texture;
 
 namespace Textures {
-    bool LoadImageFile(const std::string &path, Tex *texture);
-    bool LoadImageBMP(const std::string &path, Tex *texture);
-    bool LoadImageGIF(const std::string &path, std::vector<Tex> &textures);
-    bool LoadImageICO(const std::string &path, Tex *texture);
-    bool LoadImageJPEG(const std::string &path, Tex *texture);
-    bool LoadImagePCX(const std::string &path, Tex *texture);
-    bool LoadImagePNG(const std::string &path, Tex *texture);
+    bool LoadImageFile(unsigned char **data, SceOff *size, Tex *texture);
+    bool LoadImageBMP(unsigned char **data, SceOff *size, Tex *texture);
+    bool LoadImageGIF(unsigned char **data, SceOff *size, std::vector<Tex> &textures);
+    bool LoadImageICO(unsigned char **data, SceOff *size, Tex *texture);
+    bool LoadImageJPEG(unsigned char **data, SceOff *size, Tex *texture);
+    bool LoadImagePCX(unsigned char **data, SceOff *size, Tex *texture);
+    bool LoadImagePNG(unsigned char **data, SceOff *size, Tex *texture);
     bool LoadImageTIFF(const std::string &path, Tex *texture);
-    bool LoadImageWEBP(const std::string &path, Tex *texture);
+    bool LoadImageWEBP(unsigned char **data, SceOff *size, Tex *texture);
     void Free(Tex *texture);
     void Init(void);
     void Exit(void);

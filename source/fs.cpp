@@ -53,6 +53,18 @@ namespace FS {
         return ext;
     }
 
+    static bool IsImageType(const std::string &path) {
+        std::string ext = FS::GetFileExt(path);
+        
+        if ((!ext.compare(".BMP")) || (!ext.compare(".GIF")) || (!ext.compare(".ICO")) || (!ext.compare(".JPG")) || (!ext.compare(".JPEG"))
+            || (!ext.compare(".PGM")) || (!ext.compare(".PPM")) || (!ext.compare(".PNG")) || (!ext.compare(".PSD")) || (!ext.compare(".TGA"))
+            || (!ext.compare(".TIFF")) || (!ext.compare(".WEBP")))
+            return true;
+
+        return false;
+
+    }
+
     static SceOff CountFiles(const std::string &path) {
         int ret = 0;
         SceOff entry_count = 0;
@@ -69,6 +81,9 @@ namespace FS {
             
             if (R_FAILED(ret = sceIoDread(dir, &entries)))
                 Log::Error("sceIoDread(%s) failed: 0x%lx\n", path.c_str(), ret);
+            
+            if ((!FS::IsImageType(entries.d_name)) && (!SCE_S_ISDIR(entries.d_stat.st_mode)))
+                continue;
             
             if (ret > 0)
                 entry_count++;
@@ -137,6 +152,9 @@ namespace FS {
         do {
             if (R_FAILED(ret = sceIoDread(dir, &entries[i])))
                 Log::Error("sceIoDread(%s) failed: 0x%lx\n", path.c_str(), ret);
+                
+            if ((!FS::IsImageType(entries[i].d_name)) && (!SCE_S_ISDIR(entries[i].d_stat.st_mode)))
+                continue;
             
             i++;
         } while (ret > 0);

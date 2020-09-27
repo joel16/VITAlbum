@@ -153,20 +153,14 @@ namespace Textures {
         return true;
     }
 
-    bool LoadImageFile(const std::string &path, Tex *texture) {
-        SceOff size = 0;
-        unsigned char *data = nullptr, *image = nullptr;
-
-        if (R_FAILED(FS::ReadFile(path, &data, &size)))
-            return false;
-        
-        image = stbi_load_from_memory(data, size, &texture->width, &texture->height, nullptr, BYTES_PER_PIXEL);
+    bool LoadImageFile(unsigned char **data, SceOff *size, Tex *texture) {
+        unsigned char *image = nullptr;
+        image = stbi_load_from_memory(*data, *size, &texture->width, &texture->height, nullptr, BYTES_PER_PIXEL);
         bool ret = Textures::LoadImage(image, GL_RGBA, texture, stbi_image_free);
-        delete[] data;
         return ret;
     }
 
-    bool LoadImageBMP(const std::string &path, Tex *texture) {
+    bool LoadImageBMP(unsigned char **data, SceOff *size, Tex *texture) {
         bmp_bitmap_callback_vt bitmap_callbacks = {
             BMP::bitmap_create,
             BMP::bitmap_destroy,
@@ -176,18 +170,12 @@ namespace Textures {
         
         bmp_result code = BMP_OK;
         bmp_image bmp;
-        unsigned char *data = nullptr;
-        size_t size = 0;
-
         bmp_create(&bmp, &bitmap_callbacks);
-        if (R_FAILED(FS::ReadFile(path, &data, reinterpret_cast<SceOff *>(&size))))
-            return false;
             
-        code = bmp_analyse(&bmp, size, data);
+        code = bmp_analyse(&bmp, *size, *data);
         if (code != BMP_OK) {
             Log::Error("bmp_analyse failed: %d\n", code);
             bmp_finalise(&bmp);
-            delete[] data;
             return false;
         }
 
@@ -196,7 +184,6 @@ namespace Textures {
             if ((code != BMP_INSUFFICIENT_DATA) && (code != BMP_DATA_ERROR)) {
                 Log::Error("bmp_decode failed: %d\n", code);
                 bmp_finalise(&bmp);
-                delete[] data;
                 return false;
             }
             
@@ -204,7 +191,6 @@ namespace Textures {
             if ((bmp.width * bmp.height) > 200000) {
                 Log::Error("bmp_decode failed: width*height is over 200000\n");
                 bmp_finalise(&bmp);
-                delete[] data;
                 return false;
             }
         }
@@ -213,11 +199,10 @@ namespace Textures {
         texture->height = bmp.height;
         bool ret = Textures::LoadImage(static_cast<unsigned char *>(bmp.bitmap), GL_RGBA, texture, nullptr);
         bmp_finalise(&bmp);
-        delete[] data;
         return ret;
     }
 
-    bool LoadImageGIF(const std::string &path, std::vector<Tex> &textures) {
+    bool LoadImageGIF(unsigned char **data, SceOff *size, std::vector<Tex> &textures) {
         gif_bitmap_callback_vt bitmap_callbacks = {
             GIF::bitmap_create,
             GIF::bitmap_destroy,
@@ -229,20 +214,14 @@ namespace Textures {
 
         bool ret = false;
         gif_animation gif;
-        SceOff size = 0;
         gif_result code = GIF_OK;
-        unsigned char *data = nullptr;
-
         gif_create(&gif, &bitmap_callbacks);
-        if (R_FAILED(FS::ReadFile(path, &data, &size)))
-            return ret;
             
         do {
-            code = gif_initialise(&gif, size, data);
+            code = gif_initialise(&gif, *size, *data);
             if (code != GIF_OK && code != GIF_WORKING) {
                 Log::Error("gif_initialise failed: %d\n", code);
                 gif_finalise(&gif);
-                delete[] data;
                 return ret;
             }
         } while (code != GIF_OK);
@@ -256,7 +235,6 @@ namespace Textures {
                 code = gif_decode_frame(&gif, i);
                 if (code != GIF_OK) {
                     Log::Error("gif_decode_frame failed: %d\n", code);
-                    delete[] data;
                     return false;
                 }
 
@@ -270,7 +248,6 @@ namespace Textures {
             code = gif_decode_frame(&gif, 0);
             if (code != GIF_OK) {
                 Log::Error("gif_decode_frame failed: %d\n", code);
-                delete[] data;
                 return false;
             }
             
@@ -280,11 +257,10 @@ namespace Textures {
         }
 
         gif_finalise(&gif);
-        delete[] data;
         return ret;
     }
 
-    bool LoadImageICO(const std::string &path, Tex *texture) {
+    bool LoadImageICO(unsigned char **data, SceOff *size, Tex *texture) {
         bmp_bitmap_callback_vt bitmap_callbacks = {
             ICO::bitmap_create,
             ICO::bitmap_destroy,
@@ -296,18 +272,13 @@ namespace Textures {
         ico_collection ico;
         bmp_result code = BMP_OK;
         bmp_image *bmp;
-        unsigned char *data = nullptr;
-        size_t size = 0;
 
         ico_collection_create(&ico, &bitmap_callbacks);
-        if (R_FAILED(FS::ReadFile(path, &data, reinterpret_cast<SceOff *>(&size))))
-            return false;
-            
-        code = ico_analyse(&ico, size, data);
+
+        code = ico_analyse(&ico, *size, *data);
         if (code != BMP_OK) {
             Log::Error("ico_analyse failed: %d\n", code);
             ico_finalise(&ico);
-            delete[] data;
             return false;
         }
 
@@ -319,7 +290,6 @@ namespace Textures {
             if ((code != BMP_INSUFFICIENT_DATA) && (code != BMP_DATA_ERROR)) {
                 Log::Error("bmp_decode failed: %d\n", code);
                 ico_finalise(&ico);
-                delete[] data;
                 return false;
             }
             
@@ -327,7 +297,7 @@ namespace Textures {
             if ((bmp->width * bmp->height) > 200000) {
                 Log::Error("bmp_decode failed: width*height is over 200000\n");
                 ico_finalise(&ico);
-                delete[] data;
+                delete[] *data;
                 return false;
             }
         }
@@ -336,21 +306,15 @@ namespace Textures {
         texture->height = bmp->height;
         bool ret = Textures::LoadImage(static_cast<unsigned char *>(bmp->bitmap), GL_RGBA, texture, nullptr);
         ico_finalise(&ico);
-        delete[] data;
         return ret;
     }
 
-    bool LoadImageJPEG(const std::string &path, Tex *texture) {
-        unsigned char *data = nullptr, *buffer = nullptr;
-        SceOff size = 0;
-        
-        if (R_FAILED(FS::ReadFile(path, &data, &size)))
-            return false;
-            
+    bool LoadImageJPEG(unsigned char **data, SceOff *size, Tex *texture) {
+        unsigned char *buffer = nullptr;
         tjhandle jpeg = tjInitDecompress();
         int jpegsubsamp = 0;
 
-        if (R_FAILED(tjDecompressHeader2(jpeg, data, size, &texture->width, &texture->height, &jpegsubsamp))) {
+        if (R_FAILED(tjDecompressHeader2(jpeg, *data, *size, &texture->width, &texture->height, &jpegsubsamp))) {
             Log::Error("tjDecompressHeader2 failed: %s\n", tjGetErrorStr());
             delete[] data;
             return false;
@@ -358,46 +322,31 @@ namespace Textures {
         
         buffer = new unsigned char[texture->width * texture->height * 3];
 
-        if (R_FAILED(tjDecompress2(jpeg, data, size, buffer, texture->width, 0, texture->height, TJPF_RGB, TJFLAG_FASTDCT))) {
+        if (R_FAILED(tjDecompress2(jpeg, *data, *size, buffer, texture->width, 0, texture->height, TJPF_RGB, TJFLAG_FASTDCT))) {
             Log::Error("tjDecompress2 failed: %s\n", tjGetErrorStr());
             delete[] buffer;
-            delete[] data;
             return false;
         }
         
         bool ret = Textures::LoadImage(buffer, GL_RGB, texture, nullptr);
         tjDestroy(jpeg);
         delete[] buffer;
-        delete[] data;
         return ret;
     }
 
-    bool LoadImagePCX(const std::string &path, Tex *texture) {
-        unsigned char *data = nullptr;
-        SceOff size = 0;
-        
-        if (R_FAILED(FS::ReadFile(path, &data, &size)))
-            return false;
-        
-        data = drpcx_load_memory(data, size, DRPCX_FALSE, &texture->width, &texture->height, nullptr, BYTES_PER_PIXEL);
-        bool ret = Textures::LoadImage(data, GL_RGBA, texture, nullptr);
-        delete[] data;
+    bool LoadImagePCX(unsigned char **data, SceOff *size, Tex *texture) {
+        *data = drpcx_load_memory(*data, *size, DRPCX_FALSE, &texture->width, &texture->height, nullptr, BYTES_PER_PIXEL);
+        bool ret = Textures::LoadImage(*data, GL_RGBA, texture, nullptr);
         return ret;
     }
 
-    bool LoadImagePNG(const std::string &path, Tex *texture) {
+    bool LoadImagePNG(unsigned char **data, SceOff *size, Tex *texture) {
         bool ret = false;
-        unsigned char *data = nullptr;
-        SceOff size = 0;
-        
-        if (R_FAILED(FS::ReadFile(path, &data, &size)))
-            return ret;
-        
         png_image image;
         std::memset(&image, 0, (sizeof image));
         image.version = PNG_IMAGE_VERSION;
         
-        if (png_image_begin_read_from_memory(&image, data, size) != 0) {
+        if (png_image_begin_read_from_memory(&image, *data, *size) != 0) {
             png_bytep buffer;
             image.format = PNG_FORMAT_RGBA;
             buffer = new png_byte[PNG_IMAGE_SIZE(image)];
@@ -422,8 +371,7 @@ namespace Textures {
         }
         else
             Log::Error("png_image_begin_read_from_memory failed: %s\n", image.message);
-
-        delete[] data;
+        
         return ret;
     }
 
@@ -457,16 +405,9 @@ namespace Textures {
         return false;
     }
 
-    bool LoadImageWEBP(const std::string &path, Tex *texture) {
-        unsigned char *data = nullptr;
-        SceOff size = 0;
-        
-        if (R_FAILED(FS::ReadFile(path, &data, &size)))
-            return false;
-        
-        data = WebPDecodeRGBA(data, size, &texture->width, &texture->height);
-        bool ret = Textures::LoadImage(data, GL_RGBA, texture, nullptr);
-        delete[] data;
+    bool LoadImageWEBP(unsigned char **data, SceOff *size, Tex *texture) {
+        *data = WebPDecodeRGBA(*data, *size, &texture->width, &texture->height);
+        bool ret = Textures::LoadImage(*data, GL_RGBA, texture, nullptr);
         return ret;
     }
 
@@ -475,14 +416,32 @@ namespace Textures {
     }
 
     void Init(void) {
-        bool image_ret = Textures::LoadImagePNG("app0:res/file.png", &file_texture);
+        unsigned char *data[3] = { nullptr, nullptr, nullptr };
+        SceOff size[3] = { 0, 0, 0 };
+        std::string filenames[3] = {
+            "app0:res/file.png",
+            "app0:res/folder.png",
+            "app0:res/image.png"
+        };
+
+        for (int i = 0; i < 3; i++) {
+            if (R_FAILED(FS::ReadFile(filenames[i], &data[i], &size[i])))
+                break;
+        }
+
+        bool image_ret = Textures::LoadImagePNG(&data[0], &size[0], &file_texture);
         IM_ASSERT(image_ret);
         
-        image_ret = Textures::LoadImagePNG("app0:res/folder.png", &folder_texture);
+        image_ret = Textures::LoadImagePNG(&data[1], &size[1], &folder_texture);
         IM_ASSERT(image_ret);
         
-        image_ret = Textures::LoadImagePNG("app0:res/image.png", &image_texture);
+        image_ret = Textures::LoadImagePNG(&data[2], &size[2], &image_texture);
         IM_ASSERT(image_ret);
+
+        for (int i = 0; i < 3; i++) {
+            if (data[i])
+                delete[] data[i];
+        }
     }
 
     void Exit(void) {
