@@ -5,11 +5,18 @@
 #include "windows.h"
 
 namespace Windows {
+    static bool focus = false;
+
     void FileBrowserWindow(MenuItem *item) {
         Windows::SetupWindow();
         
         if (ImGui::Begin("VITAlbum", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), config.cwd.c_str());
+
+            if (!focus) {
+                ImGui::SetNextWindowFocus();
+                focus = true;
+            }
             
             ImGui::BeginChild("##FS::GetDirList");
             for (SceOff i = 0; i < item->entry_count; i++) {

@@ -8,6 +8,7 @@
 #include "imgui.h"
 #include "imgui_impl_vitagl.h"
 #include "imgui_vita_touch.h"
+#include "utils.h"
 
 #define lerp(value, from_max, to_max) ((((value*10) * (to_max*10))/(from_max*10))/10)
 
@@ -416,8 +417,8 @@ void ImGui_ImplVitaGL_NewFrame()
 		SceCtrlData pad;
 		int lstick_x, lstick_y = 0;
 		ImGui_ImplVitaGL_PollLeftStick(&pad, &lstick_x, &lstick_y);
-		io.NavInputs[ImGuiNavInput_Activate]  = (pad.buttons & SCE_CTRL_CROSS)    ? 1.0f : 0.0f;
-		io.NavInputs[ImGuiNavInput_Cancel]    = (pad.buttons & SCE_CTRL_CIRCLE)   ? 1.0f : 0.0f;
+		io.NavInputs[ImGuiNavInput_Activate]  = (pad.buttons & SCE_CTRL_ENTER)    ? 1.0f : 0.0f;
+		//io.NavInputs[ImGuiNavInput_Cancel]    = (pad.buttons & SCE_CTRL_CIRCLE)   ? 1.0f : 0.0f;
 		io.NavInputs[ImGuiNavInput_Input]     = (pad.buttons & SCE_CTRL_TRIANGLE) ? 1.0f : 0.0f;
 		io.NavInputs[ImGuiNavInput_Menu]      = (pad.buttons & SCE_CTRL_SQUARE)   ? 1.0f : 0.0f;
 		io.NavInputs[ImGuiNavInput_DpadLeft]  = (pad.buttons & SCE_CTRL_LEFT)     ? 1.0f : 0.0f;
@@ -425,18 +426,18 @@ void ImGui_ImplVitaGL_NewFrame()
 		io.NavInputs[ImGuiNavInput_DpadUp]    = (pad.buttons & SCE_CTRL_UP)       ? 1.0f : 0.0f;
 		io.NavInputs[ImGuiNavInput_DpadDown]  = (pad.buttons & SCE_CTRL_DOWN)     ? 1.0f : 0.0f;
 
-		if (io.NavInputs[ImGuiNavInput_Menu] == 1.0f) {
+		//if (io.NavInputs[ImGuiNavInput_Menu] == 1.0f) {
 			io.NavInputs[ImGuiNavInput_FocusPrev] = (pad.buttons & SCE_CTRL_LTRIGGER) ? 1.0f : 0.0f;
 			io.NavInputs[ImGuiNavInput_FocusNext] = (pad.buttons & SCE_CTRL_RTRIGGER) ? 1.0f : 0.0f;
 			if (lstick_x < 0) io.NavInputs[ImGuiNavInput_LStickLeft] = (float)(-lstick_x/16);
 			if (lstick_x > 0) io.NavInputs[ImGuiNavInput_LStickRight] = (float)(lstick_x/16);
 			if (lstick_y < 0) io.NavInputs[ImGuiNavInput_LStickUp] = (float)(-lstick_y/16);
 			if (lstick_y > 0) io.NavInputs[ImGuiNavInput_LStickDown] = (float)(lstick_y/16);
-		}
+		//}
 	}
 	
 	// Keys for mouse emulation
-	/*if (mousestick_usage && !(io.NavInputs[ImGuiNavInput_Menu] == 1.0f)){
+	if (mousestick_usage && !(io.NavInputs[ImGuiNavInput_Menu] == 1.0f)){
 		SceCtrlData pad;
 		ImGui_ImplVitaGL_PollLeftStick(&pad, &mx, &my);
 		if ((pad.buttons & SCE_CTRL_LTRIGGER) != (g_OldPad.buttons & SCE_CTRL_LTRIGGER))
@@ -448,7 +449,7 @@ void ImGui_ImplVitaGL_NewFrame()
 	
 	// Setup mouse inputs (we already got mouse wheel, keyboard keys & characters from our event handler)
 	//Uint32 mouse_buttons = SDL_GetMouseState(&mx, &my);
-	io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
+	/*io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
 	io.MouseDown[0] = g_MousePressed[0];
 	io.MouseDown[1] = g_MousePressed[1];
 	io.MouseDown[2] = g_MousePressed[2];

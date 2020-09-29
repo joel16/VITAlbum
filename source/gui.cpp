@@ -4,6 +4,8 @@
 #include "config.h"
 #include "fs.h"
 #include "gui.h"
+#include "imgui.h"
+#include "imgui_internal.h"
 #include "popups.h"
 #include "utils.h"
 #include "windows.h"
@@ -68,6 +70,13 @@ namespace GUI {
                 case GUI_STATE_HOME:
                     if (pressed & SCE_CTRL_SELECT)
                         item.state = GUI_STATE_SETTINGS;
+                    else if (pressed & SCE_CTRL_CANCEL) {
+                        SceOff value = FS::ChangeDirPrev(&item.entries);
+                        if (value >= 0) {
+                            item.entry_count = value;
+                            GImGui->NavId = 0;
+                        }
+                    }
 
                     break;
                 
