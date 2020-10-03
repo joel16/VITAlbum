@@ -40,43 +40,49 @@ namespace Windows {
                     else {
                         std::string path = FS::BuildPath(&item->entries[i]);
                         std::string ext = FS::GetFileExt(path);
-                        
-                        unsigned char *data = nullptr;
-                        SceOff size = 0;
-                        FS::ReadFile(path, &data, &size);
 
-                        if (ext == ".GIF") {
-                            bool image_ret = Textures::LoadImageGIF(&data, &size, item->textures);
-                            IM_ASSERT(image_ret);
-                            item->state = GUI_STATE_GIF_PREVIEW;
-                        }
-                        else {
-                            bool image_ret = false;
-                            
-                            if (ext == ".BMP")
-                                image_ret = Textures::LoadImageBMP(&data, &size, &item->texture);
-                            else if ((ext == ".PGM") || (ext == ".PPM") || (ext == ".PSD") || (ext == ".TGA"))
-                                image_ret = Textures::LoadImageFile(&data, &size, &item->texture);
-                            else if (ext == ".ICO")
-                                image_ret = Textures::LoadImageICO(&data, &size, &item->texture);
-                            else if ((ext == ".JPG") || (ext == ".JPEG"))
-                                image_ret = Textures::LoadImageJPEG(&data, &size, &item->texture);
-                            else if (ext == ".PCX")
-                                image_ret = Textures::LoadImagePCX(&data, &size, &item->texture);
-                            else if (ext == ".PNG")
-                                image_ret = Textures::LoadImagePNG(&data, &size, &item->texture);
-                            else if (ext == ".SVG")
-                                image_ret = Textures::LoadImageSVG(&data, &item->texture);
-                            else if (ext == ".TIFF")
-                                image_ret = Textures::LoadImageTIFF(path, &item->texture);
-                            else if (ext == ".WEBP")
-                                image_ret = Textures::LoadImageWEBP(&data, &size, &item->texture);
+                        bool image_ret = false;
 
+                        // Because TIFF does not load via buffer, but directly from the path.
+                        if (ext == ".TIFF") {
+                            image_ret = Textures::LoadImageTIFF(path, &item->texture);
                             IM_ASSERT(image_ret);
                             item->state = GUI_STATE_IMAGE_PREVIEW;
                         }
-                        
-                        delete[] data;
+                        else {
+                            unsigned char *data = nullptr;
+                            SceOff size = 0;
+                            FS::ReadFile(path, &data, &size);
+                            
+                            if (ext == ".GIF") {
+                                image_ret = Textures::LoadImageGIF(&data, &size, item->textures);
+                                IM_ASSERT(image_ret);
+                                item->state = GUI_STATE_GIF_PREVIEW;
+                            }
+                            else {
+                                if (ext == ".BMP")
+                                    image_ret = Textures::LoadImageBMP(&data, &size, &item->texture);
+                                else if ((ext == ".PGM") || (ext == ".PPM") || (ext == ".PSD") || (ext == ".TGA"))
+                                    image_ret = Textures::LoadImageFile(&data, &size, &item->texture);
+                                else if (ext == ".ICO")
+                                    image_ret = Textures::LoadImageICO(&data, &size, &item->texture);
+                                else if ((ext == ".JPG") || (ext == ".JPEG"))
+                                    image_ret = Textures::LoadImageJPEG(&data, &size, &item->texture);
+                                else if (ext == ".PCX")
+                                    image_ret = Textures::LoadImagePCX(&data, &size, &item->texture);
+                                else if (ext == ".PNG")
+                                    image_ret = Textures::LoadImagePNG(&data, &size, &item->texture);
+                                else if (ext == ".SVG")
+                                    image_ret = Textures::LoadImageSVG(&data, &item->texture);
+                                else if (ext == ".WEBP")
+                                    image_ret = Textures::LoadImageWEBP(&data, &size, &item->texture);
+                                
+                                IM_ASSERT(image_ret);
+                                item->state = GUI_STATE_IMAGE_PREVIEW;
+                            }
+
+                            delete[] data;
+                        }
                     }
                 }
                 
