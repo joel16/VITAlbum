@@ -131,6 +131,9 @@ namespace GUI {
                 default:
                     break;
             }
+
+            if (pressed & SCE_CTRL_START)
+                done = true;
         }
 
         FS::FreeDirEntries(&item.entries, item.entry_count);
