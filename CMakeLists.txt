@@ -60,7 +60,6 @@ add_executable(${PROJECT_NAME}
   libs/imgui/imgui.cpp
   libs/imgui/imgui_draw.cpp
   libs/imgui/imgui_impl_vitagl.cpp
-  libs/imgui/imgui_vita_touch.cpp
   libs/imgui/imgui_widgets.cpp
   libs/libnsbmp/libnsbmp.c
   libs/libnsgif/libnsgif.c

@@ -7,7 +7,6 @@
 #include <math.h>
 #include "imgui.h"
 #include "imgui_impl_vitagl.h"
-#include "imgui_vita_touch.h"
 #include "utils.h"
 
 #define lerp(value, from_max, to_max) ((((value*10) * (to_max*10))/(from_max*10))/10)
@@ -29,7 +28,6 @@ static uint8_t *gColorBuffer = nullptr;
 static uint16_t *gIndexBuffer = nullptr;
 static uint32_t gCounter = 0;
 
-static bool touch_usage = false;
 static bool mousestick_usage = false;
 static bool gamepad_usage = true;
 static bool shaders_usage = false;
@@ -285,7 +283,6 @@ void ImGui_ImplVitaGL_DestroyFontsTexture() {
 }
 
 bool ImGui_ImplVitaGL_Init() {
-	sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
 	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
 	
 	// Setup back-end capabilities flags
@@ -330,9 +327,6 @@ bool ImGui_ImplVitaGL_Init() {
 	io.KeyMap[ImGuiKey_Z] = SDL_SCANCODE_Z;*/
 
 	io.ClipboardUserData = NULL;
-
-	//ImGui_ImplVitaGL_InitTouch();
-
 	return true;
 }
 
@@ -403,15 +397,6 @@ void ImGui_ImplVitaGL_NewFrame() {
 	uint64_t current_time = sceKernelGetProcessTimeWide();
 	io.DeltaTime = g_Time > 0 ? (float)((double)(current_time - g_Time) / frequency) : (float)(1.0f / 60.0f);
 	g_Time = current_time;
-
-	// Touch for mouse emulation
-	if (touch_usage) {
-		double scale_x = 960.0 / io.DisplaySize.x;
-		double scale_y = 544.0 / io.DisplaySize.y;
-		double offset_x = 0;
-		double offset_y = 0;
-		ImGui_ImplVitaGL_PollTouch(offset_x, offset_y, scale_x, scale_y, &mx, &my, g_MousePressed);
-	}
 	
 	// Keypad navigation
 	if (gamepad_usage) {
@@ -465,18 +450,6 @@ void ImGui_ImplVitaGL_NewFrame() {
 	ImGui::NewFrame();
 	
 	vglIndexPointerMapped(gIndexBuffer);
-}
-
-void ImGui_ImplVitaGL_TouchUsage(bool val) {
-	touch_usage = val;
-}
-
-void ImGui_ImplVitaGL_UseIndirectFrontTouch(bool val) {
-	ImGui_ImplVitaGL_PrivateSetIndirectFrontTouch(val);
-}
-
-void ImGui_ImplVitaGL_UseRearTouch(bool val) {
-	ImGui_ImplVitaGL_PrivateSetRearTouch(val);
 }
 
 void ImGui_ImplVitaGL_MouseStickUsage(bool val) {
