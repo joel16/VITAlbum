@@ -123,7 +123,7 @@ void ImGui_ImplVitaGL_RenderDrawData(ImDrawData* draw_data) {
 					uint8_t *cp = gColorBuffer;
 					uint8_t *indices = (uint8_t*)idx_buffer;
 					
-					if (sizeof(ImDrawIdx) == 2){
+					if (sizeof(ImDrawIdx) == 2) {
 						for (int idx=0; idx < pcmd->ElemCount; idx++) {
 							uint16_t index = *((uint16_t*)(indices + sizeof(ImDrawIdx) * idx));
 							float *vertices = (float*)((const char*)vtx_buffer + IM_OFFSETOF(ImDrawVert, pos) + sizeof(ImDrawVert) * index);
@@ -178,7 +178,7 @@ void ImGui_ImplVitaGL_RenderDrawData(ImDrawData* draw_data) {
 			}
 			idx_buffer += pcmd->ElemCount;
 			gCounter += pcmd->ElemCount;
-			if (gCounter > 0x99900){
+			if (gCounter > 0x99900) {
 				gVertexBuffer = startVertex;
 				gColorBuffer = startColor;
 				gTexCoordBuffer = startTexCoord;
