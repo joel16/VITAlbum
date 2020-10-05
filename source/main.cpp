@@ -65,6 +65,7 @@ namespace Services {
 		colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 		
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 		io.FontGlobalScale = 1.8f;
 		io.IniFilename = nullptr;
 	}
@@ -78,7 +79,6 @@ namespace Services {
 
 		// Setup style
 		ImGui::StyleColorsDark();
-		ImGui_ImplVitaGL_GamepadUsage(true);
 
 		sceSysmoduleLoadModule(SCE_SYSMODULE_JSON);
 

@@ -28,8 +28,6 @@ static uint8_t *gColorBuffer = nullptr;
 static uint16_t *gIndexBuffer = nullptr;
 static uint32_t gCounter = 0;
 
-static bool mousestick_usage = false;
-static bool gamepad_usage = true;
 static bool shaders_usage = false;
 
 static void ImGui_ImplVitaGL_SetupRenderState(ImDrawData* draw_data, int fb_width, int fb_height) {
@@ -203,50 +201,6 @@ void ImGui_ImplVitaGL_RenderDrawData(ImDrawData* draw_data) {
     //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, last_tex_env_mode);
 }
 
-// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
-// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
-// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-bool ImGui_ImplVitaGL_ProcessEvent(SceCtrlData *pad) {
-	/*ImGuiIO& io = ImGui::GetIO();
-	switch (event->type)
-	{
-	case SDL_MOUSEWHEEL:
-		{
-			if (event->wheel.x > 0) io.MouseWheelH += 1;
-			if (event->wheel.x < 0) io.MouseWheelH -= 1;
-			if (event->wheel.y > 0) io.MouseWheel += 1;
-			if (event->wheel.y < 0) io.MouseWheel -= 1;
-			return true;
-		}
-	case SDL_MOUSEBUTTONDOWN:
-		{
-			if (event->button.button == SDL_BUTTON_LEFT) g_MousePressed[0] = true;
-			if (event->button.button == SDL_BUTTON_RIGHT) g_MousePressed[1] = true;
-			if (event->button.button == SDL_BUTTON_MIDDLE) g_MousePressed[2] = true;
-			return true;
-		}
-	case SDL_TEXTINPUT:
-		{
-			io.AddInputCharactersUTF8(event->text.text);
-			return true;
-		}
-	case SDL_KEYDOWN:
-	case SDL_KEYUP:
-		{
-			int key = event->key.keysym.scancode;
-			IM_ASSERT(key >= 0 && key < IM_ARRAYSIZE(io.KeysDown));
-			io.KeysDown[key] = (event->type == SDL_KEYDOWN);
-			io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
-			io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
-			io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
-			io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
-			return true;
-		}
-	}*/
-	return false;
-}
-
 bool ImGui_ImplVitaGL_CreateDeviceObjects() {
 	// Build texture atlas
 	ImGuiIO& io = ImGui::GetIO();
@@ -341,42 +295,43 @@ void ImGui_ImplVitaGL_Shutdown() {
 	ImGui_ImplVitaGL_DestroyFontsTexture();
 }
 
-int mx, my;
+static void ImGui_ImplVitaGL_UpdateGamepads() {
+	ImGuiIO& io = ImGui::GetIO();
+    memset(io.NavInputs, 0, sizeof(io.NavInputs));
+    if ((io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) == 0)
+        return;
 
-void IN_RescaleAnalog(int *x, int *y, int dead) {
-	float analogX = (float) *x;
-	float analogY = (float) *y;
-	float deadZone = (float) dead;
-	float maximum = 32768.0f;
-	float magnitude = sqrt(analogX * analogX + analogY * analogY);
-	if (magnitude >= deadZone)
-	{
-		float scalingFactor = maximum / magnitude * (magnitude - deadZone) / (maximum - deadZone);
-		*x = (int) (analogX * scalingFactor);
-		*y = (int) (analogY * scalingFactor);
-	} else {
-		*x = 0;
-		*y = 0;
-	}
+	SceCtrlData pad;
+	sceCtrlPeekBufferPositive(0, &pad, 1);
+
+	int lstick_x = (pad.lx - 127) * 256;
+	int lstick_y = (pad.ly - 127) * 256;
+
+	// Update gamepad inputs
+    #define MAP_BUTTON(NAV_NO, BUTTON_NO)       { io.NavInputs[NAV_NO] = pad.buttons & BUTTON_NO? 1.0f : 0.0f; }
+    #define MAP_ANALOG(NAV_NO, AXIS_NO, V0, V1) { float vn = (float)(AXIS_NO - V0) / (float)(V1 - V0); if (vn > 1.0f) vn = 1.0f; if (vn > 0.0f && io.NavInputs[NAV_NO] < vn) io.NavInputs[NAV_NO] = vn; }
+    const int thumb_dead_zone = 8000;           // SDL_gamecontroller.h suggests using this value.
+    MAP_BUTTON(ImGuiNavInput_Activate,      SCE_CTRL_ENTER);       // Cross / A
+    // MAP_BUTTON(ImGuiNavInput_Cancel,        SCE_CTRL_TRIANGLE)); // Circle / B
+    MAP_BUTTON(ImGuiNavInput_Menu,          SCE_CTRL_SQUARE);      // Square / X
+    MAP_BUTTON(ImGuiNavInput_Input,         SCE_CTRL_TRIANGLE);    // Triangle / Y
+    MAP_BUTTON(ImGuiNavInput_DpadLeft,      SCE_CTRL_LEFT);        // D-Pad Left
+    MAP_BUTTON(ImGuiNavInput_DpadRight,     SCE_CTRL_RIGHT);       // D-Pad Right
+    MAP_BUTTON(ImGuiNavInput_DpadUp,        SCE_CTRL_UP);          // D-Pad Up
+    MAP_BUTTON(ImGuiNavInput_DpadDown,      SCE_CTRL_DOWN);        // D-Pad Down
+    MAP_BUTTON(ImGuiNavInput_FocusPrev,     SCE_CTRL_LTRIGGER);    // L1 / LB
+    MAP_BUTTON(ImGuiNavInput_FocusNext,     SCE_CTRL_RTRIGGER);    // R1 / RB
+    MAP_BUTTON(ImGuiNavInput_TweakSlow,     SCE_CTRL_LTRIGGER);    // L1 / LB
+    MAP_BUTTON(ImGuiNavInput_TweakFast,     SCE_CTRL_RTRIGGER);    // R1 / RB
+    MAP_ANALOG(ImGuiNavInput_LStickLeft,    lstick_x, -thumb_dead_zone, -32768);
+    MAP_ANALOG(ImGuiNavInput_LStickRight,   lstick_x, +thumb_dead_zone, +32767);
+    MAP_ANALOG(ImGuiNavInput_LStickUp,      lstick_y, -thumb_dead_zone, -32767);
+    MAP_ANALOG(ImGuiNavInput_LStickDown,    lstick_y, +thumb_dead_zone, +32767);
+
+    io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+    #undef MAP_BUTTON
+    #undef MAP_ANALOG
 }
-
-void ImGui_ImplVitaGL_PollLeftStick(SceCtrlData *pad, int *x, int *y) {
-	sceCtrlPeekBufferPositive(0, pad, 1);
-	int lx = (pad->lx - 127) * 256;
-	int ly = (pad->ly - 127) * 256;
-	IN_RescaleAnalog(&lx, &ly, 7680);
-	hires_x += lx;
-	hires_y += ly;
-	if (hires_x != 0 || hires_y != 0) {
-		// slow down pointer, could be made user-adjustable
-		int slowdown = 2048;
-		*x += hires_x / slowdown;
-		*y += hires_y / slowdown;
-		hires_x %= slowdown;
-		hires_y %= slowdown;
-	}
-}
-
 
 void ImGui_ImplVitaGL_NewFrame() {
 	if (!g_FontTexture)
@@ -391,75 +346,15 @@ void ImGui_ImplVitaGL_NewFrame() {
 	w = display_w = viewport[2];
 	h = display_h = viewport[3];
 	io.DisplaySize = ImVec2((float)w, (float)h);
-	io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
+	if (w > 0 && h > 0)
+        io.DisplayFramebufferScale = ImVec2((float)display_w / w, (float)display_h / h);
 
 	static uint64_t frequency = 1000000;
 	uint64_t current_time = sceKernelGetProcessTimeWide();
 	io.DeltaTime = g_Time > 0 ? (float)((double)(current_time - g_Time) / frequency) : (float)(1.0f / 60.0f);
 	g_Time = current_time;
-	
-	// Keypad navigation
-	if (gamepad_usage) {
-		SceCtrlData pad;
-		int lstick_x, lstick_y = 0;
-		ImGui_ImplVitaGL_PollLeftStick(&pad, &lstick_x, &lstick_y);
-		io.NavInputs[ImGuiNavInput_Activate]  = (pad.buttons & SCE_CTRL_ENTER)    ? 1.0f : 0.0f;
-		//io.NavInputs[ImGuiNavInput_Cancel]    = (pad.buttons & SCE_CTRL_CIRCLE)   ? 1.0f : 0.0f;
-		io.NavInputs[ImGuiNavInput_Input]     = (pad.buttons & SCE_CTRL_TRIANGLE) ? 1.0f : 0.0f;
-		io.NavInputs[ImGuiNavInput_Menu]      = (pad.buttons & SCE_CTRL_SQUARE)   ? 1.0f : 0.0f;
-		io.NavInputs[ImGuiNavInput_DpadLeft]  = (pad.buttons & SCE_CTRL_LEFT)     ? 1.0f : 0.0f;
-		io.NavInputs[ImGuiNavInput_DpadRight] = (pad.buttons & SCE_CTRL_RIGHT)    ? 1.0f : 0.0f;
-		io.NavInputs[ImGuiNavInput_DpadUp]    = (pad.buttons & SCE_CTRL_UP)       ? 1.0f : 0.0f;
-		io.NavInputs[ImGuiNavInput_DpadDown]  = (pad.buttons & SCE_CTRL_DOWN)     ? 1.0f : 0.0f;
 
-		//if (io.NavInputs[ImGuiNavInput_Menu] == 1.0f) {
-			io.NavInputs[ImGuiNavInput_FocusPrev] = (pad.buttons & SCE_CTRL_LTRIGGER) ? 1.0f : 0.0f;
-			io.NavInputs[ImGuiNavInput_FocusNext] = (pad.buttons & SCE_CTRL_RTRIGGER) ? 1.0f : 0.0f;
-			if (lstick_x < 0) io.NavInputs[ImGuiNavInput_LStickLeft] = (float)(-lstick_x/16);
-			if (lstick_x > 0) io.NavInputs[ImGuiNavInput_LStickRight] = (float)(lstick_x/16);
-			if (lstick_y < 0) io.NavInputs[ImGuiNavInput_LStickUp] = (float)(-lstick_y/16);
-			if (lstick_y > 0) io.NavInputs[ImGuiNavInput_LStickDown] = (float)(lstick_y/16);
-		//}
-	}
-	
-	// Keys for mouse emulation
-	if (mousestick_usage && !(io.NavInputs[ImGuiNavInput_Menu] == 1.0f)){
-		SceCtrlData pad;
-		ImGui_ImplVitaGL_PollLeftStick(&pad, &mx, &my);
-		if ((pad.buttons & SCE_CTRL_LTRIGGER) != (g_OldPad.buttons & SCE_CTRL_LTRIGGER))
-			g_MousePressed[0] = pad.buttons & SCE_CTRL_LTRIGGER;
-		if ((pad.buttons & SCE_CTRL_RTRIGGER) != (g_OldPad.buttons & SCE_CTRL_RTRIGGER))
-			g_MousePressed[1] = pad.buttons & SCE_CTRL_RTRIGGER;
-		g_OldPad = pad;
-	}
-	
-	// Setup mouse inputs (we already got mouse wheel, keyboard keys & characters from our event handler)
-	//Uint32 mouse_buttons = SDL_GetMouseState(&mx, &my);
-	io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
-	io.MouseDown[0] = g_MousePressed[0];
-	io.MouseDown[1] = g_MousePressed[1];
-	io.MouseDown[2] = g_MousePressed[2];
-
-	if (mx < 0) mx = 0;
-	else if (mx > 960) mx = 960;
-	if (my < 0) my = 0;
-	else if (my > 544) my = 544;
-	io.MousePos = ImVec2((float)mx, (float)my);
-
-	// Start the frame. This call will update the io.WantCaptureMouse, io.WantCaptureKeyboard flag that you can use to dispatch inputs (or not) to your application.
+	ImGui_ImplVitaGL_UpdateGamepads();
 	ImGui::NewFrame();
-	
 	vglIndexPointerMapped(gIndexBuffer);
-}
-
-void ImGui_ImplVitaGL_MouseStickUsage(bool val) {
-	mousestick_usage = val;
-}
-
-void ImGui_ImplVitaGL_GamepadUsage(bool val) {
-	gamepad_usage = val;
-}
-
-void ImGui_ImplVitaGL_UseCustomShader(bool val) {
-	shaders_usage = val;
 }
