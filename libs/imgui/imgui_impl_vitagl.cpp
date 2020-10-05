@@ -327,6 +327,8 @@ static void ImGui_ImplVitaGL_UpdateGamepads() {
     MAP_ANALOG(ImGuiNavInput_LStickRight,   lstick_x, +thumb_dead_zone, +32767);
     MAP_ANALOG(ImGuiNavInput_LStickUp,      lstick_y, -thumb_dead_zone, -32767);
     MAP_ANALOG(ImGuiNavInput_LStickDown,    lstick_y, +thumb_dead_zone, +32767);
+	MAP_ANALOG(ImGuiNavInput_DpadLeft,      lstick_x, -thumb_dead_zone, -32768);
+	MAP_ANALOG(ImGuiNavInput_DpadRight,     lstick_x, +thumb_dead_zone, +32767);
 
     io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
     #undef MAP_BUTTON
