@@ -2,5 +2,6 @@
 set -e
 set -x
 
-cmake -G "Unix Makefiles"
-make clean && make
+mkdir build
+cd build
+cmake ../ && make clean && make
