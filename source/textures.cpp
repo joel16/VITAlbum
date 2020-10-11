@@ -56,8 +56,7 @@
 Tex folder_texture, file_texture, image_texture;
 
 namespace BMP {
-    static void *bitmap_create(int width, int height, unsigned int state) {
-        (void) state;  /* unused */
+    static void *bitmap_create(int width, int height, [[maybe_unused]] unsigned int state) {
         /* ensure a stupidly large (>50Megs or so) bitmap is not created */
         if ((static_cast<long long>(width) * static_cast<long long>(height)) > (MAX_IMAGE_BYTES/BYTES_PER_PIXEL))
             return nullptr;
@@ -70,8 +69,7 @@ namespace BMP {
         return static_cast<unsigned char *>(bitmap);
     }
     
-    static size_t bitmap_get_bpp(void *bitmap) {
-        (void) bitmap;  /* unused */
+    static size_t bitmap_get_bpp([[maybe_unused]] void *bitmap) {
         return BYTES_PER_PIXEL;
     }
     
@@ -90,14 +88,11 @@ namespace GIF {
         return std::calloc(width * height, BYTES_PER_PIXEL);
     }
 
-    static void bitmap_set_opaque(void *bitmap, bool opaque) {
-        (void) opaque;  /* unused */
-        (void) bitmap;  /* unused */
+    static void bitmap_set_opaque([[maybe_unused]] void *bitmap, [[maybe_unused]] bool opaque) {
         assert(bitmap);
     }
     
-    static bool bitmap_test_opaque(void *bitmap) {
-        (void) bitmap;  /* unused */
+    static bool bitmap_test_opaque([[maybe_unused]] void *bitmap) {
         assert(bitmap);
         return false;
     }
@@ -112,16 +107,14 @@ namespace GIF {
         std::free(bitmap);
     }
     
-    static void bitmap_modified(void *bitmap) {
-        (void) bitmap;  /* unused */
+    static void bitmap_modified([[maybe_unused]] void *bitmap) {
         assert(bitmap);
         return;
     }
 }
 
 namespace ICO {
-    static void *bitmap_create(int width, int height, unsigned int state) {
-        (void) state;  /* unused */
+    static void *bitmap_create(int width, int height, [[maybe_unused]] unsigned int state) {
         return std::calloc(width * height, BYTES_PER_PIXEL);
     }
     
@@ -130,8 +123,7 @@ namespace ICO {
         return static_cast<unsigned char *>(bitmap);
     }
     
-    static size_t bitmap_get_bpp(void *bitmap) {
-        (void) bitmap;  /* unused */
+    static size_t bitmap_get_bpp([[maybe_unused]] void *bitmap) {
         return BYTES_PER_PIXEL;
     }
     
