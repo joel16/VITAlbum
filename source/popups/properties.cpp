@@ -5,13 +5,13 @@
 #include "utils.h"
 
 namespace Popups {
-    void ImageProperties(MenuItem *item, Tex *texture) {
+    void ImageProperties(bool *state, MenuItem *item, Tex *texture) {
         ImGui::OpenPopup("Properties");
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(20, 20));
         ImGui::SetNextWindowPos(ImVec2(480.0f, 272.0f), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
         std::string new_width, new_height;
-        if (ImGui::BeginPopupModal("Properties", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        if (ImGui::BeginPopupModal("Properties", state, ImGuiWindowFlags_AlwaysAutoResize)) {
             std::string parent_text = "Parent: ";
             parent_text.append(config.cwd);
             ImGui::Text(parent_text.c_str());
@@ -38,9 +38,9 @@ namespace Popups {
             width_text.append(std::to_string(texture->width));
             width_text.append("px");
             ImGui::Text(width_text.c_str());
-            ImGui::SameLine(0.0f, 10.0f);
+            /*ImGui::SameLine(0.0f, 10.0f);
             if (ImGui::Button("Edit width"))
-                new_width = Keyboard::GetText("Enter width", std::to_string(texture->width));
+                new_width = Keyboard::GetText("Enter width", std::to_string(texture->width));*/
 
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 
@@ -48,9 +48,9 @@ namespace Popups {
             height_text.append(std::to_string(texture->height));
             height_text.append("px");
             ImGui::Text(height_text.c_str());
-            ImGui::SameLine(0.0f, 10.0f);
+            /*ImGui::SameLine(0.0f, 10.0f);
             if (ImGui::Button("Edit height"))
-                new_height = Keyboard::GetText("Enter height", std::to_string(texture->height));
+                new_height = Keyboard::GetText("Enter height", std::to_string(texture->height));*/
 
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 
@@ -62,13 +62,13 @@ namespace Popups {
                     else if (new_height != std::to_string(texture->height))
                     
                 }
-            }*/
+            }
 
-            ImGui::SameLine();
+            ImGui::SameLine();*/
             
             if (ImGui::Button("OK", ImVec2(120, 0))) {
                 ImGui::CloseCurrentPopup();
-                item->image_properties = false;
+                *state = false;
             }
             
             ImGui::EndPopup();

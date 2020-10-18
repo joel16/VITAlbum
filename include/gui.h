@@ -15,7 +15,6 @@ typedef struct {
     std::vector<SceIoDirent> entries;
     std::vector<Tex> textures;
     int frame_count = 0;
-    bool image_properties = false;
 } MenuItem;
 
 namespace GUI {

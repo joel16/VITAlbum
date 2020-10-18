@@ -16,7 +16,7 @@ namespace Popups {
         ImGui::PopStyleVar();
     };
     
-    void ImageProperties(MenuItem *item, Tex *texture);
+    void ImageProperties(bool *state, MenuItem *item, Tex *texture);
 }
 
 #endif

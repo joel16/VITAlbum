@@ -28,7 +28,7 @@ namespace Renderer {
 
 namespace GUI {
     int RenderLoop(void) {
-        bool done = false;
+        bool done = false, properties = false;
         ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
         MenuItem item;
@@ -45,8 +45,8 @@ namespace GUI {
                 case GUI_STATE_IMAGE_PREVIEW:
                     Windows::ImageWindow(&item);
 
-                    if (item.image_properties)
-                        Popups::ImageProperties(&item, &item.textures[0]);
+                    if (properties)
+                        Popups::ImageProperties(&properties, &item, &item.textures[0]);
                     
                     break;
                 
@@ -74,9 +74,9 @@ namespace GUI {
                 
                 case GUI_STATE_IMAGE_PREVIEW:
                     if (pressed & SCE_CTRL_TRIANGLE)
-                        item.image_properties = !item.image_properties;
+                        properties = !properties;
                     
-                    if (!item.image_properties) {
+                    if (!properties) {
                         if (pressed & SCE_CTRL_CANCEL) {
                             for (int i = 0; i < item.textures.size(); i++)
                                 Textures::Free(&item.textures[i]);
@@ -88,7 +88,7 @@ namespace GUI {
                     }
                     else {
                         if (pressed & SCE_CTRL_CANCEL)
-                            item.image_properties = false;
+                            properties = false;
                     }
                     
                     break;
