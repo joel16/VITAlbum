@@ -2,7 +2,6 @@
 #include <psp2/io/stat.h>
 #include <algorithm>
 #include <cstdio>
-#include <cstdlib> 
 #include <cstring>
 #include <filesystem>
 
@@ -97,51 +96,54 @@ namespace FS {
         return entry_count;
     }
 
-    static int Sort(const void *p1, const void *p2) {
-        int ret = 0;
-        const SceIoDirent *entryA = reinterpret_cast<const SceIoDirent*>(p1);
-        const SceIoDirent *entryB = reinterpret_cast<const SceIoDirent*>(p2);
-
-        if ((SCE_S_ISDIR(entryA->d_stat.st_mode)) && !(SCE_S_ISDIR(entryB->d_stat.st_mode)))
-            return -1;
-        else if (!(SCE_S_ISDIR(entryA->d_stat.st_mode)) && (SCE_S_ISDIR(entryB->d_stat.st_mode)))
-            return 1;
+    static bool Sort(const SceIoDirent &entryA, const SceIoDirent &entryB) {
+        if ((SCE_S_ISDIR(entryA.d_stat.st_mode)) && !(SCE_S_ISDIR(entryB.d_stat.st_mode)))
+            return true;
+        else if (!(SCE_S_ISDIR(entryA.d_stat.st_mode)) && (SCE_S_ISDIR(entryB.d_stat.st_mode)))
+            return false;
         else {
             switch(config.sort) {
                 case 0:
-                    ret = strcasecmp(entryA->d_name, entryB->d_name);
+                    if (strcasecmp(entryA.d_name, entryB.d_name) < 0)
+                        return true;
+                    
                     break;
 
                 case 1:
-                    ret = strcasecmp(entryB->d_name, entryA->d_name);
+                    if (strcasecmp(entryB.d_name, entryA.d_name) < 0)
+                        return true;
+                    
                     break;
 
                 case 2:
-                    ret = entryA->d_stat.st_size > entryB->d_stat.st_size ? -1 : entryA->d_stat.st_size < entryB->d_stat.st_size ? 1 : 0;
+                    if (entryB.d_stat.st_size < entryA.d_stat.st_size)
+                        return true;
+                    
                     break;
 
                 case 3:
-                    ret = entryB->d_stat.st_size > entryA->d_stat.st_size ? -1 : entryB->d_stat.st_size < entryA->d_stat.st_size ? 1 : 0;
+                    if (entryA.d_stat.st_size < entryB.d_stat.st_size)
+                        return true;
+                    
                     break;
             }
         }
-
-        return ret;
+        
+        return false;
     }
 
-    SceOff GetDirList(const std::string &path, SceIoDirent **entriesp) {
+    int GetDirList(const std::string &path, std::vector<SceIoDirent> &entries) {
         int ret = 0, i = ((path == "ux0:")? 0 : 1);
-        SceOff entry_count = 0;
         SceUID dir = 0;
 
-        entry_count = FS::CountFiles(path) + ((path == "ux0:")? 0 : 1);
+        SceOff entry_count = FS::CountFiles(path) + ((path == "ux0:")? 0 : 1);
 
         if (R_FAILED(dir = sceIoDopen(path.c_str()))) {
             Log::Error("sceIoDopen(%s) failed: 0x%lx\n", path.c_str(), ret);
             return dir;
         }
         
-        SceIoDirent *entries = new SceIoDirent[entry_count * sizeof(entries)];
+        entries.resize(entry_count);
 
         // Add parent directory entry if not on root path
         if (path != "ux0:") {
@@ -150,48 +152,41 @@ namespace FS {
         }
         
         do {
-            if (R_FAILED(ret = sceIoDread(dir, &entries[i])))
+            SceIoDirent dirent;
+            if (R_FAILED(ret = sceIoDread(dir, &dirent)))
                 Log::Error("sceIoDread(%s) failed: 0x%lx\n", path.c_str(), ret);
-                
-            if ((!FS::IsImageType(entries[i].d_name)) && (!SCE_S_ISDIR(entries[i].d_stat.st_mode)))
+            
+            if ((!FS::IsImageType(dirent.d_name)) && (!SCE_S_ISDIR(dirent.d_stat.st_mode)))
                 continue;
             
+            entries.push_back(dirent);
             i++;
         } while (ret > 0);
 
-        std::qsort(entries, entry_count, sizeof(SceIoDirent), FS::Sort);
+        std::sort(entries.begin(), entries.end(), FS::Sort);
         
         if (R_FAILED(ret = sceIoDclose(dir))) {
             Log::Error("sceIoDclose(%s) failed: 0x%lx\n", path.c_str(), ret);
-            delete[] entries;
             return ret;
         }
-        
-        *entriesp = entries;
-        return entry_count;
+
+        return 0;
     }
-    
-    void FreeDirEntries(SceIoDirent **entries, SceOff entry_count) {
-        if (entry_count > 0)
-            delete[] (*entries);
-            
-        *entries = nullptr;
-	}
 
     //TODO: Clean up change directory impl.
-    static SceOff ChangeDir(const std::string &path, SceIoDirent **entries) {
-        SceIoDirent *new_entries;
+    static int ChangeDir(const std::string &path, std::vector<SceIoDirent> &entries) {
+        int ret = 0;
+        std::vector<SceIoDirent> new_entries;
         
-        SceOff num_entries = FS::GetDirList(path, &new_entries);
-        if (num_entries < 0)
-            return -1;
+        if (R_FAILED(ret = FS::GetDirList(path, new_entries)))
+            return ret;
             
         // Free entries and change the current working directory.
-        delete[] *entries;
+        entries.clear();
         config.cwd = path;
         Config::Save(config);
-        *entries = new_entries;
-        return num_entries;
+        entries = new_entries;
+        return 0;;
     }
 
     static int ChangeDirUp(char path[256]) {
@@ -218,14 +213,14 @@ namespace FS {
         return 0;
     }
     
-    SceOff ChangeDirNext(const std::string &path, SceIoDirent **entries) {
+    int ChangeDirNext(const std::string &path, std::vector<SceIoDirent> &entries) {
         std::string new_path = config.cwd;
         new_path.append("/");
         new_path.append(path);
         return FS::ChangeDir(new_path, entries);
     }
     
-    SceOff ChangeDirPrev(SceIoDirent **entries) {
+    int ChangeDirPrev(std::vector<SceIoDirent> &entries) {
         char new_path[256];
         if (FS::ChangeDirUp(new_path) < 0)
             return -1;

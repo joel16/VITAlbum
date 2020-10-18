@@ -32,7 +32,10 @@ namespace GUI {
         ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
         MenuItem item;
-        item.entry_count = FS::GetDirList(config.cwd, &item.entries);
+        
+        int ret = 0;
+        if (R_FAILED(ret = FS::GetDirList(config.cwd, item.entries)))
+            return ret;
 
         while (!done) {
             Renderer::Start();
@@ -71,11 +74,8 @@ namespace GUI {
                     if (pressed & SCE_CTRL_SELECT)
                         item.state = GUI_STATE_SETTINGS;
                     else if (pressed & SCE_CTRL_CANCEL) {
-                        SceOff value = FS::ChangeDirPrev(&item.entries);
-                        if (value >= 0) {
-                            item.entry_count = value;
+                        if (R_SUCCEEDED(FS::ChangeDirPrev(item.entries)))
                             GImGui->NavId = 0;
-                        }
                     }
 
                     break;
@@ -121,8 +121,8 @@ namespace GUI {
                 case GUI_STATE_SETTINGS:
                     if (pressed & SCE_CTRL_CANCEL) {
                         Config::Save(config);
-                        FS::FreeDirEntries(&item.entries, item.entry_count);
-                        item.entry_count = FS::GetDirList(config.cwd, &item.entries);
+                        item.entries.clear();
+                        FS::GetDirList(config.cwd, item.entries);
                         item.state = GUI_STATE_HOME;
                     }
 
@@ -135,8 +135,8 @@ namespace GUI {
             if (pressed & SCE_CTRL_START)
                 done = true;
         }
-
-        FS::FreeDirEntries(&item.entries, item.entry_count);
+        
+        item.entries.clear();
         return 0;
     }
 }

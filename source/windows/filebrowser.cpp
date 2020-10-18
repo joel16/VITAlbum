@@ -19,7 +19,7 @@ namespace Windows {
             }
             
             ImGui::BeginChild("##FS::GetDirList");
-            for (SceOff i = 0; i < item->entry_count; i++) {
+            for (SceOff i = 0; i < item->entries.size(); i++) {
                 if (SCE_S_ISDIR(item->entries[i].d_stat.st_mode))
                     ImGui::Image(reinterpret_cast<ImTextureID>(folder_texture.id), ImVec2(folder_texture.width, folder_texture.height));
                 else if (FS::IsImageType(item->entries[i].d_name))
@@ -31,9 +31,9 @@ namespace Windows {
                     if (SCE_S_ISDIR(item->entries[i].d_stat.st_mode)) {
                         std::string filename = item->entries[i].d_name;
                         if (filename == "..")
-                            item->entry_count = FS::ChangeDirPrev(&item->entries);
+                            FS::ChangeDirPrev(item->entries);
                         else
-                            item->entry_count = FS::ChangeDirNext(filename, &item->entries);
+                            FS::ChangeDirNext(filename, item->entries);
                         
                         GImGui->NavId = 0;
                     }

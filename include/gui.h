@@ -13,8 +13,7 @@ enum GUI_STATES {
 typedef struct {
     int state = GUI_STATE_HOME;
     SceOff selected = 0;
-    SceOff entry_count = 0;
-    SceIoDirent *entries = nullptr;
+    std::vector<SceIoDirent> entries;
     Tex texture;
     std::vector<Tex> textures;
     int frame_count = 0;
