@@ -46,18 +46,10 @@ namespace GUI {
                     Windows::ImageWindow(&item);
 
                     if (item.image_properties)
-                        Popups::ImageProperties(&item, &item.texture);
-                    
-                    break;
-
-                case GUI_STATE_GIF_PREVIEW:
-                    Windows::GifWindow(&item);
-                    
-                    if (item.image_properties)
                         Popups::ImageProperties(&item, &item.textures[0]);
                     
                     break;
-
+                
                 case GUI_STATE_SETTINGS:
                     Windows::SettingsWindow(&item);
                     break;
@@ -86,23 +78,6 @@ namespace GUI {
                     
                     if (!item.image_properties) {
                         if (pressed & SCE_CTRL_CANCEL) {
-                            Textures::Free(&item.texture);
-                            item.state = GUI_STATE_HOME;
-                        }
-                    }
-                    else {
-                        if (pressed & SCE_CTRL_CANCEL)
-                            item.image_properties = false;
-                    }
-                    
-                    break;
-
-                case GUI_STATE_GIF_PREVIEW:
-                     if (pressed & SCE_CTRL_TRIANGLE)
-                        item.image_properties = !item.image_properties;
-                    
-                    if (!item.image_properties) {
-                        if (pressed & SCE_CTRL_CANCEL) {
                             for (int i = 0; i < item.textures.size(); i++)
                                 Textures::Free(&item.textures[i]);
                             
@@ -117,7 +92,7 @@ namespace GUI {
                     }
                     
                     break;
-
+                
                 case GUI_STATE_SETTINGS:
                     if (pressed & SCE_CTRL_CANCEL) {
                         Config::Save(config);

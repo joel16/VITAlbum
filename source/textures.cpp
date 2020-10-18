@@ -53,7 +53,8 @@
 #define BYTES_PER_PIXEL 4
 #define MAX_IMAGE_BYTES (48 * 1024 * 1024)
 
-Tex folder_texture, file_texture, image_texture;
+std::vector<Tex> icons;
+unsigned const FOLDER = 0, IMAGE = 1;
 
 namespace BMP {
     static void *bitmap_create(int width, int height, [[maybe_unused]] unsigned int state) {
@@ -432,7 +433,7 @@ namespace Textures {
     void Free(Tex *texture) {
         glDeleteTextures(1, &texture->id);
     }
-
+    
     void Init(void) {
         const int num_icons = 2;
         unsigned char *data[num_icons] = { nullptr, nullptr };
@@ -447,10 +448,11 @@ namespace Textures {
                 break;
         }
 
-        bool image_ret = Textures::LoadImagePNG(&data[0], &size[0], &folder_texture);
+        icons.resize(num_icons);
+        bool image_ret = Textures::LoadImagePNG(&data[0], &size[0], &icons[FOLDER]);
         IM_ASSERT(image_ret);
         
-        image_ret = Textures::LoadImagePNG(&data[1], &size[1], &image_texture);
+        image_ret = Textures::LoadImagePNG(&data[1], &size[1], &icons[IMAGE]);
         IM_ASSERT(image_ret);
 
         for (int i = 0; i < num_icons; i++) {
@@ -460,8 +462,7 @@ namespace Textures {
     }
 
     void Exit(void) {
-        Textures::Free(&image_texture);
-        Textures::Free(&folder_texture);
-        Textures::Free(&file_texture);
+        for (unsigned int i = 0; i < icons.size(); i++)
+            Textures::Free(&icons[i]);
     }
 }

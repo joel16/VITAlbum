@@ -18,7 +18,6 @@ namespace Windows {
     };
     
     void FileBrowserWindow(MenuItem *item);
-    void GifWindow(MenuItem *item);
     void ImageWindow(MenuItem *item);
     void SettingsWindow(MenuItem *item);
 }

@@ -12,7 +12,8 @@ typedef struct {
     int delay = 0;
 } Tex;
 
-extern Tex folder_texture, image_texture;
+extern std::vector<Tex> icons;
+extern unsigned const FOLDER, IMAGE;
 
 namespace Textures {
     bool LoadImageFile(unsigned char **data, SceOff *size, Tex *texture);

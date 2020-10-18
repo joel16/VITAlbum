@@ -19,11 +19,11 @@ namespace Windows {
             }
             
             ImGui::BeginChild("##FS::GetDirList");
-            for (SceOff i = 0; i < item->entries.size(); i++) {
+            for (unsigned int i = 0; i < item->entries.size(); i++) {
                 if (SCE_S_ISDIR(item->entries[i].d_stat.st_mode))
-                    ImGui::Image(reinterpret_cast<ImTextureID>(folder_texture.id), ImVec2(folder_texture.width, folder_texture.height));
+                    ImGui::Image(reinterpret_cast<ImTextureID>(icons[FOLDER].id), ImVec2(icons[FOLDER].width, icons[FOLDER].height));
                 else if (FS::IsImageType(item->entries[i].d_name))
-                    ImGui::Image(reinterpret_cast<ImTextureID>(image_texture.id), ImVec2(image_texture.width, image_texture.height));
+                    ImGui::Image(reinterpret_cast<ImTextureID>(icons[IMAGE].id), ImVec2(icons[IMAGE].width, icons[IMAGE].height));
                 
                 ImGui::SameLine();
                 
@@ -42,47 +42,40 @@ namespace Windows {
                         std::string ext = FS::GetFileExt(path);
 
                         bool image_ret = false;
+                        item->textures.resize(1); // Resize to 1 initially. If the file is a GIF it will be resized accordingly.
 
                         // Because TIFF does not load via buffer, but directly from the path.
-                        if (ext == ".TIFF") {
-                            image_ret = Textures::LoadImageTIFF(path, &item->texture);
-                            IM_ASSERT(image_ret);
-                            item->state = GUI_STATE_IMAGE_PREVIEW;
-                        }
+                        if (ext == ".TIFF")
+                            image_ret = Textures::LoadImageTIFF(path, &item->textures[0]);
                         else {
                             unsigned char *data = nullptr;
                             SceOff size = 0;
                             FS::ReadFile(path, &data, &size);
                             
-                            if (ext == ".GIF") {
+                            if (ext == ".BMP")
+                                image_ret = Textures::LoadImageBMP(&data, &size, &item->textures[0]);
+                            else if ((ext == ".PGM") || (ext == ".PPM") || (ext == ".PSD") || (ext == ".TGA"))
+                                image_ret = Textures::LoadImageFile(&data, &size, &item->textures[0]);
+                            else if (ext == ".GIF")
                                 image_ret = Textures::LoadImageGIF(&data, &size, item->textures);
-                                IM_ASSERT(image_ret);
-                                item->state = GUI_STATE_GIF_PREVIEW;
-                            }
-                            else {
-                                if (ext == ".BMP")
-                                    image_ret = Textures::LoadImageBMP(&data, &size, &item->texture);
-                                else if ((ext == ".PGM") || (ext == ".PPM") || (ext == ".PSD") || (ext == ".TGA"))
-                                    image_ret = Textures::LoadImageFile(&data, &size, &item->texture);
-                                else if (ext == ".ICO")
-                                    image_ret = Textures::LoadImageICO(&data, &size, &item->texture);
-                                else if ((ext == ".JPG") || (ext == ".JPEG"))
-                                    image_ret = Textures::LoadImageJPEG(&data, &size, &item->texture);
-                                else if (ext == ".PCX")
-                                    image_ret = Textures::LoadImagePCX(&data, &size, &item->texture);
-                                else if (ext == ".PNG")
-                                    image_ret = Textures::LoadImagePNG(&data, &size, &item->texture);
-                                else if (ext == ".SVG")
-                                    image_ret = Textures::LoadImageSVG(&data, &item->texture);
-                                else if (ext == ".WEBP")
-                                    image_ret = Textures::LoadImageWEBP(&data, &size, &item->texture);
-                                
-                                IM_ASSERT(image_ret);
-                                item->state = GUI_STATE_IMAGE_PREVIEW;
-                            }
-
+                            else if (ext == ".ICO")
+                                image_ret = Textures::LoadImageICO(&data, &size, &item->textures[0]);
+                            else if ((ext == ".JPG") || (ext == ".JPEG"))
+                                image_ret = Textures::LoadImageJPEG(&data, &size, &item->textures[0]);
+                            else if (ext == ".PCX")
+                                image_ret = Textures::LoadImagePCX(&data, &size, &item->textures[0]);
+                            else if (ext == ".PNG")
+                                image_ret = Textures::LoadImagePNG(&data, &size, &item->textures[0]);
+                            else if (ext == ".SVG")
+                                image_ret = Textures::LoadImageSVG(&data, &item->textures[0]);
+                            else if (ext == ".WEBP")
+                                image_ret = Textures::LoadImageWEBP(&data, &size, &item->textures[0]);
+                            
                             delete[] data;
                         }
+
+                        IM_ASSERT(image_ret);
+                        item->state = GUI_STATE_IMAGE_PREVIEW;
                     }
                 }
                 

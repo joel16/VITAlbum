@@ -6,15 +6,13 @@
 enum GUI_STATES {
     GUI_STATE_HOME,
     GUI_STATE_IMAGE_PREVIEW,
-    GUI_STATE_GIF_PREVIEW,
     GUI_STATE_SETTINGS
 };
 
 typedef struct {
-    int state = GUI_STATE_HOME;
+    GUI_STATES state = GUI_STATE_HOME;
     SceOff selected = 0;
     std::vector<SceIoDirent> entries;
-    Tex texture;
     std::vector<Tex> textures;
     int frame_count = 0;
     bool image_properties = false;

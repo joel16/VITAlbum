@@ -12,10 +12,20 @@ namespace Windows {
         ImGuiWindowFlags_ filename_flag = !config.image_filename? ImGuiWindowFlags_NoTitleBar : ImGuiWindowFlags_None;
         
         if (ImGui::Begin(item->entries[item->selected].d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | filename_flag)) {
-            if ((item->texture.width <= 960) && (item->texture.height <= 544))
-                ImGui::SetCursorPos((ImGui::GetWindowSize() - ImVec2(item->texture.width, item->texture.height)) * 0.5f);
-            
-            ImGui::Image(reinterpret_cast<ImTextureID>(item->texture.id), ImVec2(item->texture.width, item->texture.height));
+            if ((item->textures[0].width <= 960) && (item->textures[0].height <= 544))
+                ImGui::SetCursorPos((ImGui::GetWindowSize() - ImVec2(item->textures[0].width, item->textures[0].height)) * 0.5f);
+
+            if (item->textures.size() > 1) {
+                sceKernelDelayThread(item->textures[item->frame_count].delay * 10000);
+                ImGui::Image(reinterpret_cast<ImTextureID>(item->textures[item->frame_count].id), ImVec2(item->textures[item->frame_count].width, item->textures[item->frame_count].height));
+                item->frame_count++;
+                
+                // Reset frame counter
+                if (item->frame_count == item->textures.size() - 1)
+                    item->frame_count = 0;
+            }
+            else
+                ImGui::Image(reinterpret_cast<ImTextureID>(item->textures[0].id), ImVec2(item->textures[0].width, item->textures[0].height));
         }
         
         Windows::ExitWindow();
