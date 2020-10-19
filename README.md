@@ -3,7 +3,7 @@
 A simple homebrew file browser that is used for viewing various image formats on the PlayStation VITA. This is a stripped down port of NX-Shell (Next) for Nintendo Switch. It only supports viewing images/gifs.
 
 <p align="center">
-<img src="https://i.imgur.com/rFzFfcT.jpg" alt="VITAlbum Screenshot" width="640" height="362"/>
+<img src="https://i.imgur.com/KKXkLeG.jpg" alt="VITAlbum Screenshot" width="640" height="362"/>
 </p>
 
 # Supported Formats:
