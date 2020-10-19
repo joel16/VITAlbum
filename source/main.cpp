@@ -66,7 +66,6 @@ namespace Services {
 		
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-		io.FontGlobalScale = 1.8f;
 		io.IniFilename = nullptr;
 	}
 

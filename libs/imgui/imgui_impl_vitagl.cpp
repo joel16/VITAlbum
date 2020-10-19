@@ -204,9 +204,29 @@ void ImGui_ImplVitaGL_RenderDrawData(ImDrawData* draw_data) {
 bool ImGui_ImplVitaGL_CreateDeviceObjects() {
 	// Build texture atlas
 	ImGuiIO& io = ImGui::GetIO();
-	unsigned char* pixels;
-	int width, height;
-	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+	unsigned char *pixels = nullptr;
+	int width = 0, height = 0;
+	
+	ImFontConfig font_config;
+	font_config.OversampleH = 1;
+	font_config.OversampleV = 1;
+	font_config.PixelSnapH = 1;
+
+	SceUID font = 0;
+	font = sceIoOpen("sa0:/data/font/pvf/ltn0.pvf", SCE_O_RDONLY, 0);
+	if (font < 0)
+		return false;
+
+	SceOff font_size = sceIoLseek(font, 0, SEEK_END);
+	unsigned char *font_buf = new unsigned char[font_size];
+
+	sceIoLseek(font, 0, SCE_SEEK_SET);
+	sceIoRead(font, font_buf, font_size);
+	sceIoClose(font);
+
+	io.Fonts->AddFontFromMemoryTTF(font_buf, font_size, 20.0f, &font_config, io.Fonts->GetGlyphRangesDefault());
+	io.Fonts->GetTexDataAsRGBA32(static_cast<unsigned char **>(&pixels), &width, &height);
+	delete[] font_buf;
 
 	// Upload texture to graphics system
 	GLint last_texture;
@@ -219,7 +239,7 @@ bool ImGui_ImplVitaGL_CreateDeviceObjects() {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 	// Store our identifier
-	io.Fonts->TexID = (void *)(intptr_t)g_FontTexture;
+	io.Fonts->TexID = reinterpret_cast<ImTextureID>(g_FontTexture);
 
 	// Restore state
 	glBindTexture(GL_TEXTURE_2D, last_texture);
