@@ -1,3 +1,6 @@
+#include <png.h>
+#include <webp/decode.h>
+
 #include "config.h"
 #include "fs.h"
 #include "imgui.h"
@@ -39,6 +42,24 @@ namespace Windows {
             if (ImGui::TreeNode("Developer Options")) {
                 ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
                 ImGui::Checkbox(" Enable logs", &config.dev_options);
+                ImGui::TreePop();
+            }
+
+            Windows::Separator();
+            
+            if (ImGui::TreeNode("About")) {
+                ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+                std::string vitalbum_ver = APP_VERSION;
+                vitalbum_ver.erase(0, std::min(vitalbum_ver.find_first_not_of('0'), vitalbum_ver.size() - 1));
+                ImGui::Text("VITAlbum version: %s", vitalbum_ver.c_str());
+                ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+                ImGui::Text("Author: Joel16");
+                ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+                ImGui::Text("Dear imGui version: %s", ImGui::GetVersion());
+                ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+                ImGui::Text("libpng version: %s", PNG_LIBPNG_VER_STRING);
+                ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+                ImGui::Text("libwebp version: %d.%d.%d", (WebPGetDecoderVersion() >> 16) & 0xFF, (WebPGetDecoderVersion() >> 8) & 0xFF, WebPGetDecoderVersion() & 0xFF);
                 ImGui::TreePop();
             }
         }

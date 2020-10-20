@@ -25,9 +25,12 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 set(VITA_APP_NAME "VITAlbum")
 # Unique ID must be exactly 9 characters. Recommended: XXXXYYYYY where X =
 # unique string of developer and Y = a unique number for this app
-set(VITA_TITLEID  "VITALBUM0")
+set(VITA_TITLEID "VITALBUM0")
 # Optional version string to show in LiveArea's more info screen
-set(VITA_VERSION  "01.30")
+set(VITA_VERSION "01.30")
+
+# Add version definition
+add_definitions(-DAPP_VERSION="${VITA_VERSION}")
 
 ## Flags and includes for building
 # Note that we make sure not to overwrite previous flags
