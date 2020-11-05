@@ -16,16 +16,7 @@ extern std::vector<Tex> icons;
 extern unsigned const FOLDER, IMAGE;
 
 namespace Textures {
-    bool LoadImageFile(unsigned char **data, SceOff *size, Tex *texture);
-    bool LoadImageBMP(unsigned char **data, SceOff *size, Tex *texture);
-    bool LoadImageGIF(unsigned char **data, SceOff *size, std::vector<Tex> &textures);
-    bool LoadImageICO(unsigned char **data, SceOff *size, Tex *texture);
-    bool LoadImageJPEG(unsigned char **data, SceOff *size, Tex *texture);
-    bool LoadImagePCX(unsigned char **data, SceOff *size, Tex *texture);
-    bool LoadImagePNG(unsigned char **data, SceOff *size, Tex *texture);
-    bool LoadImageSVG(unsigned char **data, Tex *texture);
-    bool LoadImageTIFF(const std::string &path, Tex *texture);
-    bool LoadImageWEBP(unsigned char **data, SceOff *size, Tex *texture);
+    bool LoadImageFile(const std::string &path, std::vector<Tex> &textures);
     void Free(Tex *texture);
     void Init(void);
     void Exit(void);

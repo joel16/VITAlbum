@@ -153,14 +153,14 @@ namespace Textures {
         return true;
     }
 
-    bool LoadImageFile(unsigned char **data, SceOff *size, Tex *texture) {
+    static bool LoadImageOther(unsigned char **data, SceOff *size, Tex *texture) {
         unsigned char *image = nullptr;
         image = stbi_load_from_memory(*data, *size, &texture->width, &texture->height, nullptr, BYTES_PER_PIXEL);
         bool ret = Textures::LoadImage(image, GL_RGBA, texture, stbi_image_free);
         return ret;
     }
 
-    bool LoadImageBMP(unsigned char **data, SceOff *size, Tex *texture) {
+    static bool LoadImageBMP(unsigned char **data, SceOff *size, Tex *texture) {
         bmp_bitmap_callback_vt bitmap_callbacks = {
             BMP::bitmap_create,
             BMP::bitmap_destroy,
@@ -202,7 +202,7 @@ namespace Textures {
         return ret;
     }
 
-    bool LoadImageGIF(unsigned char **data, SceOff *size, std::vector<Tex> &textures) {
+    static bool LoadImageGIF(unsigned char **data, SceOff *size, std::vector<Tex> &textures) {
         gif_bitmap_callback_vt bitmap_callbacks = {
             GIF::bitmap_create,
             GIF::bitmap_destroy,
@@ -260,7 +260,7 @@ namespace Textures {
         return ret;
     }
 
-    bool LoadImageICO(unsigned char **data, SceOff *size, Tex *texture) {
+    static bool LoadImageICO(unsigned char **data, SceOff *size, Tex *texture) {
         bmp_bitmap_callback_vt bitmap_callbacks = {
             ICO::bitmap_create,
             ICO::bitmap_destroy,
@@ -309,7 +309,7 @@ namespace Textures {
         return ret;
     }
 
-    bool LoadImageJPEG(unsigned char **data, SceOff *size, Tex *texture) {
+    static bool LoadImageJPEG(unsigned char **data, SceOff *size, Tex *texture) {
         unsigned char *buffer = nullptr;
         tjhandle jpeg = tjInitDecompress();
         int jpegsubsamp = 0;
@@ -334,13 +334,13 @@ namespace Textures {
         return ret;
     }
 
-    bool LoadImagePCX(unsigned char **data, SceOff *size, Tex *texture) {
+    static bool LoadImagePCX(unsigned char **data, SceOff *size, Tex *texture) {
         *data = drpcx_load_memory(*data, *size, DRPCX_FALSE, &texture->width, &texture->height, nullptr, BYTES_PER_PIXEL);
         bool ret = Textures::LoadImage(*data, GL_RGBA, texture, nullptr);
         return ret;
     }
 
-    bool LoadImagePNG(unsigned char **data, SceOff *size, Tex *texture) {
+    static bool LoadImagePNG(unsigned char **data, SceOff *size, Tex *texture) {
         bool ret = false;
         png_image image;
         std::memset(&image, 0, (sizeof image));
@@ -375,7 +375,7 @@ namespace Textures {
         return ret;
     }
 
-    bool LoadImageSVG(unsigned char **data, Tex *texture) {
+    static bool LoadImageSVG(unsigned char **data, Tex *texture) {
         NSVGimage *svg;
         svg = nsvgParse(reinterpret_cast<char *>(*data), "px", 96);
         
@@ -394,7 +394,7 @@ namespace Textures {
         return ret;
     }
 
-    bool LoadImageTIFF(const std::string &path, Tex *texture) {
+    static bool LoadImageTIFF(const std::string &path, Tex *texture) {
         TIFF *tif = TIFFOpen(path.c_str(), "r");
         if (tif) {
             size_t num_pixels = 0;
@@ -424,7 +424,7 @@ namespace Textures {
         return false;
     }
 
-    bool LoadImageWEBP(unsigned char **data, SceOff *size, Tex *texture) {
+    static bool LoadImageWEBP(unsigned char **data, SceOff *size, Tex *texture) {
         *data = WebPDecodeRGBA(*data, *size, &texture->width, &texture->height);
         bool ret = Textures::LoadImage(*data, GL_RGBA, texture, nullptr);
         return ret;
@@ -432,6 +432,46 @@ namespace Textures {
 
     void Free(Tex *texture) {
         glDeleteTextures(1, &texture->id);
+    }
+
+    bool LoadImageFile(const std::string &path, std::vector<Tex> &textures) {
+        bool ret = false;
+        std::string ext = FS::GetFileExt(path);
+        
+        // Resize to 1 initially. If the file is a GIF it will be resized accordingly.
+        textures.resize(1);
+        
+        // Because TIFF does not load via buffer, but directly from the path.
+        if (ext == ".TIFF")
+            ret = Textures::LoadImageTIFF(path, &textures[0]);
+        else {
+            unsigned char *data = nullptr;
+            SceOff size = 0;
+            FS::ReadFile(path, &data, &size);
+            
+            if (ext == ".BMP")
+                ret = Textures::LoadImageBMP(&data, &size, &textures[0]);
+            else if ((ext == ".PGM") || (ext == ".PPM") || (ext == ".PSD") || (ext == ".TGA"))
+                ret = Textures::LoadImageOther(&data, &size, &textures[0]);
+            else if (ext == ".GIF")
+                ret = Textures::LoadImageGIF(&data, &size, textures);
+            else if (ext == ".ICO")
+                ret = Textures::LoadImageICO(&data, &size, &textures[0]);
+            else if ((ext == ".JPG") || (ext == ".JPEG"))
+                ret = Textures::LoadImageJPEG(&data, &size, &textures[0]);
+            else if (ext == ".PCX")
+                ret = Textures::LoadImagePCX(&data, &size, &textures[0]);
+            else if (ext == ".PNG")
+                ret = Textures::LoadImagePNG(&data, &size, &textures[0]);
+            else if (ext == ".SVG")
+                ret = Textures::LoadImageSVG(&data, &textures[0]);
+            else if (ext == ".WEBP")
+                ret = Textures::LoadImageWEBP(&data, &size, &textures[0]);
+            
+            delete[] data;
+        }
+        
+        return ret;
     }
     
     void Init(void) {
@@ -449,11 +489,11 @@ namespace Textures {
         }
 
         icons.resize(num_icons);
-        bool image_ret = Textures::LoadImagePNG(&data[0], &size[0], &icons[FOLDER]);
-        IM_ASSERT(image_ret);
+        bool ret = Textures::LoadImagePNG(&data[0], &size[0], &icons[FOLDER]);
+        IM_ASSERT(ret);
         
-        image_ret = Textures::LoadImagePNG(&data[1], &size[1], &icons[IMAGE]);
-        IM_ASSERT(image_ret);
+        ret = Textures::LoadImagePNG(&data[1], &size[1], &icons[IMAGE]);
+        IM_ASSERT(ret);
 
         for (int i = 0; i < num_icons; i++) {
             if (data[i])
