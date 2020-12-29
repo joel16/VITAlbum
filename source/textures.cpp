@@ -404,9 +404,9 @@ namespace Textures {
             TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &texture->height);
             num_pixels = texture->width * texture->height;
 
-            raster = static_cast<uint32 *>(_TIFFmalloc(num_pixels * sizeof (uint32)));
+            raster = static_cast<uint32 *>(_TIFFmalloc(num_pixels * sizeof(uint32)));
             if (raster != nullptr) {
-                if (TIFFReadRGBAImage(tif, texture->width, texture->height, raster))
+                if (TIFFReadRGBAImageOriented(tif, texture->width, texture->height, raster, ORIENTATION_TOPLEFT))
                     LoadImage(reinterpret_cast<unsigned char *>(raster), GL_RGBA, texture, _TIFFfree);
                 else
                     Log::Error("TIFFReadRGBAImage failed\n");
