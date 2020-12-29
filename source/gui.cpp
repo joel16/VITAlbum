@@ -27,6 +27,61 @@ namespace Renderer {
 }
 
 namespace GUI {
+    static void ClearTextures(MenuItem *item) {
+        for (int i = 0; i < item->textures.size(); i++)
+            Textures::Free(&item->textures[i]);
+        
+        item->textures.clear();
+        item->frame_count = 0;
+    }
+
+    static bool HandleScroll(MenuItem *item, int index) {
+        if (SCE_S_ISDIR(item->entries[index].d_stat.st_mode))
+            return false;
+        else {
+            item->selected = index;
+            std::string path = FS::BuildPath(&item->entries[index]);
+            bool ret = Textures::LoadImageFile(path, item->textures);
+            IM_ASSERT(ret);
+            return true;
+        }
+
+        return false;
+    }
+
+    static bool HandlePrev(MenuItem *item) {
+        bool ret = false;
+
+        for (int i = item->selected - 1; i > 0; i--) {
+            std::string filename = item->entries[i].d_name;
+            if (filename.empty())
+                continue;
+                
+            if (!(ret = GUI::HandleScroll(item, i)))
+                continue;
+            else
+                break;
+        }
+
+        return ret;
+    }
+
+    static bool HandleNext(MenuItem *item) {
+        bool ret = false;
+
+        if (item->selected == item->entries.size())
+            return ret;
+        
+        for (int i = item->selected + 1; i < item->entries.size(); i++) {
+            if (!(ret = GUI::HandleScroll(item, i)))
+                continue;
+            else
+                break;
+        }
+
+        return ret;
+    }
+
     int RenderLoop(void) {
         bool done = false, properties = false;
         ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -78,12 +133,20 @@ namespace GUI {
                     
                     if (!properties) {
                         if (pressed & SCE_CTRL_CANCEL) {
-                            for (int i = 0; i < item.textures.size(); i++)
-                                Textures::Free(&item.textures[i]);
-                            
-                            item.textures.clear();
-                            item.frame_count = 0;
+                            GUI::ClearTextures(&item);
                             item.state = GUI_STATE_HOME;
+                        }
+
+                        if (pressed & SCE_CTRL_LTRIGGER) {
+                            GUI::ClearTextures(&item);
+                            if (!GUI::HandlePrev(&item))
+                                item.state = GUI_STATE_HOME;
+                        }
+                        else if (pressed & SCE_CTRL_RTRIGGER) {
+                            GUI::ClearTextures(&item);
+
+                            if (!GUI::HandleNext(&item))
+                                item.state = GUI_STATE_HOME;
                         }
                     }
                     else {

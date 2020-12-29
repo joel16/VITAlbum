@@ -28,6 +28,8 @@ namespace Windows {
                 ImGui::SameLine();
                 
                 if (ImGui::Selectable(item->entries[i].d_name)) {
+                    item->selected = i;
+
                     if (SCE_S_ISDIR(item->entries[i].d_stat.st_mode)) {
                         std::string filename = item->entries[i].d_name;
                         if (filename == "..")
