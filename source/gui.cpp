@@ -169,8 +169,8 @@ namespace GUI {
                     break;
             }
 
-            if (pressed & SCE_CTRL_START)
-                done = true;
+            /*if (pressed & SCE_CTRL_START)
+                done = true;*/
         }
         
         item.entries.clear();
