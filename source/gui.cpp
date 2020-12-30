@@ -144,7 +144,6 @@ namespace GUI {
                         }
                         else if (pressed & SCE_CTRL_RTRIGGER) {
                             GUI::ClearTextures(&item);
-
                             if (!GUI::HandleNext(&item))
                                 item.state = GUI_STATE_HOME;
                         }

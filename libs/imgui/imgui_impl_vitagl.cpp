@@ -299,8 +299,8 @@ static void ImGui_ImplVitaGL_UpdateGamepads() {
 	SceCtrlData pad;
 	sceCtrlPeekBufferPositive(0, &pad, 1);
 	
-	int lstick_x = (pad.lx - 127) * 256;
-	int lstick_y = (pad.ly - 127) * 256;
+	int rstick_x = (pad.rx - 127) * 256;
+	int rstick_y = (pad.ry - 127) * 256;
 	
 	// Update gamepad inputs
 	#define MAP_BUTTON(NAV_NO, BUTTON_NO)       { io.NavInputs[NAV_NO] = pad.buttons & BUTTON_NO? 1.0f : 0.0f; }
@@ -318,12 +318,10 @@ static void ImGui_ImplVitaGL_UpdateGamepads() {
 	MAP_BUTTON(ImGuiNavInput_FocusNext,     SCE_CTRL_RTRIGGER);    // R1 / RB
 	MAP_BUTTON(ImGuiNavInput_TweakSlow,     SCE_CTRL_LTRIGGER);    // L1 / LB
 	MAP_BUTTON(ImGuiNavInput_TweakFast,     SCE_CTRL_RTRIGGER);    // R1 / RB
-	MAP_ANALOG(ImGuiNavInput_LStickLeft,    lstick_x, -thumb_dead_zone, -32768);
-	MAP_ANALOG(ImGuiNavInput_LStickRight,   lstick_x, +thumb_dead_zone, +32767);
-	MAP_ANALOG(ImGuiNavInput_LStickUp,      lstick_y, -thumb_dead_zone, -32767);
-	MAP_ANALOG(ImGuiNavInput_LStickDown,    lstick_y, +thumb_dead_zone, +32767);
-	MAP_ANALOG(ImGuiNavInput_DpadLeft,      lstick_x, -thumb_dead_zone, -32768);
-	MAP_ANALOG(ImGuiNavInput_DpadRight,     lstick_x, +thumb_dead_zone, +32767);
+	MAP_ANALOG(ImGuiNavInput_LStickLeft,    rstick_x, -thumb_dead_zone, -32768);
+	MAP_ANALOG(ImGuiNavInput_LStickRight,   rstick_x, +thumb_dead_zone, +32767);
+	MAP_ANALOG(ImGuiNavInput_LStickUp,      rstick_y, -thumb_dead_zone, -32767);
+	MAP_ANALOG(ImGuiNavInput_LStickDown,    rstick_y, +thumb_dead_zone, +32767);
 	
 	io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
 	#undef MAP_BUTTON
