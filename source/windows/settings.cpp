@@ -1,4 +1,5 @@
 #include <png.h>
+#include <tiffvers.h>
 #include <webp/decode.h>
 
 #include "config.h"
@@ -58,6 +59,8 @@ namespace Windows {
                 ImGui::Text("Dear imGui version: %s", ImGui::GetVersion());
                 ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
                 ImGui::Text("libpng version: %s", PNG_LIBPNG_VER_STRING);
+                ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+                ImGui::Text("LibTIFF version: %d", TIFFLIB_VERSION);
                 ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
                 ImGui::Text("libwebp version: %d.%d.%d", (WebPGetDecoderVersion() >> 16) & 0xFF, (WebPGetDecoderVersion() >> 8) & 0xFF, WebPGetDecoderVersion() & 0xFF);
                 ImGui::TreePop();
