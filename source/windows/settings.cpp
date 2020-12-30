@@ -1,3 +1,4 @@
+#include <jconfig.h>
 #include <png.h>
 #include <tiffvers.h>
 #include <webp/decode.h>
@@ -6,6 +7,9 @@
 #include "fs.h"
 #include "imgui.h"
 #include "windows.h"
+
+#define STRINGIFY(x) #x
+#define TO_STRING(x) STRINGIFY(x)
 
 namespace Windows {
     static void Separator(void) {
@@ -57,6 +61,8 @@ namespace Windows {
                 ImGui::Text("Author: Joel16");
                 ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
                 ImGui::Text("Dear imGui version: %s", ImGui::GetVersion());
+                ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+                ImGui::Text("libjpeg-turbo version: %s", TO_STRING(LIBJPEG_TURBO_VERSION));
                 ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
                 ImGui::Text("libpng version: %s", PNG_LIBPNG_VER_STRING);
                 ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
