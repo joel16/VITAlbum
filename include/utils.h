@@ -15,7 +15,7 @@ extern unsigned int pressed;
 namespace Utils {
     int InitAppUtil(void);
     int EndAppUtil(void);
-    void ReadControls(void);
+    SceCtrlData ReadControls(void);
     int GetEnterButton(void);
     int GetCancelButton(void);
     void GetSizeString(char *string, double size);

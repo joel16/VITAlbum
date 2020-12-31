@@ -58,11 +58,12 @@ namespace Utils {
         return 0;
     }
 
-    void ReadControls(void) {
+    SceCtrlData ReadControls(void) {
         std::memset(&pad, 0, sizeof(SceCtrlData));
         sceCtrlPeekBufferPositive(0, &pad, 1);
         pressed = pad.buttons & ~old_pad.buttons;
         old_pad = pad;
+        return pad;
     }
 
     int GetEnterButton(void) {

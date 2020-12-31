@@ -87,6 +87,7 @@ namespace GUI {
         ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
         MenuItem item;
+        SceCtrlData pad = { 0 };
         
         int ret = 0;
         if (R_FAILED(ret = FS::GetDirList(config.cwd, item.entries)))
@@ -114,7 +115,7 @@ namespace GUI {
             }
 
             Renderer::End(clear_color);
-            Utils::ReadControls();
+            pad = Utils::ReadControls();
 
             switch (item.state) {
                 case GUI_STATE_HOME:
@@ -130,10 +131,24 @@ namespace GUI {
                 case GUI_STATE_IMAGE_PREVIEW:
                     if (pressed & SCE_CTRL_TRIANGLE)
                         properties = !properties;
-                    
+
+                    if (pad.ly > 170) {
+                        item.zoom_factor -= 0.5f * ImGui::GetIO().DeltaTime;
+                        
+                        if (item.zoom_factor < 0.1f)
+                            item.zoom_factor = 0.1f;
+                    }
+                    else if (pad.ly < 70) {
+                        item.zoom_factor += 0.5f * ImGui::GetIO().DeltaTime;
+
+                        if (item.zoom_factor > 5.0f)
+                            item.zoom_factor = 5.0f;
+                    }
+
                     if (!properties) {
                         if (pressed & SCE_CTRL_CANCEL) {
                             GUI::ClearTextures(&item);
+                            item.zoom_factor = 1.0f;
                             item.state = GUI_STATE_HOME;
                         }
 

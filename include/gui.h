@@ -15,6 +15,7 @@ typedef struct {
     std::vector<SceIoDirent> entries;
     std::vector<Tex> textures;
     int frame_count = 0;
+    float zoom_factor = 1.0f;
 } MenuItem;
 
 namespace GUI {
