@@ -27,7 +27,7 @@ set(VITA_APP_NAME "VITAlbum")
 # unique string of developer and Y = a unique number for this app
 set(VITA_TITLEID "VITALBUM0")
 # Optional version string to show in LiveArea's more info screen
-set(VITA_VERSION "01.30")
+set(VITA_VERSION "01.40")
 
 # Add version definition
 add_definitions(-DAPP_VERSION="${VITA_VERSION}")
