@@ -139,11 +139,15 @@ namespace GUI {
 
                         if (pressed & SCE_CTRL_LTRIGGER) {
                             GUI::ClearTextures(&item);
+                            sceKernelDelayThread(100000);
+
                             if (!GUI::HandlePrev(&item))
                                 item.state = GUI_STATE_HOME;
                         }
                         else if (pressed & SCE_CTRL_RTRIGGER) {
                             GUI::ClearTextures(&item);
+                            sceKernelDelayThread(100000);
+
                             if (!GUI::HandleNext(&item))
                                 item.state = GUI_STATE_HOME;
                         }
