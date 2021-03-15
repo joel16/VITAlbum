@@ -71,7 +71,7 @@ namespace Services {
 
 	void Init(void) {
 		// Initalize vitaGL and imGui contexts
-		vglInitExtended(0x100000, 960, 544, 0x1000000, SCE_GXM_MULTISAMPLE_4X);
+		vglInitExtended(0, 960, 544, 0x800000, SCE_GXM_MULTISAMPLE_4X);
 		vglUseVram(GL_TRUE);
 		ImGui::CreateContext();
 		ImGui_ImplVitaGL_Init();

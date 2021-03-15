@@ -42,7 +42,7 @@
 #include "tiffio.h"
 
 // WEBP
-#include "webp/decode.h"
+#include <webp/decode.h>
 
 #include "fs.h"
 #include "imgui.h"

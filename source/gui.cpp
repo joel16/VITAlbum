@@ -12,7 +12,6 @@
 
 namespace Renderer {
     static void Start(void) {
-        vglStartRendering();
         ImGui_ImplVitaGL_NewFrame();
     }
     
@@ -22,7 +21,7 @@ namespace Renderer {
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui::Render();
         ImGui_ImplVitaGL_RenderDrawData(ImGui::GetDrawData());
-        vglStopRendering();
+        vglSwapBuffers(GL_FALSE);
     }
 }
 

@@ -90,11 +90,6 @@ namespace Keyboard {
                 done = true;
             else if (status != SCE_COMMON_DIALOG_STATUS_CANCELLED)
                 done = false;
-            
-            vglStopRenderingInit();
-            vglUpdateCommonDialog();
-            vglStopRenderingTerm();
-            vglStartRendering();
         } while(!done);
 
         return text;
