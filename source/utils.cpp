@@ -1,6 +1,7 @@
 #include <psp2/apputil.h>
 #include <psp2/common_dialog.h>
 #include <psp2/system_param.h>
+#include <psp2/kernel/clib.h>
 #include <cstring>
 #include <cstdio>
 
@@ -16,8 +17,8 @@ namespace Utils {
     int InitAppUtil(void) {
         SceAppUtilInitParam init;
         SceAppUtilBootParam boot;
-        std::memset(&init, 0, sizeof(SceAppUtilInitParam));
-        std::memset(&boot, 0, sizeof(SceAppUtilBootParam));
+        sceClibMemset(&init, 0, sizeof(SceAppUtilInitParam));
+        sceClibMemset(&boot, 0, sizeof(SceAppUtilBootParam));
         
         int ret = 0;
         
@@ -59,7 +60,7 @@ namespace Utils {
     }
 
     SceCtrlData ReadControls(void) {
-        std::memset(&pad, 0, sizeof(SceCtrlData));
+        sceClibMemset(&pad, 0, sizeof(SceCtrlData));
         sceCtrlPeekBufferPositive(0, &pad, 1);
         pressed = pad.buttons & ~old_pad.buttons;
         old_pad = pad;

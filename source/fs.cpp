@@ -1,5 +1,6 @@
 #include <psp2/io/fcntl.h>
 #include <psp2/io/stat.h>
+#include <psp2/kernel/clib.h>
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
@@ -76,7 +77,7 @@ namespace FS {
         
         do {
             SceIoDirent entries;
-            std::memset(&entries, 0, sizeof(SceIoDirent));
+            sceClibMemset(&entries, 0, sizeof(SceIoDirent));
             
             if (R_FAILED(ret = sceIoDread(dir, &entries)))
                 Log::Error("sceIoDread(%s) failed: 0x%lx\n", path.c_str(), ret);

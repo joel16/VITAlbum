@@ -59,7 +59,7 @@ namespace Keyboard {
         SceCommonDialogStatus status = sceImeDialogGetStatus();
         if (status == SCE_COMMON_DIALOG_STATUS_FINISHED) {
             SceImeDialogResult result;
-            std::memset(&result, 0, sizeof(SceImeDialogResult));
+            sceClibMemset(&result, 0, sizeof(SceImeDialogResult));
             sceImeDialogGetResult(&result);
 
             if ((result.button == SCE_IME_DIALOG_BUTTON_CLOSE) || (result.button == SCE_IME_DIALOG_BUTTON_ENTER)) {

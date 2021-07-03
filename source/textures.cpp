@@ -343,7 +343,7 @@ namespace Textures {
     static bool LoadImagePNG(unsigned char **data, SceOff *size, Tex *texture) {
         bool ret = false;
         png_image image;
-        std::memset(&image, 0, (sizeof image));
+        sceClibMemset(&image, 0, (sizeof image));
         image.version = PNG_IMAGE_VERSION;
         
         if (png_image_begin_read_from_memory(&image, *data, *size) != 0) {
