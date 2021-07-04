@@ -35,12 +35,13 @@ add_definitions(-DAPP_VERSION="${VITA_VERSION}")
 ## Flags and includes for building
 # Note that we make sure not to overwrite previous flags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -g -mtune=cortex-a9 -mfpu=neon -Wall")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi -fno-exceptions -fno-rtti -std=gnu++17 -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi -fno-exceptions -fno-rtti -std=gnu++17")
 # Optional. You can specify more param.sfo flags this way.
 set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1")
 
 # Add any additional include paths here
 include_directories(
+  ${VITASDK}/arm-vita-eabi/include/freetype2/
   libs/imgui
   libs/libnsbmp
   libs/libnsgif
@@ -63,7 +64,9 @@ add_executable(${PROJECT_NAME}
   libs/imgui/imgui.cpp
   libs/imgui/imgui_draw.cpp
   libs/imgui/imgui_impl_vitagl.cpp
+  libs/imgui/imgui_tables.cpp
   libs/imgui/imgui_widgets.cpp
+  libs/imgui/misc/freetype/imgui_freetype.cpp
   libs/libnsbmp/libnsbmp.c
   libs/libnsgif/libnsgif.c
   libs/libnsgif/lzw.c
@@ -83,6 +86,7 @@ add_executable(${PROJECT_NAME}
 
 # Library to link to (drop the  prefix). This will mostly be stubs.
 target_link_libraries(${PROJECT_NAME}
+  freetype
   tiff
   webp
   turbojpeg
