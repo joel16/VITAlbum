@@ -1,4 +1,5 @@
 #include <imgui_vita.h>
+#include <psp2/kernel/threadmgr.h>
 #include <vitaGL.h>
 
 #include "config.h"

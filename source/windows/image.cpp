@@ -1,3 +1,5 @@
+#include <psp2/kernel/threadmgr.h>
+
 #include "config.h"
 #include "imgui.h"
 #include "windows.h"

@@ -1,4 +1,5 @@
 #include <cstring>
+#include <psp2/kernel/clib.h>
 
 // BMP
 #include "libnsbmp.h"

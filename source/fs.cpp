@@ -65,38 +65,6 @@ namespace FS {
 
     }
 
-    static SceOff CountFiles(const std::string &path) {
-        int ret = 0;
-        SceOff entry_count = 0;
-        SceUID dir = 0;
-        
-        if (R_FAILED(dir = sceIoDopen(path.c_str()))) {
-            Log::Error("sceIoDopen(%s) failed: 0x%lx\n", path.c_str(), ret);
-            return dir;
-        }
-        
-        do {
-            SceIoDirent entries;
-            sceClibMemset(&entries, 0, sizeof(SceIoDirent));
-            
-            if (R_FAILED(ret = sceIoDread(dir, &entries)))
-                Log::Error("sceIoDread(%s) failed: 0x%lx\n", path.c_str(), ret);
-            
-            if ((!FS::IsImageType(entries.d_name)) && (!SCE_S_ISDIR(entries.d_stat.st_mode)))
-                continue;
-            
-            if (ret > 0)
-                entry_count++;
-        } while (ret > 0);
-        
-        if (R_FAILED(ret = sceIoDclose(dir))) {
-            Log::Error("sceIoDclose(%s) failed: 0x%lx\n", path.c_str(), ret);
-            return ret;
-        }
-        
-        return entry_count;
-    }
-
     static bool Sort(const SceIoDirent &entryA, const SceIoDirent &entryB) {
         if ((SCE_S_ISDIR(entryA.d_stat.st_mode)) && !(SCE_S_ISDIR(entryB.d_stat.st_mode)))
             return true;
@@ -134,43 +102,30 @@ namespace FS {
     }
 
     int GetDirList(const std::string &path, std::vector<SceIoDirent> &entries) {
-        int ret = 0, i = ((path == "ux0:")? 0 : 1);
+        int ret = 0;
         SceUID dir = 0;
-
-        SceOff entry_count = FS::CountFiles(path) + ((path == "ux0:")? 0 : 1);
-
-        if (R_FAILED(dir = sceIoDopen(path.c_str()))) {
-            Log::Error("sceIoDopen(%s) failed: 0x%lx\n", path.c_str(), ret);
-            return dir;
-        }
+        entries.clear();
         
-        entries.resize(entry_count);
-
-        // Add parent directory entry if not on root path
-        if (path != "ux0:") {
-            std::strcpy(entries[0].d_name, "..");
-            entries[0].d_stat.st_mode = SCE_S_IFDIR;
-        }
-        
-        do {
-            SceIoDirent dirent;
-            if (R_FAILED(ret = sceIoDread(dir, &dirent)))
-                Log::Error("sceIoDread(%s) failed: 0x%lx\n", path.c_str(), ret);
-            
-            if ((!FS::IsImageType(dirent.d_name)) && (!SCE_S_ISDIR(dirent.d_stat.st_mode)))
-                continue;
-            
-            entries.push_back(dirent);
-            i++;
-        } while (ret > 0);
-
-        std::sort(entries.begin(), entries.end(), FS::Sort);
-        
-        if (R_FAILED(ret = sceIoDclose(dir))) {
-            Log::Error("sceIoDclose(%s) failed: 0x%lx\n", path.c_str(), ret);
+        if (R_FAILED(ret = dir = sceIoDopen(path.c_str()))) {
+            Log::Error("sceIoDopen(%s) failed: %08x\n", path.c_str(), ret);
             return ret;
         }
 
+        do {
+            SceIoDirent entry;
+            sceClibMemset(&entry, 0, sizeof(entry));
+            ret = sceIoDread(dir, &entry);
+            
+            if (ret > 0) {
+                if ((!FS::IsImageType(entry.d_name)) && (!SCE_S_ISDIR(entry.d_stat.st_mode)))
+                    continue;
+
+                entries.push_back(entry);
+            }
+        } while (ret > 0);
+
+        std::sort(entries.begin(), entries.end(), FS::Sort);
+        sceIoDclose(dir);
         return 0;
     }
 

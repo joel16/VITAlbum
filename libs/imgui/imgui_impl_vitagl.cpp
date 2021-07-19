@@ -1,6 +1,8 @@
 // Implemented features:
 //  [X] User texture binding. Cast 'GLuint' OpenGL texture identifier as void*/ImTextureID. Read the FAQ about ImTextureID in imgui.cpp.
 
+#include <psp2/kernel/clib.h>
+#include <psp2/kernel/processmgr.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vitaGL.h>

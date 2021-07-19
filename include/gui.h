@@ -1,6 +1,8 @@
 #ifndef _VITALBUM_GUI_H_
 #define _VITALBUM_GUI_H_
 
+#include <psp2/io/dirent.h>
+
 #include "textures.h"
 
 enum GUI_STATES {
