@@ -46,7 +46,6 @@ include_directories(
   libs/libnsbmp
   libs/libnsgif
   libs/libtiff
-  libs/turbojpeg
   libs
   include
 )
@@ -104,6 +103,7 @@ target_link_libraries(${PROJECT_NAME}
   SceCtrl_stub
   SceDisplay_stub
   SceGxm_stub
+  SceKernelDmacMgr_stub
   SceLibJson_stub
   SceLibKernel_stub
   SceShaccCg_stub
