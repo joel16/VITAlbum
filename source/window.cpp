@@ -24,7 +24,7 @@ namespace Windows {
 
     static void ClearTextures(WindowData &data) {
         for (int i = 0; i < data.textures.size(); i++)
-            Textures::Free(&data.textures[i]);
+            Textures::Free(data.textures[i]);
         
         data.textures.clear();
         data.frame_count = 0;

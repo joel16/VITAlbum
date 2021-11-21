@@ -17,7 +17,7 @@ extern unsigned const FOLDER, IMAGE;
 
 namespace Textures {
     bool LoadImageFile(const std::string &path, std::vector<Tex> &textures);
-    void Free(Tex *texture);
+    void Free(Tex &texture);
     void Init(void);
     void Exit(void);
 }
