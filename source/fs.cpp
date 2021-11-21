@@ -82,18 +82,25 @@ namespace FS {
             return ret;
         }
 
-        do {
+        while (true) {
             SceIoDirent entry;
             sceClibMemset(&entry, 0, sizeof(entry));
-            ret = sceIoDread(dir, &entry);
-            
-            if (ret > 0) {
+
+            if (R_FAILED(ret = sceIoDread(dir, &entry))) {
+                Log::Error("sceIoDread(%s) failed: %08x\n", path.c_str(), ret);
+                sceIoDclose(dir);
+                return ret;
+            }
+
+            if (ret) {
                 if ((!FS::IsImageType(entry.d_name)) && (!SCE_S_ISDIR(entry.d_stat.st_mode)))
                     continue;
-
-                entries.push_back(entry);
             }
-        } while (ret > 0);
+            else
+                break;
+
+            entries.push_back(entry);
+        }
         
         sceIoDclose(dir);
         return 0;
@@ -112,11 +119,11 @@ namespace FS {
         cfg.cwd = path;
         Config::Save(cfg);
         entries = new_entries;
-        return 0;;
+        return 0;
     }
 
-    static int ChangeDirUp(char path[256]) {
-        if (cfg.cwd.length() <= 1 && cfg.cwd.c_str()[0] == '/')
+    static int GetPrevPath(char path[256]) {
+        if (cfg.cwd.c_str() == "ux0:")
             return -1;
             
         // Remove upmost directory
@@ -134,7 +141,7 @@ namespace FS {
         // remove trailing slash
         if (len > 1 && path[len - 1] == '/')
             len--;
-        
+            
         path[len] = '\0';
         return 0;
     }
@@ -148,7 +155,7 @@ namespace FS {
     
     int ChangeDirPrev(std::vector<SceIoDirent> &entries) {
         char new_path[256];
-        if (FS::ChangeDirUp(new_path) < 0)
+        if (FS::GetPrevPath(new_path) < 0)
             return -1;
         
         return FS::ChangeDir(std::string(new_path), entries);

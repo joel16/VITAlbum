@@ -72,12 +72,12 @@ namespace Tabs {
                 return false;
             else {
                 switch (column_sort_spec->ColumnIndex) {
-                    case 1: // filename
+                    case 0: // filename
                         sort = descending? FS_SORT_ALPHA_DESC : FS_SORT_ALPHA_ASC;
                         return descending? (strcasecmp(entryB.d_name, entryA.d_name) < 0) : (strcasecmp(entryA.d_name, entryB.d_name) < 0);
                         break;
                         
-                    case 2: // Size
+                    case 1: // Size
                         sort = descending? FS_SORT_SIZE_DESC : FS_SORT_SIZE_ASC;
                         return descending? (entryB.d_stat.st_size < entryA.d_stat.st_size) : (entryA.d_stat.st_size < entryB.d_stat.st_size);
                         break;
