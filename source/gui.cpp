@@ -14,6 +14,7 @@
 namespace Renderer {
     static void Start(void) {
         ImGui_ImplVitaGL_NewFrame();
+        ImGui::NewFrame();
     }
     
     static void End(ImVec4 clear_color) {
