@@ -8,7 +8,7 @@
 
 #define CONFIG_VERSION 2
 
-config_t config;
+config_t cfg;
 
 namespace Config {
     static const char *config_file = "{\n\t\"config_ver\": %d,\n\t\"dev_options\": %s,\n\t\"image_filename\": %s,\n\t\"last_dir\": \"%s\",\n\t\"sort\": %d\n}";
@@ -27,7 +27,7 @@ namespace Config {
             }
     };
     
-    int Save(config_t config) {
+    int Save(config_t &config) {
         int ret = 0;
         char *buf = new char[1024];
         SceSize len = std::snprintf(buf, 1024, config_file, CONFIG_VERSION, config.dev_options? "true" : "false", 
@@ -42,11 +42,11 @@ namespace Config {
         return 0;
     }
     
-    static void SetDefault(config_t *config) {
-        config->sort = 0;
-        config->dev_options = false;
-        config->image_filename = false;
-        config->cwd = "ux0:";
+    static void SetDefault(config_t &config) {
+        config.sort = 0;
+        config.dev_options = false;
+        config.image_filename = false;
+        config.cwd = "ux0:";
     }
 
     int Load(void) {
@@ -58,8 +58,8 @@ namespace Config {
             sceIoMkdir("ux0:data/VITAlbum", 0777);
             
         if (!FS::FileExists("ux0:data/VITAlbum/config.json")) {
-            Config::SetDefault(&config);
-            return Config::Save(config);
+            Config::SetDefault(cfg);
+            return Config::Save(cfg);
         }
             
         SceUID file = 0;
@@ -94,22 +94,22 @@ namespace Config {
 
         // We know sceJson API loops through the child values in root alphabetically.
         config_version_holder = value.getValue(0).getInteger();
-        config.dev_options = value.getValue(1).getBoolean();
-        config.image_filename = value.getValue(2).getBoolean();
-        config.cwd = value.getValue(3).getString().c_str();
-        config.sort = value.getValue(4).getInteger();
+        cfg.dev_options = value.getValue(1).getBoolean();
+        cfg.image_filename = value.getValue(2).getBoolean();
+        cfg.cwd = value.getValue(3).getString().c_str();
+        cfg.sort = value.getValue(4).getInteger();
 
         init.terminate();
         delete alloc;
         
-        if (!FS::DirExists(config.cwd))
-            config.cwd = "ux0:";
+        if (!FS::DirExists(cfg.cwd))
+            cfg.cwd = "ux0:";
             
         // Delete config file if config file is updated. This will rarely happen.
         if (config_version_holder < CONFIG_VERSION) {
             sceIoRemove("ux0:data/VITAlbum/config.json");
-            Config::SetDefault(&config);
-            return Config::Save(config);
+            Config::SetDefault(cfg);
+            return Config::Save(cfg);
         }
 
         return 0;

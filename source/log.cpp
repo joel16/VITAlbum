@@ -10,7 +10,7 @@ namespace Log {
     static SceUID log_file = 0;
 
     void Init(void) {
-        if (!config.dev_options)
+        if (!cfg.dev_options)
             return;
         
         if (!FS::FileExists("ux0:data/VITAlbum/debug.log"))
@@ -21,7 +21,7 @@ namespace Log {
     }
 
     void Exit(void) {
-        if (!config.dev_options)
+        if (!cfg.dev_options)
             return;
             
         if (R_FAILED(sceIoClose(log_file)))
@@ -29,7 +29,7 @@ namespace Log {
     }
     
     void Error(const char *data, ...) {
-        if (!config.dev_options)
+        if (!cfg.dev_options)
             return;
         
         char buf[512];

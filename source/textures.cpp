@@ -448,7 +448,7 @@ namespace Textures {
         else {
             unsigned char *data = nullptr;
             SceOff size = 0;
-            FS::ReadFile(path, &data, &size);
+            FS::ReadFile(path, &data, size);
             
             if (ext == ".BMP")
                 ret = Textures::LoadImageBMP(&data, &size, &textures[0]);
@@ -485,7 +485,7 @@ namespace Textures {
         };
 
         for (int i = 0; i < num_icons; i++) {
-            if (R_FAILED(FS::ReadFile(filenames[i], &data[i], &size[i])))
+            if (R_FAILED(FS::ReadFile(filenames[i], &data[i], size[i])))
                 break;
         }
 

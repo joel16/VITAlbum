@@ -72,15 +72,16 @@ add_executable(${PROJECT_NAME}
   source/config.cpp
   source/fs.cpp
   source/gui.cpp
+  source/image.cpp
   source/keyboard.cpp
   source/log.cpp
   source/main.cpp
   source/textures.cpp
   source/utils.cpp
+  source/window.cpp
   source/popups/properties.cpp
-  source/windows/filebrowser.cpp
-  source/windows/image.cpp
-  source/windows/settings.cpp
+  source/tabs/filebrowser.cpp
+  source/tabs/settings.cpp
 )
 
 # Library to link to (drop the  prefix). This will mostly be stubs.

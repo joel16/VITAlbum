@@ -3,6 +3,7 @@
 
 #include "imgui.h"
 #include "textures.h"
+#include "windows.h"
 
 namespace Popups {
     inline void SetupPopup(const char *id) {
@@ -16,7 +17,7 @@ namespace Popups {
         ImGui::PopStyleVar();
     };
     
-    void ImageProperties(bool *state, MenuItem *item, Tex *texture);
+    void ImageProperties(bool &state, WindowData &data, Tex &texture);
 }
 
 #endif

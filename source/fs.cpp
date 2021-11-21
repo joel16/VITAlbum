@@ -34,7 +34,7 @@ namespace FS {
         return false;
     }
 
-    int GetFileSize(const std::string &path, SceOff *size) {
+    int GetFileSize(const std::string &path, SceOff &size) {
         int ret = 0;
         SceIoStat stat;
 
@@ -43,7 +43,7 @@ namespace FS {
             return ret;
         }
         
-        *size = stat.st_size;
+        size = stat.st_size;
         return 0;
     }
 
@@ -65,46 +65,17 @@ namespace FS {
 
     }
 
-    static bool Sort(const SceIoDirent &entryA, const SceIoDirent &entryB) {
-        if ((SCE_S_ISDIR(entryA.d_stat.st_mode)) && !(SCE_S_ISDIR(entryB.d_stat.st_mode)))
-            return true;
-        else if (!(SCE_S_ISDIR(entryA.d_stat.st_mode)) && (SCE_S_ISDIR(entryB.d_stat.st_mode)))
-            return false;
-        else {
-            switch(config.sort) {
-                case 0:
-                    if (strcasecmp(entryA.d_name, entryB.d_name) < 0)
-                        return true;
-                    
-                    break;
-
-                case 1:
-                    if (strcasecmp(entryB.d_name, entryA.d_name) < 0)
-                        return true;
-                    
-                    break;
-
-                case 2:
-                    if (entryB.d_stat.st_size < entryA.d_stat.st_size)
-                        return true;
-                    
-                    break;
-
-                case 3:
-                    if (entryA.d_stat.st_size < entryB.d_stat.st_size)
-                        return true;
-                    
-                    break;
-            }
-        }
-        
-        return false;
-    }
-
     int GetDirList(const std::string &path, std::vector<SceIoDirent> &entries) {
         int ret = 0;
         SceUID dir = 0;
         entries.clear();
+
+        // Create ".." entry
+        SceIoDirent entry;
+        std::strncpy(entry.d_name, "..", 3);
+        entry.d_stat.st_mode = SCE_S_IFDIR;
+        entry.d_stat.st_size = 0;
+        entries.push_back(entry);
         
         if (R_FAILED(ret = dir = sceIoDopen(path.c_str()))) {
             Log::Error("sceIoDopen(%s) failed: %08x\n", path.c_str(), ret);
@@ -123,8 +94,7 @@ namespace FS {
                 entries.push_back(entry);
             }
         } while (ret > 0);
-
-        std::sort(entries.begin(), entries.end(), FS::Sort);
+        
         sceIoDclose(dir);
         return 0;
     }
@@ -139,24 +109,24 @@ namespace FS {
             
         // Free entries and change the current working directory.
         entries.clear();
-        config.cwd = path;
-        Config::Save(config);
+        cfg.cwd = path;
+        Config::Save(cfg);
         entries = new_entries;
         return 0;;
     }
 
     static int ChangeDirUp(char path[256]) {
-        if (config.cwd.length() <= 1 && config.cwd.c_str()[0] == '/')
+        if (cfg.cwd.length() <= 1 && cfg.cwd.c_str()[0] == '/')
             return -1;
             
         // Remove upmost directory
         bool copy = false;
         int len = 0;
-        for (ssize_t i = config.cwd.length(); i >= 0; i--) {
-            if (config.cwd.c_str()[i] == '/')
+        for (ssize_t i = cfg.cwd.length(); i >= 0; i--) {
+            if (cfg.cwd.c_str()[i] == '/')
                 copy = true;
             if (copy) {
-                path[i] = config.cwd.c_str()[i];
+                path[i] = cfg.cwd.c_str()[i];
                 len++;
             }
         }
@@ -170,7 +140,7 @@ namespace FS {
     }
     
     int ChangeDirNext(const std::string &path, std::vector<SceIoDirent> &entries) {
-        std::string new_path = config.cwd;
+        std::string new_path = cfg.cwd;
         new_path.append("/");
         new_path.append(path);
         return FS::ChangeDir(new_path, entries);
@@ -184,10 +154,10 @@ namespace FS {
         return FS::ChangeDir(std::string(new_path), entries);
     }
     
-    const std::string BuildPath(SceIoDirent *entry) {
-        std::string path = config.cwd;
+    const std::string BuildPath(SceIoDirent &entry) {
+        std::string path = cfg.cwd;
         path.append("/");
-        path.append(entry->d_name);
+        path.append(entry.d_name);
         return path;
     }
 
@@ -208,7 +178,7 @@ namespace FS {
         return 0;
     }
 
-    int ReadFile(const std::string &path, unsigned char **buffer, SceOff *size) {
+    int ReadFile(const std::string &path, unsigned char **buffer, SceOff &size) {
         int ret = 0;
         SceUID file = 0;
 
@@ -217,10 +187,10 @@ namespace FS {
             return ret;
         }
         
-        *size = sceIoLseek(file, 0, SEEK_END);
-        *buffer = new unsigned char[*size];
+        size = sceIoLseek(file, 0, SEEK_END);
+        *buffer = new unsigned char[size];
 
-        if (R_FAILED(ret = sceIoPread(file, *buffer, *size, SCE_SEEK_SET))) {
+        if (R_FAILED(ret = sceIoPread(file, *buffer, size, SCE_SEEK_SET))) {
             Log::Error("sceIoPread(%s) failed: 0x%lx\n", path.c_str(), ret);
             return ret;
         }

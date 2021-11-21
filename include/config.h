@@ -10,10 +10,10 @@ typedef struct {
     std::string cwd;
 } config_t;
 
-extern config_t config;
+extern config_t cfg;
 
 namespace Config {
-    int Save(config_t config);
+    int Save(config_t &config);
     int Load(void);
 }
 
