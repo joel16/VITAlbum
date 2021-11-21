@@ -11,7 +11,7 @@
 int _newlib_heap_size_user = 192 * 1024 * 1024;
 
 namespace Services {
-	void SetDefaultTheme(void) {
+    void SetDefaultTheme(void) {
         ImGui::GetStyle().FrameRounding = 4.0f;
         ImGui::GetStyle().GrabRounding = 4.0f;
         
@@ -64,49 +64,49 @@ namespace Services {
         colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
         colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
         colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
-
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-		io.IniFilename = nullptr;
+        
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+        io.IniFilename = nullptr;
     }
-
-	void Init(void) {
-		// Initalize vitaGL and imGui contexts
-		vglInitExtended(0, 960, 544, 0x800000, SCE_GXM_MULTISAMPLE_4X);
-		vglUseVram(GL_TRUE);
-		ImGui::CreateContext();
-		ImGui_ImplVitaGL_Init();
-
-		// Setup style
-		ImGui::StyleColorsDark();
-
-		sceSysmoduleLoadModule(SCE_SYSMODULE_JSON);
-
-		Config::Load();
-		Log::Init();
-
-		Textures::Init();
-		Utils::InitAppUtil();
-		SCE_CTRL_ENTER = Utils::GetEnterButton();
-		SCE_CTRL_CANCEL = Utils::GetCancelButton();
-	}
-
-	void Exit(void) {
-		// Clean up
-		Utils::EndAppUtil();
-		Textures::Exit();
-		Log::Exit();
-		sceSysmoduleUnloadModule(SCE_SYSMODULE_JSON);
-		ImGui_ImplVitaGL_Shutdown();
-		ImGui::DestroyContext();
-		vglEnd();
-	}
+    
+    void Init(void) {
+        // Initalize vitaGL and imGui contexts
+        vglInitExtended(0, 960, 544, 0x800000, SCE_GXM_MULTISAMPLE_4X);
+        vglUseVram(GL_TRUE);
+        ImGui::CreateContext();
+        ImGui_ImplVitaGL_Init();
+        
+        // Setup style
+        ImGui::StyleColorsDark();
+        
+        sceSysmoduleLoadModule(SCE_SYSMODULE_JSON);
+        
+        Config::Load();
+        Log::Init();
+        Textures::Init();
+        Utils::InitAppUtil();
+        
+        SCE_CTRL_ENTER = Utils::GetEnterButton();
+        SCE_CTRL_CANCEL = Utils::GetCancelButton();
+    }
+    
+    void Exit(void) {
+        // Clean up
+        Utils::EndAppUtil();
+        Textures::Exit();
+        Log::Exit();
+        sceSysmoduleUnloadModule(SCE_SYSMODULE_JSON);
+        ImGui_ImplVitaGL_Shutdown();
+        ImGui::DestroyContext();
+        vglEnd();
+    }
 }
 
 int main(int argc, char *argv[]) {
-	Services::Init();
-	Services::SetDefaultTheme();
-	GUI::RenderLoop();
-	Services::Exit();
-	return 0;
+    Services::Init();
+    Services::SetDefaultTheme();
+    GUI::RenderLoop();
+    Services::Exit();
+    return 0;
 }
