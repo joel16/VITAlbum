@@ -19,7 +19,7 @@ namespace Windows {
                     (data.textures[data.frame_count].height * data.zoom_factor))) * 0.5f);
 
             if (data.textures.size() > 1) {
-                sceKernelDelayThread(data.textures[data.frame_count].delay * 10000);
+                sceKernelDelayThread(data.textures[data.frame_count].delay);
 
                 ImGui::Image(reinterpret_cast<ImTextureID>(data.textures[data.frame_count].id), ImVec2(data.textures[data.frame_count].width * data.zoom_factor,
                     data.textures[data.frame_count].height * data.zoom_factor));

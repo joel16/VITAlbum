@@ -44,6 +44,7 @@
 
 // WEBP
 #include <webp/decode.h>
+#include <webp/demux.h>
 
 #include "fs.h"
 #include "imgui.h"
@@ -241,7 +242,7 @@ namespace Textures {
 
                 textures[i].width = gif.width;
                 textures[i].height = gif.height;
-                textures[i].delay = gif.frames->frame_delay;
+                textures[i].delay = gif.frames->frame_delay * 10000;
                 ret = Textures::LoadImage(static_cast<unsigned char *>(gif.frame_image), GL_RGBA, textures[i], nullptr);
             }
         }
@@ -425,9 +426,58 @@ namespace Textures {
         return false;
     }
 
-    static bool LoadImageWEBP(unsigned char **data, SceOff &size, Tex &texture) {
-        *data = WebPDecodeRGBA(*data, size, &texture.width, &texture.height);
-        bool ret = Textures::LoadImage(*data, GL_RGBA, texture, nullptr);
+    static bool LoadImageWEBP(unsigned char **data, SceOff &size, std::vector<Tex> &textures) {
+        bool ret = false;
+        VP8StatusCode status = VP8_STATUS_OK;
+        WebPBitstreamFeatures features = {0};
+        
+        status = WebPGetFeatures(*data, size, &features);
+        if (status != VP8_STATUS_OK)
+            return ret;
+
+        if (features.has_animation) {
+            int frame_index = 0, prev_timestamp = 0;
+            WebPData webp_data = {0};
+            WebPAnimDecoder *dec = {0};
+            WebPAnimInfo info = {0};
+
+            WebPDataInit(&webp_data);
+            webp_data.bytes = *data;
+            webp_data.size = size;
+
+            dec = WebPAnimDecoderNew(&webp_data, nullptr);
+            if (dec == nullptr)
+                return ret;
+
+            if (!WebPAnimDecoderGetInfo(dec, &info)) {
+                WebPAnimDecoderDelete(dec);
+                return ret;
+            }
+
+            textures.resize(info.frame_count);
+
+            while (WebPAnimDecoderHasMoreFrames(dec)) {
+                unsigned char *frame_rgba = nullptr;
+                int timestamp = 0;
+
+                if (!WebPAnimDecoderGetNext(dec, &frame_rgba, &timestamp)) {
+                    WebPAnimDecoderDelete(dec);
+                    return ret;
+                }
+                
+                textures[frame_index].width = info.canvas_width;
+                textures[frame_index].height = info.canvas_height;
+                textures[frame_index].delay = (timestamp - prev_timestamp) * 1000;
+                ret = Textures::LoadImage(frame_rgba, GL_RGBA, textures[frame_index], nullptr);
+                ++frame_index;
+                prev_timestamp = timestamp;
+            }
+        }
+        else {
+            *data = WebPDecodeRGBA(*data, size, &textures[0].width, &textures[0].height);
+            ret = Textures::LoadImage(*data, GL_RGBA, textures[0], nullptr);
+        }
+
         return ret;
     }
 
@@ -467,7 +517,7 @@ namespace Textures {
             else if (ext == ".SVG")
                 ret = Textures::LoadImageSVG(&data, textures[0]);
             else if (ext == ".WEBP")
-                ret = Textures::LoadImageWEBP(&data, size, textures[0]);
+                ret = Textures::LoadImageWEBP(&data, size, textures);
             
             delete[] data;
         }

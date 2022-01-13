@@ -9,7 +9,7 @@ typedef struct {
     GLuint id = 0;
     int width = 0;
     int height = 0;
-    int delay = 0;
+    SceUInt delay = 0; // microseconds
 } Tex;
 
 extern std::vector<Tex> icons;
