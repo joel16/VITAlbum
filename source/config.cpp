@@ -115,7 +115,7 @@ namespace Config {
         config_version_holder = value.getValue(4).getInteger();
 
         // Build path with device + cwd
-        std::string path = cfg.device + cfg.cwd;
+        const std::string path = cfg.device + cfg.cwd;
 
         init.terminate();
         delete alloc;

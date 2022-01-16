@@ -18,7 +18,7 @@ A simple homebrew file browser that is used for viewing various image formats on
 - SVG
 - TGA
 - TIFF
-- WEBP
+- WEBP (animated & non animated)
 
 # Todo:
 - Ability to resize images.
