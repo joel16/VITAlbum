@@ -34,6 +34,26 @@ namespace FS {
         return false;
     }
 
+    // Recursive mkdir based on -> https://newbedev.com/mkdir-c-function
+    int MakeDir(const std::string &path) {
+        std::string current_level = "";
+        std::string level;
+        std::stringstream ss(path);
+        
+        // split path using slash as a separator
+        while (std::getline(ss, level, '/')) {
+            current_level += level; // append folder to the current level
+            
+            // create current level
+            if (!FS::DirExists(current_level) && sceIoMkdir(current_level.c_str(), 0777) != 0)
+                return -1;
+                
+            current_level += "/"; // don't forget to append a slash
+        }
+        
+        return 0;
+    }
+
     int GetFileSize(const std::string &path, SceOff &size) {
         int ret = 0;
         SceIoStat stat;
@@ -110,8 +130,9 @@ namespace FS {
     static int ChangeDir(const std::string &path, std::vector<SceIoDirent> &entries) {
         int ret = 0;
         std::vector<SceIoDirent> new_entries;
+        const std::string new_path = cfg.device + path;
         
-        if (R_FAILED(ret = FS::GetDirList(path, new_entries)))
+        if (R_FAILED(ret = FS::GetDirList(new_path, new_entries)))
             return ret;
             
         // Free entries and change the current working directory.
@@ -123,7 +144,7 @@ namespace FS {
     }
 
     static int GetPrevPath(char path[256]) {
-        if (cfg.cwd.c_str() == "ux0:")
+        if (cfg.cwd.c_str() == "")
             return -1;
             
         // Remove upmost directory
@@ -148,7 +169,10 @@ namespace FS {
     
     int ChangeDirNext(const std::string &path, std::vector<SceIoDirent> &entries) {
         std::string new_path = cfg.cwd;
-        new_path.append("/");
+        
+        if (new_path != "/")
+            new_path.append("/");
+            
         new_path.append(path);
         return FS::ChangeDir(new_path, entries);
     }
@@ -162,7 +186,7 @@ namespace FS {
     }
     
     const std::string BuildPath(SceIoDirent &entry) {
-        std::string path = cfg.cwd;
+        std::string path = cfg.device + cfg.cwd;
         path.append("/");
         path.append(entry.d_name);
         return path;
@@ -194,7 +218,7 @@ namespace FS {
             return ret;
         }
         
-        size = sceIoLseek(file, 0, SEEK_END);
+        size = sceIoLseek(file, 0, SCE_SEEK_END);
         *buffer = new unsigned char[size];
 
         if (R_FAILED(ret = sceIoPread(file, *buffer, size, SCE_SEEK_SET))) {

@@ -48,7 +48,9 @@ namespace FileBrowser {
 }
 
 namespace Tabs {
+    static int device = 0;
     static const ImVec2 tex_size = ImVec2(22, 22);
+    static const char *devices[] = { "os0:", "pd0:", "sa0:", "tm0:", "ud0:", "ur0:", "ux0:", "vd0:", "vs0:"};
 
     // Sort using ImGuiTableSortSpecs
     bool Sort(const SceIoDirent &entryA, const SceIoDirent &entryB) {
@@ -93,6 +95,32 @@ namespace Tabs {
 
     void FileBrowser(WindowData &data) {
         if (ImGui::BeginTabItem("File Browser")) {
+            ImGui::PushID("device_list");
+            ImGui::PushItemWidth(75.f);
+            if (ImGui::BeginCombo("", cfg.device.c_str())) {
+                for (int i = 0; i < IM_ARRAYSIZE(devices); i++) {
+                    const bool is_selected = (cfg.device == devices[i]);
+                    
+                    if (ImGui::Selectable(devices[i], is_selected)) {
+                        cfg.device = devices[i];
+                        cfg.cwd = "/";
+                        data.entries.clear();
+                        const std::string path = cfg.device + cfg.cwd;
+                        FS::GetDirList(path, data.entries);
+                        sort = -1;
+                    }
+                        
+                    if (is_selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+
+                ImGui::EndCombo();
+            }
+            ImGui::PopItemWidth();
+            ImGui::PopID();
+            
+            ImGui::SameLine();
+
             // Display current working directory
             ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), cfg.cwd.c_str());
 

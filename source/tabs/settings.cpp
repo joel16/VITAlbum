@@ -28,14 +28,6 @@ namespace Tabs {
             
             Tabs::Separator();
             
-            if (ImGui::TreeNode("Developer Options")) {
-                ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-                ImGui::Checkbox(" Enable logs", &cfg.dev_options);
-                ImGui::TreePop();
-            }
-
-            Tabs::Separator();
-            
             if (ImGui::TreeNode("About")) {
                 ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
                 std::string vitalbum_ver = APP_VERSION;

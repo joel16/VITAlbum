@@ -145,7 +145,8 @@ namespace Windows {
                     if (pressed & SCE_CTRL_CANCEL) {
                         Config::Save(cfg);
                         data.entries.clear();
-                        FS::GetDirList(cfg.cwd, data.entries);
+                        const std::string path = cfg.device + cfg.cwd;
+                        FS::GetDirList(path, data.entries);
                         data.state = WINDOW_STATE_FILEBROWSER;
                     }
 

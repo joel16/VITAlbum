@@ -9,6 +9,7 @@
 namespace FS {
     bool FileExists(const std::string &path);
     bool DirExists(const std::string &path);
+    int MakeDir(const std::string &path);
     int GetFileSize(const std::string &path, SceOff &size);
     std::string GetFileExt(const std::string &filename);
     bool IsImageType(const std::string &filename);

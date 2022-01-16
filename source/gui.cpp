@@ -34,7 +34,8 @@ namespace GUI {
         SceCtrlData pad = { 0 };
         
         int ret = 0;
-        if (R_FAILED(ret = FS::GetDirList(cfg.cwd, data.entries)))
+        const std::string path = cfg.device + cfg.cwd;
+        if (R_FAILED(ret = FS::GetDirList(path, data.entries)))
             return ret;
 
         while (!done) {

@@ -4,19 +4,23 @@
 
 #include "config.h"
 #include "fs.h"
+#include "log.h"
 #include "utils.h"
 
-#define CONFIG_VERSION 2
+#define CONFIG_VERSION 3
 
 config_t cfg;
 
 namespace Config {
-    static const char *config_file = "{\n\t\"config_ver\": %d,\n\t\"dev_options\": %s,\n\t\"image_filename\": %s,\n\t\"last_dir\": \"%s\",\n\t\"sort\": %d\n}";
+    static constexpr char config_path[] = "ux0:data/VITAlbum/config.json";
+    static const char *config_file = "{\n\t\"version\": %d,\n\t\"cwd\": \"%s\",\n\t\"device\": \"%s\",\n\t\"filename\": %s,\n\t\"sort\": %d\n}";
     static int config_version_holder = 0;
     
     class Allocator : public sce::Json::MemAllocator {
         public:
-            Allocator() {}
+            Allocator() {
+                
+            }
             
             virtual void *allocateMemory(size_t size, void *unk) override {
                 return std::malloc(size);
@@ -29,11 +33,11 @@ namespace Config {
     
     int Save(config_t &config) {
         int ret = 0;
-        char *buf = new char[1024];
-        SceSize len = std::snprintf(buf, 1024, config_file, CONFIG_VERSION, config.dev_options? "true" : "false", 
-            config.image_filename? "true" : "false", config.cwd.c_str(), config.sort);
+        char *buf = new char[512];
+        SceSize len = std::snprintf(buf, 512, config_file, CONFIG_VERSION,  config.cwd.c_str(), config.device.c_str(),
+            config.image_filename? "true" : "false", config.sort);
         
-        if (R_FAILED(ret = FS::WriteFile("ux0:data/VITAlbum/config.json", buf, len))) {
+        if (R_FAILED(ret = FS::WriteFile(config_path, buf, len))) {
             delete[] buf;
             return ret;
         }
@@ -44,38 +48,37 @@ namespace Config {
     
     static void SetDefault(config_t &config) {
         config.sort = 0;
-        config.dev_options = false;
         config.image_filename = false;
-        config.cwd = "ux0:";
+        config.device = "ux0:";
+        config.cwd = "/";
     }
 
     int Load(void) {
         int ret = 0;
-
-        if (!FS::DirExists("ux0:data"))
-            sceIoMkdir("ux0:data", 0777);
-        if (!FS::DirExists("ux0:data/VITAlbum"))
-            sceIoMkdir("ux0:data/VITAlbum", 0777);
             
-        if (!FS::FileExists("ux0:data/VITAlbum/config.json")) {
+        if (!FS::FileExists(config_path)) {
             Config::SetDefault(cfg);
             return Config::Save(cfg);
         }
             
         SceUID file = 0;
-        if (R_FAILED(ret = file = sceIoOpen("ux0:data/VITAlbum/config.json", SCE_O_RDONLY, 0)))
+        if (R_FAILED(ret = file = sceIoOpen(config_path, SCE_O_RDONLY, 0))) {
+            Log::Error("sceIoOpen(%s) failed: 0x%lx\n", config_path, ret);
             return ret;
+        }
             
-        SceOff size = sceIoLseek(file, 0, SEEK_END);
-        char *buffer =  new char[size + 1];
+        SceSize size = sceIoLseek(file, 0, SCE_SEEK_END);
+        char *buffer =  new char[size];
         
-        if (R_FAILED(ret = sceIoPread(file, buffer, size + 1, SCE_SEEK_SET))) {
+        if (R_FAILED(ret = sceIoPread(file, buffer, size, SCE_SEEK_SET))) {
+            Log::Error("sceIoRead(%s) failed: 0x%lx\n", config_path, ret);
             delete[] buffer;
             sceIoClose(file);
             return ret;
         }
         
         if (R_FAILED(ret = sceIoClose(file))) {
+            Log::Error("sceIoClose(%s) failed: 0x%lx\n", config_path, ret);
             delete[] buffer;
             return ret;
         }
@@ -84,34 +87,52 @@ namespace Config {
 
         sce::Json::InitParameter params;
         params.allocator = alloc;
-        params.bufSize = static_cast<SceSize>(size);
+        params.bufSize = size;
 
         sce::Json::Initializer init = sce::Json::Initializer();
-        init.initialize(&params);
+        if (R_FAILED(ret = init.initialize(&params))) {
+            Log::Error("sce::Json::Initializer::initialize failed  0x%lx\n", ret);
+            delete[] buffer;
+            init.terminate();
+            delete alloc;
+            return ret;
+        }
 
         sce::Json::Value value = sce::Json::Value();
-        sce::Json::Parser::parse(value, buffer, params.bufSize);
+        if (R_FAILED(ret = sce::Json::Parser::parse(value, buffer, params.bufSize))) {
+            Log::Error("sce::Json::Parser::parse failed  0x%lx\n", ret);
+            delete[] buffer;
+            init.terminate();
+            delete alloc;
+            return ret;
+        }
 
         // We know sceJson API loops through the child values in root alphabetically.
-        config_version_holder = value.getValue(0).getInteger();
-        cfg.dev_options = value.getValue(1).getBoolean();
+        cfg.cwd = value.getValue(0).getString().c_str();
+        cfg.device = value.getValue(1).getString().c_str();
         cfg.image_filename = value.getValue(2).getBoolean();
-        cfg.cwd = value.getValue(3).getString().c_str();
-        cfg.sort = value.getValue(4).getInteger();
+        cfg.sort = value.getValue(3).getInteger();
+        config_version_holder = value.getValue(4).getInteger();
+
+        // Build path with device + cwd
+        std::string path = cfg.device + cfg.cwd;
 
         init.terminate();
         delete alloc;
+        delete[] buffer;
         
-        if (!FS::DirExists(cfg.cwd))
-            cfg.cwd = "ux0:";
+        if (!FS::DirExists(path)) {
+            cfg.device = "ux0:";
+            cfg.cwd = "/";
+        }
             
         // Delete config file if config file is updated. This will rarely happen.
         if (config_version_holder < CONFIG_VERSION) {
-            sceIoRemove("ux0:data/VITAlbum/config.json");
+            sceIoRemove(config_path);
             Config::SetDefault(cfg);
             return Config::Save(cfg);
         }
-
+        
         return 0;
     }
 }

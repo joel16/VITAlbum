@@ -5,8 +5,8 @@
 
 typedef struct {
     int sort = 0;
-    bool dev_options = false;
     bool image_filename = false;
+    std::string device;
     std::string cwd;
 } config_t;
 

@@ -3,6 +3,7 @@
 #include <vitaGL.h>
 
 #include "config.h"
+#include "fs.h"
 #include "gui.h"
 #include "log.h"
 #include "textures.h"
@@ -81,9 +82,12 @@ namespace Services {
         ImGui::StyleColorsDark();
         
         sceSysmoduleLoadModule(SCE_SYSMODULE_JSON);
+
+        if (!FS::DirExists("ux0:data/VITAlbum"))
+			FS::MakeDir("ux0:data/VITAlbum");
         
-        Config::Load();
         Log::Init();
+        Config::Load();
         Textures::Init();
         Utils::InitAppUtil();
         
