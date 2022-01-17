@@ -132,7 +132,7 @@ namespace Tabs {
                 ImGui::TableSetupScrollFreeze(0, 1);
 
                 ImGui::TableSetupColumn("Filename", ImGuiTableColumnFlags_DefaultSort);
-                ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed);
+                ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed, 100.f);
                 ImGui::TableHeadersRow();
 
                 if (ImGuiTableSortSpecs *sorts_specs = ImGui::TableGetSortSpecs()) {
