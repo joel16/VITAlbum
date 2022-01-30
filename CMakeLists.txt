@@ -17,9 +17,13 @@ set(VITA_TITLEID "VITALBUM0")
 set(VITA_VERSION "01.40")
 
 add_definitions(-DAPP_VERSION="${VITA_VERSION}")
+add_definitions(
+    -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -DIMGUI_DISABLE_DEMO_WINDOWS -DIMGUI_DISABLE_METRICS_WINDOW
+    -DIMGUI_DISABLE_WIN32_DEFAULT_CLIPBOARD_FUNCTIONS -DIMGUI_DISABLE_WIN32_DEFAULT_IME_FUNCTIONS
+    -DIMGUI_DISABLE_WIN32_FUNCTIONS -DIMGUI_DISABLE_STB_TRUETYPE_IMPLEMENTATION -DIMGUI_ENABLE_FREETYPE
+)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -g -mtune=cortex-a9 -mfpu=neon -Wall")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi -fno-exceptions -fno-rtti -std=gnu++17")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -ffast-math -mtune=cortex-a9 -mfpu=neon -Wall -Wno-psabi -fno-rtti -std=gnu++17")
 set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1")
 
 include_directories(
@@ -40,7 +44,6 @@ link_directories(
 add_executable(${PROJECT_NAME}
     libs/imgui/imgui.cpp
     libs/imgui/imgui_draw.cpp
-    libs/imgui/imgui_impl_vitagl.cpp
     libs/imgui/imgui_tables.cpp
     libs/imgui/imgui_widgets.cpp
     libs/imgui/misc/freetype/imgui_freetype.cpp
@@ -51,6 +54,7 @@ add_executable(${PROJECT_NAME}
     source/fs.cpp
     source/gui.cpp
     source/image.cpp
+    source/imgui_impl_vitagl.cpp
     source/keyboard.cpp
     source/log.cpp
     source/main.cpp
