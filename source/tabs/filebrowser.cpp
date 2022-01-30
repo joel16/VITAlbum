@@ -10,43 +10,6 @@
 
 int sort = 0;
 
-namespace FileBrowser {
-    // Sort without using ImGuiTableSortSpecs
-    bool Sort(const SceIoDirent &entryA, const SceIoDirent &entryB) {
-        // Make sure ".." stays at the top regardless of sort direction
-        if (strcasecmp(entryA.d_name, "..") == 0)
-            return true;
-        
-        if (strcasecmp(entryB.d_name, "..") == 0)
-            return false;
-        
-        if ((SCE_S_ISDIR(entryA.d_stat.st_mode)) && !(SCE_S_ISDIR(entryB.d_stat.st_mode)))
-            return true;
-        else if (!(SCE_S_ISDIR(entryA.d_stat.st_mode)) && (SCE_S_ISDIR(entryB.d_stat.st_mode)))
-            return false;
-
-        switch(sort) {
-            case FS_SORT_ALPHA_ASC:
-                return (strcasecmp(entryA.d_name, entryB.d_name) < 0);
-                break;
-
-            case FS_SORT_ALPHA_DESC:
-                return (strcasecmp(entryB.d_name, entryA.d_name) < 0);
-                break;
-
-            case FS_SORT_SIZE_ASC:
-                return (entryA.d_stat.st_size < entryB.d_stat.st_size);
-                break;
-
-            case FS_SORT_SIZE_DESC:
-                return (entryB.d_stat.st_size < entryA.d_stat.st_size);
-                break;
-        }
-
-        return false;
-    }
-}
-
 namespace Tabs {
     static const ImVec2 tex_size = ImVec2(22, 22);
     static const char *devices[] = { "os0:", "pd0:", "sa0:", "tm0:", "ud0:", "ur0:", "ux0:", "vd0:", "vs0:"};
@@ -131,7 +94,7 @@ namespace Tabs {
                 ImGui::TableSetupScrollFreeze(0, 1);
 
                 ImGui::TableSetupColumn("Filename", ImGuiTableColumnFlags_DefaultSort);
-                ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed, 100.f);
+                ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed, 125.f);
                 ImGui::TableHeadersRow();
 
                 if (ImGuiTableSortSpecs *sorts_specs = ImGui::TableGetSortSpecs()) {
