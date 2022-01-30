@@ -26,7 +26,7 @@ typedef struct {
     SceOff selected = 0;
     std::vector<SceIoDirent> entries;
     std::vector<Tex> textures;
-    int frame_count = 0;
+    unsigned int frame_count = 0;
     float zoom_factor = 1.0f;
 } WindowData;
 

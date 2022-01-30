@@ -23,7 +23,7 @@ namespace Windows {
     };
 
     static void ClearTextures(WindowData &data) {
-        for (int i = 0; i < data.textures.size(); i++)
+        for (unsigned int i = 0; i < data.textures.size(); i++)
             Textures::Free(data.textures[i]);
         
         data.textures.clear();
@@ -67,7 +67,7 @@ namespace Windows {
         if (data.selected == data.entries.size())
             return ret;
         
-        for (int i = data.selected + 1; i < data.entries.size(); i++) {
+        for (unsigned int i = data.selected + 1; i < data.entries.size(); i++) {
             if (!(ret = Windows::HandleScroll(data, i)))
                 continue;
             else

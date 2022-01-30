@@ -144,7 +144,7 @@ namespace FS {
     }
 
     static int GetPrevPath(char path[256]) {
-        if (cfg.cwd.c_str() == "")
+        if (cfg.cwd == "")
             return -1;
             
         // Remove upmost directory

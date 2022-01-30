@@ -48,7 +48,6 @@ namespace FileBrowser {
 }
 
 namespace Tabs {
-    static int device = 0;
     static const ImVec2 tex_size = ImVec2(22, 22);
     static const char *devices[] = { "os0:", "pd0:", "sa0:", "tm0:", "ud0:", "ur0:", "ux0:", "vd0:", "vs0:"};
 
