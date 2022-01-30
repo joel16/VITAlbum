@@ -13,7 +13,7 @@ namespace Windows {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGuiWindowFlags_ filename_flag = !cfg.image_filename? ImGuiWindowFlags_NoTitleBar : ImGuiWindowFlags_None;
         
-        if (ImGui::Begin(data.entries[data.selected].d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | filename_flag)) {
+        if (ImGui::Begin(data.entries[data.selected].d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_HorizontalScrollbar | filename_flag)) {
             if (((data.textures[0].width * data.zoom_factor) <= 960.0f) && ((data.textures[0].height * data.zoom_factor) <= 544.0f))
                 ImGui::SetCursorPos((ImGui::GetContentRegionAvail() - ImVec2((data.textures[data.frame_count].width * data.zoom_factor),
                     (data.textures[data.frame_count].height * data.zoom_factor))) * 0.5f);
