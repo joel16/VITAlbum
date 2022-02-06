@@ -1,11 +1,12 @@
 #include <cstring>
 #include <psp2/kernel/clib.h>
+#include <memory>
 
 // BMP
 #include "libnsbmp.h"
 
 // GIF
-#include "libnsgif.h"
+#include "gif_lib.h"
 
 // JPEG
 #include "turbojpeg.h"
@@ -82,40 +83,6 @@ namespace BMP {
     }
 }
 
-namespace GIF {
-    static void *bitmap_create(int width, int height) {
-        /* ensure a stupidly large bitmap is not created */
-        if ((static_cast<long long>(width) * static_cast<long long>(height)) > (MAX_IMAGE_BYTES/BYTES_PER_PIXEL))
-            return nullptr;
-        
-        return std::calloc(width * height, BYTES_PER_PIXEL);
-    }
-
-    static void bitmap_set_opaque([[maybe_unused]] void *bitmap, [[maybe_unused]] bool opaque) {
-        assert(bitmap);
-    }
-    
-    static bool bitmap_test_opaque([[maybe_unused]] void *bitmap) {
-        assert(bitmap);
-        return false;
-    }
-    
-    static unsigned char *bitmap_get_buffer(void *bitmap) {
-        assert(bitmap);
-        return static_cast<unsigned char *>(bitmap);
-    }
-    
-    static void bitmap_destroy(void *bitmap) {
-        assert(bitmap);
-        std::free(bitmap);
-    }
-    
-    static void bitmap_modified([[maybe_unused]] void *bitmap) {
-        assert(bitmap);
-        return;
-    }
-}
-
 namespace ICO {
     static void *bitmap_create(int width, int height, [[maybe_unused]] unsigned int state) {
         return std::calloc(width * height, BYTES_PER_PIXEL);
@@ -137,7 +104,7 @@ namespace ICO {
 }
 
 namespace Textures {
-    static bool LoadImage(unsigned char *data, GLint format, Tex &texture, void (*free_func)(void *)) {    
+    static bool Create(unsigned char *data, GLint format, Tex &texture, void (*free_func)(void *)) {    
         // Create a OpenGL texture identifier
         glGenTextures(1, &texture.id);
         glBindTexture(GL_TEXTURE_2D, texture.id);
@@ -158,7 +125,7 @@ namespace Textures {
     static bool LoadImageOther(unsigned char **data, SceOff &size, Tex &texture) {
         unsigned char *image = nullptr;
         image = stbi_load_from_memory(*data, size, &texture.width, &texture.height, nullptr, BYTES_PER_PIXEL);
-        bool ret = Textures::LoadImage(image, GL_RGBA, texture, stbi_image_free);
+        bool ret = Textures::Create(image, GL_RGBA, texture, stbi_image_free);
         return ret;
     }
 
@@ -199,67 +166,106 @@ namespace Textures {
 
         texture.width = bmp.width;
         texture.height = bmp.height;
-        bool ret = Textures::LoadImage(static_cast<unsigned char *>(bmp.bitmap), GL_RGBA, texture, nullptr);
+        bool ret = Textures::Create(static_cast<unsigned char *>(bmp.bitmap), GL_RGBA, texture, nullptr);
         bmp_finalise(&bmp);
         return ret;
     }
 
-    static bool LoadImageGIF(unsigned char **data, SceOff size, std::vector<Tex> &textures) {
-        gif_bitmap_callback_vt bitmap_callbacks = {
-            GIF::bitmap_create,
-            GIF::bitmap_destroy,
-            GIF::bitmap_get_buffer,
-            GIF::bitmap_set_opaque,
-            GIF::bitmap_test_opaque,
-            GIF::bitmap_modified
-        };
-
+    static bool LoadImageGIF(const std::string &path, std::vector<Tex> &textures) {
         bool ret = false;
-        gif_animation gif;
-        gif_result code = GIF_OK;
-        gif_create(&gif, &bitmap_callbacks);
-            
-        do {
-            code = gif_initialise(&gif, size, *data);
-            if (code != GIF_OK && code != GIF_WORKING) {
-                Log::Error("gif_initialise failed: %d\n", code);
-                gif_finalise(&gif);
-                return ret;
-            }
-        } while (code != GIF_OK);
+        int error = 0;
+        GifFileType *gif = DGifOpenFileName(path.c_str(), &error);
+
+        if (!gif) {
+            Log::Error("DGifOpenFileName failed: %d\n", error);
+            return ret;
+        }
+
+        if (DGifSlurp(gif) != GIF_OK) {
+            Log::Error("DGifSlurp failed: %d\n", gif->Error);
+            return ret;
+        }
+
+        if (gif->ImageCount <= 0) {
+            Log::Error("Gif does not contain any images.\n");
+            return ret;
+        }
         
-        bool gif_is_animated = gif.frame_count > 1;
-
-        if (gif_is_animated) {
-            textures.resize(gif.frame_count);
-
-            for (unsigned int i = 0; i < gif.frame_count; i++) {
-                code = gif_decode_frame(&gif, i);
-                if (code != GIF_OK) {
-                    Log::Error("gif_decode_frame failed: %d\n", code);
-                    return false;
+        textures.resize(gif->ImageCount);
+        
+        // seiken's example code from:
+        // https://forums.somethingawful.com/showthread.php?threadid=2773485&userid=0&perpage=40&pagenumber=487#post465199820
+        int width = gif->SWidth;
+        int height = gif->SHeight;
+        std::unique_ptr<uint32_t[]> pixels(new uint32_t[width * height]);
+        
+        for (int i = 0; i < width * height; ++i)
+            pixels[i] = gif->SBackGroundColor;
+            
+        for (int i = 0; i < gif->ImageCount; ++i) {
+            const SavedImage &frame = gif->SavedImages[i];
+            bool transparency = false;
+            unsigned char transparency_byte = 0;
+            
+            // Delay time in hundredths of a second.
+            int delay_time = 1;
+            for (int j = 0; j < frame.ExtensionBlockCount; ++j) {
+                const ExtensionBlock &block = frame.ExtensionBlocks[j];
+                
+                if (block.Function != GRAPHICS_EXT_FUNC_CODE)
+                    continue;
+                    
+                // Here's the metadata for this frame.
+                char dispose = (block.Bytes[0] >> 2) & 7;
+                transparency = block.Bytes[0] & 1;
+                delay_time = block.Bytes[1] + (block.Bytes[2] << 8);
+                transparency_byte = block.Bytes[3];
+                
+                if (dispose == 2) {
+                    // Clear the canvas.
+                    for (int k = 0; k < width * height; ++k)
+                        pixels[k] = gif->SBackGroundColor;
                 }
-
-                textures[i].width = gif.width;
-                textures[i].height = gif.height;
-                textures[i].delay = gif.frames->frame_delay * 10000;
-                ret = Textures::LoadImage(static_cast<unsigned char *>(gif.frame_image), GL_RGBA, textures[i], nullptr);
-            }
-        }
-        else {
-            code = gif_decode_frame(&gif, 0);
-            if (code != GIF_OK) {
-                Log::Error("gif_decode_frame failed: %d\n", code);
-                return false;
             }
             
-            textures[0].width = gif.width;
-            textures[0].height = gif.height;
-            ret = Textures::LoadImage(static_cast<unsigned char *>(gif.frame_image), GL_RGBA, textures[0], nullptr);
+            // Colour map for this frame.
+            ColorMapObject *map = frame.ImageDesc.ColorMap ? frame.ImageDesc.ColorMap : gif->SColorMap;
+            
+            // Region this frame draws to.
+            int fw = frame.ImageDesc.Width;
+            int fh = frame.ImageDesc.Height;
+            int fl = frame.ImageDesc.Left;
+            int ft = frame.ImageDesc.Top;
+            
+            for (int y = 0; y < std::min(height, fh); ++y) {
+                for (int x = 0; x < std::min(width, fw); ++x) {
+                    unsigned char byte = frame.RasterBits[x + y * fw];
+
+                    // Transparent pixel.
+                    if (transparency && byte == transparency_byte)
+                        continue;
+                        
+                    // Draw to canvas.
+                    const GifColorType &c = map->Colors[byte];
+                    pixels[fl + x + (ft + y) * width] = c.Red | (c.Green << 8) | (c.Blue << 16) | (0xff << 24);
+                }
+            }
+            
+            textures[i].width = width;
+            textures[i].height = height;
+            textures[i].delay = delay_time * 10000;
+            
+            // Here's the actual frame, pixels.get() is now a pointer to the 32-bit RGBA
+            // data for this frame you might expect.
+            ret = Textures::Create(reinterpret_cast<unsigned char *>(pixels.get()), GL_RGBA, textures[i], nullptr);
+        }
+        
+        if (DGifCloseFile(gif, &error) != GIF_OK) {
+            Log::Error("DGifCloseFile failed: %d\n", error);
+            return false;
         }
 
-        gif_finalise(&gif);
-        return ret;
+        return true;
     }
 
     static bool LoadImageICO(unsigned char **data, SceOff &size, Tex &texture) {
@@ -306,7 +312,7 @@ namespace Textures {
 
         texture.width = bmp->width;
         texture.height = bmp->height;
-        bool ret = Textures::LoadImage(static_cast<unsigned char *>(bmp->bitmap), GL_RGBA, texture, nullptr);
+        bool ret = Textures::Create(static_cast<unsigned char *>(bmp->bitmap), GL_RGBA, texture, nullptr);
         ico_finalise(&ico);
         return ret;
     }
@@ -330,7 +336,7 @@ namespace Textures {
             return false;
         }
         
-        bool ret = Textures::LoadImage(buffer, GL_RGB, texture, nullptr);
+        bool ret = Textures::Create(buffer, GL_RGB, texture, nullptr);
         tjDestroy(jpeg);
         delete[] buffer;
         return ret;
@@ -338,7 +344,7 @@ namespace Textures {
 
     static bool LoadImagePCX(unsigned char **data, SceOff &size, Tex &texture) {
         *data = drpcx_load_memory(*data, size, DRPCX_FALSE, &texture.width, &texture.height, nullptr, BYTES_PER_PIXEL);
-        bool ret = Textures::LoadImage(*data, GL_RGBA, texture, nullptr);
+        bool ret = Textures::Create(*data, GL_RGBA, texture, nullptr);
         return ret;
     }
 
@@ -356,7 +362,7 @@ namespace Textures {
             if (buffer != nullptr && png_image_finish_read(&image, nullptr, buffer, 0, nullptr) != 0) {
                 texture.width = image.width;
                 texture.height = image.height;
-                ret = Textures::LoadImage(buffer, GL_RGBA, texture, nullptr);
+                ret = Textures::Create(buffer, GL_RGBA, texture, nullptr);
                 delete[] buffer;
                 png_image_free(&image);
             }
@@ -388,7 +394,7 @@ namespace Textures {
         unsigned char *image = new unsigned char[texture.width * texture.height * 4];
         nsvgRasterize(rasterizer, svg, 0, 0, 1, image, texture.width, texture.height, texture.width * 4);
         
-        bool ret = Textures::LoadImage(image, GL_RGBA, texture, nullptr);
+        bool ret = Textures::Create(image, GL_RGBA, texture, nullptr);
         
         delete[] image;
         nsvgDelete(svg);
@@ -409,7 +415,7 @@ namespace Textures {
             raster = static_cast<uint32 *>(_TIFFmalloc(num_pixels * sizeof(uint32)));
             if (raster != nullptr) {
                 if (TIFFReadRGBAImageOriented(tif, texture.width, texture.height, raster, ORIENTATION_TOPLEFT))
-                    LoadImage(reinterpret_cast<unsigned char *>(raster), GL_RGBA, texture, _TIFFfree);
+                    Textures::Create(reinterpret_cast<unsigned char *>(raster), GL_RGBA, texture, _TIFFfree);
                 else
                     Log::Error("TIFFReadRGBAImage failed\n");
 
@@ -468,14 +474,14 @@ namespace Textures {
                 textures[frame_index].width = info.canvas_width;
                 textures[frame_index].height = info.canvas_height;
                 textures[frame_index].delay = (timestamp - prev_timestamp) * 1000;
-                ret = Textures::LoadImage(frame_rgba, GL_RGBA, textures[frame_index], nullptr);
+                ret = Textures::Create(frame_rgba, GL_RGBA, textures[frame_index], nullptr);
                 ++frame_index;
                 prev_timestamp = timestamp;
             }
         }
         else {
             *data = WebPDecodeRGBA(*data, size, &textures[0].width, &textures[0].height);
-            ret = Textures::LoadImage(*data, GL_RGBA, textures[0], nullptr);
+            ret = Textures::Create(*data, GL_RGBA, textures[0], nullptr);
         }
 
         return ret;
@@ -495,6 +501,8 @@ namespace Textures {
         // Because TIFF does not load via buffer, but directly from the path.
         if (ext == ".TIFF")
             ret = Textures::LoadImageTIFF(path, textures[0]);
+        else if (ext == ".GIF")
+            ret = Textures::LoadImageGIF(path, textures);
         else {
             unsigned char *data = nullptr;
             SceOff size = 0;
@@ -504,8 +512,6 @@ namespace Textures {
                 ret = Textures::LoadImageBMP(&data, size, textures[0]);
             else if ((ext == ".PGM") || (ext == ".PPM") || (ext == ".PSD") || (ext == ".TGA"))
                 ret = Textures::LoadImageOther(&data, size, textures[0]);
-            else if (ext == ".GIF")
-                ret = Textures::LoadImageGIF(&data, size, textures);
             else if (ext == ".ICO")
                 ret = Textures::LoadImageICO(&data, size, textures[0]);
             else if ((ext == ".JPG") || (ext == ".JPEG"))

@@ -28,9 +28,9 @@ set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1")
 
 include_directories(
     ${VITASDK}/arm-vita-eabi/include/freetype2/
+    libs/giflib
     libs/imgui
     libs/libnsbmp
-    libs/libnsgif
     libs/libtiff
     libs
     include
@@ -48,8 +48,6 @@ add_executable(${PROJECT_NAME}
     libs/imgui/imgui_widgets.cpp
     libs/imgui/misc/freetype/imgui_freetype.cpp
     libs/libnsbmp/libnsbmp.c
-    libs/libnsgif/libnsgif.c
-    libs/libnsgif/lzw.c
     source/config.cpp
     source/fs.cpp
     source/gui.cpp
@@ -68,6 +66,7 @@ add_executable(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     freetype
+    gif
     tiff
     webpdemux
     webp
