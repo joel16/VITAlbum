@@ -121,7 +121,7 @@ namespace Textures {
     static bool LoadImageOther(unsigned char **data, SceOff &size, Tex &texture) {
         stbi_uc *image = nullptr;
         image = stbi_load_from_memory(*data, size, &texture.width, &texture.height, nullptr, BYTES_PER_PIXEL);
-        bool ret = Textures::Create(static_cast<unsigned char*>(image), GL_RGBA, texture);
+        bool ret = Textures::Create(image, GL_RGBA, texture);
         stbi_image_free(image);
         return ret;
     }
