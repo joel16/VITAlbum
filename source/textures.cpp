@@ -70,7 +70,7 @@ namespace BMP {
     
     static unsigned char *bitmap_get_buffer(void *bitmap) {
         assert(bitmap);
-        return static_cast<unsigned char *>(bitmap);
+        return static_cast<unsigned char*>(bitmap);
     }
     
     static size_t bitmap_get_bpp([[maybe_unused]] void *bitmap) {
@@ -90,7 +90,7 @@ namespace ICO {
     
     static unsigned char *bitmap_get_buffer(void *bitmap) {
         assert(bitmap);
-        return static_cast<unsigned char *>(bitmap);
+        return static_cast<unsigned char*>(bitmap);
     }
     
     static size_t bitmap_get_bpp([[maybe_unused]] void *bitmap) {
@@ -104,7 +104,7 @@ namespace ICO {
 }
 
 namespace Textures {
-    static bool Create(unsigned char *data, GLint format, Tex &texture, void (*free_func)(void *)) {    
+    static bool Create(unsigned char *data, GLint format, Tex &texture) {    
         // Create a OpenGL texture identifier
         glGenTextures(1, &texture.id);
         glBindTexture(GL_TEXTURE_2D, texture.id);
@@ -115,17 +115,14 @@ namespace Textures {
         
         // Upload pixels into texture
         glTexImage2D(GL_TEXTURE_2D, 0, format, texture.width, texture.height, 0, format, GL_UNSIGNED_BYTE, data);
-
-        if (*free_func)
-            free_func(data);
-        
         return true;
     }
 
     static bool LoadImageOther(unsigned char **data, SceOff &size, Tex &texture) {
-        unsigned char *image = nullptr;
+        stbi_uc *image = nullptr;
         image = stbi_load_from_memory(*data, size, &texture.width, &texture.height, nullptr, BYTES_PER_PIXEL);
-        bool ret = Textures::Create(image, GL_RGBA, texture, stbi_image_free);
+        bool ret = Textures::Create(static_cast<unsigned char*>(image), GL_RGBA, texture);
+        stbi_image_free(image);
         return ret;
     }
 
@@ -166,7 +163,7 @@ namespace Textures {
 
         texture.width = bmp.width;
         texture.height = bmp.height;
-        bool ret = Textures::Create(static_cast<unsigned char *>(bmp.bitmap), GL_RGBA, texture, nullptr);
+        bool ret = Textures::Create(static_cast<unsigned char*>(bmp.bitmap), GL_RGBA, texture);
         bmp_finalise(&bmp);
         return ret;
     }
@@ -197,7 +194,7 @@ namespace Textures {
         // https://forums.somethingawful.com/showthread.php?threadid=2773485&userid=0&perpage=40&pagenumber=487#post465199820
         int width = gif->SWidth;
         int height = gif->SHeight;
-        std::unique_ptr<uint32_t[]> pixels(new uint32_t[width * height]);
+        std::unique_ptr<SceUInt32[]> pixels(new SceUInt32[width * height]);
         
         for (int i = 0; i < width * height; ++i)
             pixels[i] = gif->SBackGroundColor;
@@ -257,7 +254,7 @@ namespace Textures {
             
             // Here's the actual frame, pixels.get() is now a pointer to the 32-bit RGBA
             // data for this frame you might expect.
-            ret = Textures::Create(reinterpret_cast<unsigned char *>(pixels.get()), GL_RGBA, textures[i], nullptr);
+            ret = Textures::Create(reinterpret_cast<unsigned char*>(pixels.get()), GL_RGBA, textures[i]);
         }
         
         if (DGifCloseFile(gif, &error) != GIF_OK) {
@@ -312,13 +309,12 @@ namespace Textures {
 
         texture.width = bmp->width;
         texture.height = bmp->height;
-        bool ret = Textures::Create(static_cast<unsigned char *>(bmp->bitmap), GL_RGBA, texture, nullptr);
+        bool ret = Textures::Create(static_cast<unsigned char*>(bmp->bitmap), GL_RGBA, texture);
         ico_finalise(&ico);
         return ret;
     }
 
     static bool LoadImageJPEG(unsigned char **data, SceOff &size, Tex &texture) {
-        unsigned char *buffer = nullptr;
         tjhandle jpeg = tjInitDecompress();
         int jpegsubsamp = 0;
 
@@ -328,23 +324,20 @@ namespace Textures {
             return false;
         }
         
-        buffer = new unsigned char[texture.width * texture.height * 3];
-
-        if (R_FAILED(tjDecompress2(jpeg, *data, size, buffer, texture.width, 0, texture.height, TJPF_RGB, TJFLAG_FASTDCT))) {
+        std::unique_ptr<unsigned char[]> buffer(new unsigned char[texture.width * texture.height * 3]);
+        if (R_FAILED(tjDecompress2(jpeg, *data, size, buffer.get(), texture.width, 0, texture.height, TJPF_RGB, TJFLAG_FASTDCT))) {
             Log::Error("tjDecompress2 failed: %s\n", tjGetErrorStr());
-            delete[] buffer;
             return false;
         }
         
-        bool ret = Textures::Create(buffer, GL_RGB, texture, nullptr);
+        bool ret = Textures::Create(buffer.get(), GL_RGB, texture);
         tjDestroy(jpeg);
-        delete[] buffer;
         return ret;
     }
 
     static bool LoadImagePCX(unsigned char **data, SceOff &size, Tex &texture) {
         *data = drpcx_load_memory(*data, size, DRPCX_FALSE, &texture.width, &texture.height, nullptr, BYTES_PER_PIXEL);
-        bool ret = Textures::Create(*data, GL_RGBA, texture, nullptr);
+        bool ret = Textures::Create(*data, GL_RGBA, texture);
         return ret;
     }
 
@@ -355,26 +348,18 @@ namespace Textures {
         image.version = PNG_IMAGE_VERSION;
         
         if (png_image_begin_read_from_memory(&image, *data, size) != 0) {
-            png_bytep buffer;
             image.format = PNG_FORMAT_RGBA;
-            buffer = new png_byte[PNG_IMAGE_SIZE(image)];
+            std::unique_ptr<png_byte[]> buffer(new png_byte[PNG_IMAGE_SIZE(image)]);
             
-            if (buffer != nullptr && png_image_finish_read(&image, nullptr, buffer, 0, nullptr) != 0) {
+            if (png_image_finish_read(&image, nullptr, buffer.get(), 0, nullptr) != 0) {
                 texture.width = image.width;
                 texture.height = image.height;
-                ret = Textures::Create(buffer, GL_RGBA, texture, nullptr);
-                delete[] buffer;
+                ret = Textures::Create(buffer.get(), GL_RGBA, texture);
                 png_image_free(&image);
             }
             else {
-                if (buffer == nullptr) {
-                    Log::Error("png_byte buffer: returned nullptr\n");
-                    png_image_free(&image);
-                }
-                else {
-                    Log::Error("png_image_finish_read failed: %s\n", image.message);
-                    delete[] buffer;
-                }
+                Log::Error("png_image_finish_read failed: %s\n", image.message);
+                png_image_free(&image);
             }
         }
         else
@@ -391,12 +376,11 @@ namespace Textures {
         texture.height = svg->height;
         
         NSVGrasterizer *rasterizer = nsvgCreateRasterizer();
-        unsigned char *image = new unsigned char[texture.width * texture.height * 4];
-        nsvgRasterize(rasterizer, svg, 0, 0, 1, image, texture.width, texture.height, texture.width * 4);
+        std::unique_ptr<unsigned char[]> buffer(new unsigned char[texture.width * texture.height * BYTES_PER_PIXEL]);
+        nsvgRasterize(rasterizer, svg, 0, 0, 1, buffer.get(), texture.width, texture.height, texture.width * BYTES_PER_PIXEL);
         
-        bool ret = Textures::Create(image, GL_RGBA, texture, nullptr);
-        
-        delete[] image;
+        bool ret = Textures::Create(buffer.get(), GL_RGBA, texture);
+
         nsvgDelete(svg);
         nsvgDeleteRasterizer(rasterizer);
         return ret;
@@ -414,8 +398,10 @@ namespace Textures {
 
             raster = static_cast<uint32 *>(_TIFFmalloc(num_pixels * sizeof(uint32)));
             if (raster != nullptr) {
-                if (TIFFReadRGBAImageOriented(tif, texture.width, texture.height, raster, ORIENTATION_TOPLEFT))
-                    Textures::Create(reinterpret_cast<unsigned char *>(raster), GL_RGBA, texture, _TIFFfree);
+                if (TIFFReadRGBAImageOriented(tif, texture.width, texture.height, raster, ORIENTATION_TOPLEFT)) {
+                    Textures::Create(reinterpret_cast<unsigned char*>(raster), GL_RGBA, texture);
+                    _TIFFfree(raster);
+                }
                 else
                     Log::Error("TIFFReadRGBAImage failed\n");
 
@@ -474,14 +460,14 @@ namespace Textures {
                 textures[frame_index].width = info.canvas_width;
                 textures[frame_index].height = info.canvas_height;
                 textures[frame_index].delay = (timestamp - prev_timestamp) * 1000;
-                ret = Textures::Create(frame_rgba, GL_RGBA, textures[frame_index], nullptr);
+                ret = Textures::Create(frame_rgba, GL_RGBA, textures[frame_index]);
                 ++frame_index;
                 prev_timestamp = timestamp;
             }
         }
         else {
             *data = WebPDecodeRGBA(*data, size, &textures[0].width, &textures[0].height);
-            ret = Textures::Create(*data, GL_RGBA, textures[0], nullptr);
+            ret = Textures::Create(*data, GL_RGBA, textures[0]);
         }
 
         return ret;
