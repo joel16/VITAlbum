@@ -1,3 +1,4 @@
+#include <memory>
 #include <psp2/json.h>
 #include <psp2/io/fcntl.h>
 #include <psp2/io/stat.h>
@@ -33,16 +34,13 @@ namespace Config {
     
     int Save(config_t &config) {
         int ret = 0;
-        char *buf = new char[512];
-        SceSize len = std::snprintf(buf, 512, config_file, CONFIG_VERSION,  config.cwd.c_str(), config.device.c_str(),
+        std::unique_ptr<char[]> buffer(new char[512]);
+        SceSize len = std::snprintf(buffer.get(), 512, config_file, CONFIG_VERSION,  config.cwd.c_str(), config.device.c_str(),
             config.image_filename? "true" : "false", config.sort);
         
-        if (R_FAILED(ret = FS::WriteFile(config_path, buf, len))) {
-            delete[] buf;
+        if (R_FAILED(ret = FS::WriteFile(config_path, buffer.get(), len)))
             return ret;
-        }
         
-        delete[] buf;
         return 0;
     }
     
@@ -68,18 +66,16 @@ namespace Config {
         }
             
         SceSize size = sceIoLseek(file, 0, SCE_SEEK_END);
-        char *buffer =  new char[size];
+        std::unique_ptr<char[]> buffer(new char[size]);
         
-        if (R_FAILED(ret = sceIoPread(file, buffer, size, SCE_SEEK_SET))) {
+        if (R_FAILED(ret = sceIoPread(file, buffer.get(), size, SCE_SEEK_SET))) {
             Log::Error("sceIoRead(%s) failed: 0x%lx\n", config_path, ret);
-            delete[] buffer;
             sceIoClose(file);
             return ret;
         }
         
         if (R_FAILED(ret = sceIoClose(file))) {
             Log::Error("sceIoClose(%s) failed: 0x%lx\n", config_path, ret);
-            delete[] buffer;
             return ret;
         }
 
@@ -92,16 +88,14 @@ namespace Config {
         sce::Json::Initializer init = sce::Json::Initializer();
         if (R_FAILED(ret = init.initialize(&params))) {
             Log::Error("sce::Json::Initializer::initialize failed  0x%lx\n", ret);
-            delete[] buffer;
             init.terminate();
             delete alloc;
             return ret;
         }
 
         sce::Json::Value value = sce::Json::Value();
-        if (R_FAILED(ret = sce::Json::Parser::parse(value, buffer, params.bufSize))) {
+        if (R_FAILED(ret = sce::Json::Parser::parse(value, buffer.get(), params.bufSize))) {
             Log::Error("sce::Json::Parser::parse failed  0x%lx\n", ret);
-            delete[] buffer;
             init.terminate();
             delete alloc;
             return ret;
@@ -119,7 +113,6 @@ namespace Config {
 
         init.terminate();
         delete alloc;
-        delete[] buffer;
         
         if (!FS::DirExists(path)) {
             cfg.device = "ux0:";
