@@ -1,10 +1,10 @@
-#include <imgui_vita.h>
 #include <psp2/sysmodule.h>
 #include <vitaGL.h>
 
 #include "config.h"
 #include "fs.h"
 #include "gui.h"
+#include "imgui_impl_vitagl.h"
 #include "log.h"
 #include "textures.h"
 #include "utils.h"

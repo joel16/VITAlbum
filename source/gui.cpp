@@ -1,11 +1,9 @@
-#include <imgui_vita.h>
 #include <vitaGL.h>
 
 #include "config.h"
 #include "fs.h"
 #include "gui.h"
-#include "imgui.h"
-#include "imgui_internal.h"
+#include "imgui_impl_vitagl.h"
 #include "utils.h"
 #include "windows.h"
 
