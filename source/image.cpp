@@ -15,14 +15,14 @@ namespace Windows {
         
         if (ImGui::Begin(data.entries[data.selected].d_name, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_HorizontalScrollbar | filename_flag)) {
             if (((data.textures[0].width * data.zoom_factor) <= 960.0f) && ((data.textures[0].height * data.zoom_factor) <= 544.0f))
-                ImGui::SetCursorPos((ImGui::GetContentRegionAvail() - ImVec2((data.textures[data.frame_count].width * data.zoom_factor),
-                    (data.textures[data.frame_count].height * data.zoom_factor))) * 0.5f);
+                ImGui::SetCursorPos((ImGui::GetContentRegionAvail() - ImVec2((data.textures[0].width * data.zoom_factor),
+                    (data.textures[0].height * data.zoom_factor))) * 0.5f);
 
             if (data.textures.size() > 1) {
                 sceKernelDelayThread(data.textures[data.frame_count].delay);
 
-                ImGui::Image(reinterpret_cast<ImTextureID>(data.textures[data.frame_count].id), ImVec2(data.textures[data.frame_count].width * data.zoom_factor,
-                    data.textures[data.frame_count].height * data.zoom_factor));
+                ImGui::Image(reinterpret_cast<ImTextureID>(data.textures[data.frame_count].id), ImVec2(data.textures[0].width * data.zoom_factor,
+                    data.textures[0].height * data.zoom_factor));
                 
                 data.frame_count++;
                 

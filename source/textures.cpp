@@ -118,6 +118,20 @@ namespace Textures {
         return true;
     }
 
+    static bool Create(unsigned char *data, GLint format, Tex &texture, int width, int height) {    
+        // Create a OpenGL texture identifier
+        glGenTextures(1, &texture.id);
+        glBindTexture(GL_TEXTURE_2D, texture.id);
+        
+        // Setup filtering parameters for display
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        
+        // Upload pixels into texture
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        return true;
+    }
+
     static bool LoadImageOther(unsigned char **data, SceOff &size, Tex &texture) {
         stbi_uc *image = nullptr;
         image = stbi_load_from_memory(*data, size, &texture.width, &texture.height, nullptr, BYTES_PER_PIXEL);
@@ -192,11 +206,11 @@ namespace Textures {
         
         // seiken's example code from:
         // https://forums.somethingawful.com/showthread.php?threadid=2773485&userid=0&perpage=40&pagenumber=487#post465199820
-        int width = gif->SWidth;
-        int height = gif->SHeight;
-        std::unique_ptr<SceUInt32[]> pixels(new SceUInt32[width * height]);
+        textures[0].width = gif->SWidth;
+        textures[0].height = gif->SHeight;
+        std::unique_ptr<SceUInt32[]> pixels(new SceUInt32[textures[0].width * textures[0].height]);
         
-        for (int i = 0; i < width * height; ++i)
+        for (int i = 0; i < textures[0].width * textures[0].height; ++i)
             pixels[i] = gif->SBackGroundColor;
             
         for (int i = 0; i < gif->ImageCount; ++i) {
@@ -220,7 +234,7 @@ namespace Textures {
                 
                 if (dispose == 2) {
                     // Clear the canvas.
-                    for (int k = 0; k < width * height; ++k)
+                    for (int k = 0; k < textures[0].width * textures[0].height; ++k)
                         pixels[k] = gif->SBackGroundColor;
                 }
             }
@@ -234,8 +248,8 @@ namespace Textures {
             int fl = frame.ImageDesc.Left;
             int ft = frame.ImageDesc.Top;
             
-            for (int y = 0; y < std::min(height, fh); ++y) {
-                for (int x = 0; x < std::min(width, fw); ++x) {
+            for (int y = 0; y < std::min(textures[0].height, fh); ++y) {
+                for (int x = 0; x < std::min(textures[0].width, fw); ++x) {
                     unsigned char byte = frame.RasterBits[x + y * fw];
 
                     // Transparent pixel.
@@ -244,17 +258,15 @@ namespace Textures {
                         
                     // Draw to canvas.
                     const GifColorType &c = map->Colors[byte];
-                    pixels[fl + x + (ft + y) * width] = c.Red | (c.Green << 8) | (c.Blue << 16) | (0xff << 24);
+                    pixels[fl + x + (ft + y) * textures[0].width] = c.Red | (c.Green << 8) | (c.Blue << 16) | (0xff << 24);
                 }
             }
-            
-            textures[i].width = width;
-            textures[i].height = height;
+
             textures[i].delay = delay_time * 10000;
             
             // Here's the actual frame, pixels.get() is now a pointer to the 32-bit RGBA
             // data for this frame you might expect.
-            ret = Textures::Create(reinterpret_cast<unsigned char*>(pixels.get()), GL_RGBA, textures[i]);
+            ret = Textures::Create(reinterpret_cast<unsigned char*>(pixels.get()), GL_RGBA, textures[i], textures[0].width, textures[0].height);
         }
         
         if (DGifCloseFile(gif, &error) != GIF_OK) {
@@ -447,6 +459,8 @@ namespace Textures {
             }
 
             textures.resize(info.frame_count);
+            textures[0].width = info.canvas_width;
+            textures[0].height = info.canvas_height;
 
             while (WebPAnimDecoderHasMoreFrames(dec)) {
                 unsigned char *frame_rgba = nullptr;
@@ -456,11 +470,9 @@ namespace Textures {
                     WebPAnimDecoderDelete(dec);
                     return ret;
                 }
-                
-                textures[frame_index].width = info.canvas_width;
-                textures[frame_index].height = info.canvas_height;
+
                 textures[frame_index].delay = (timestamp - prev_timestamp) * 1000;
-                ret = Textures::Create(frame_rgba, GL_RGBA, textures[frame_index]);
+                ret = Textures::Create(frame_rgba, GL_RGBA, textures[frame_index], textures[0].width, textures[0].height);
                 ++frame_index;
                 prev_timestamp = timestamp;
             }
