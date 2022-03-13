@@ -21,7 +21,8 @@ namespace Tabs {
             ImGui::TextColored(ImVec4(0.00f, 0.50f, 0.50f, 1.0f), "Image Viewer:");
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             ImGui::Indent(15.f);
-            ImGui::Checkbox(" Display filename", &cfg.image_filename);
+            if (ImGui::Checkbox(" Display filename", &cfg.image_filename))
+                Config::Save(cfg);
             
             ImGui::Dummy(ImVec2(0.0f, 10.0f)); // Spacing
             ImGui::Unindent();
