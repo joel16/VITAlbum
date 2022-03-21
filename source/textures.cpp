@@ -42,6 +42,7 @@
 
 // TIFF
 #include "tiffio.h"
+#include "tiffiop.h"
 
 // WEBP
 #include <webp/decode.h>
@@ -285,7 +286,7 @@ namespace Textures {
             ICO::bitmap_get_bpp
         };
         
-        uint16_t width = 0, height = 0;
+        SceUInt16 width = 0, height = 0;
         ico_collection ico;
         bmp_result code = BMP_OK;
         bmp_image *bmp;
@@ -401,14 +402,14 @@ namespace Textures {
     static bool LoadImageTIFF(const std::string &path, Tex &texture) {
         TIFF *tif = TIFFOpen(path.c_str(), "r");
         if (tif) {
-            size_t num_pixels = 0;
-            uint32 *raster = nullptr;
+            size_t pixel_count = 0;
+            SceUInt32 *raster = nullptr;
             
             TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &texture.width);
             TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &texture.height);
-            num_pixels = texture.width * texture.height;
-
-            raster = static_cast<uint32 *>(_TIFFmalloc(num_pixels * sizeof(uint32)));
+            pixel_count = texture.width * texture.height;
+            
+            raster = (SceUInt32 *)_TIFFCheckMalloc(tif, pixel_count, sizeof(SceUInt32), "raster buffer");
             if (raster != nullptr) {
                 if (TIFFReadRGBAImageOriented(tif, texture.width, texture.height, raster, ORIENTATION_TOPLEFT)) {
                     Textures::Create(reinterpret_cast<unsigned char*>(raster), GL_RGBA, texture);
