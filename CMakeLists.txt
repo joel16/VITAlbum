@@ -18,12 +18,12 @@ set(VITA_VERSION "01.40")
 
 add_definitions(-DAPP_VERSION="${VITA_VERSION}")
 add_definitions(
-    -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -DIMGUI_DISABLE_DEMO_WINDOWS -DIMGUI_DISABLE_METRICS_WINDOW
+    -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -DIMGUI_DISABLE_DEMO_WINDOWS -DIMGUI_DISABLE_DEBUG_TOOLS
     -DIMGUI_DISABLE_WIN32_DEFAULT_CLIPBOARD_FUNCTIONS -DIMGUI_DISABLE_WIN32_DEFAULT_IME_FUNCTIONS
     -DIMGUI_DISABLE_WIN32_FUNCTIONS -DIMGUI_DISABLE_STB_TRUETYPE_IMPLEMENTATION -DIMGUI_ENABLE_FREETYPE
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -ffast-math -mtune=cortex-a9 -mfpu=neon -Wall -Wno-psabi -fno-rtti -std=gnu++17")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -ffast-math -mtune=cortex-a9 -mfpu=neon -Wall -Wno-psabi -Wno-unused-function -fno-rtti -std=gnu++17")
 set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1")
 
 include_directories(
@@ -70,15 +70,18 @@ target_link_libraries(${PROJECT_NAME}
     tiff
     webpdemux
     webp
+    sharpyuv
     turbojpeg
     jpeg
     png
     pthread
     lzma
     z
+    zstd
     vitaGL
     vitashark
     mathneon
+    SceShaccCgExt
     SceAppMgr_stub
     SceAppUtil_stub
     SceCommonDialog_stub
@@ -90,6 +93,7 @@ target_link_libraries(${PROJECT_NAME}
     SceLibKernel_stub
     SceShaccCg_stub
     SceSysmodule_stub
+    taihen_stub
 )
 
 vita_create_self(${PROJECT_NAME}.self ${PROJECT_NAME} UNSAFE)

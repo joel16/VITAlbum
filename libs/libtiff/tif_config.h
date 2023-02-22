@@ -83,7 +83,7 @@
 #define LIBJPEG_12_PATH ""
 
 /* Support LZMA2 compression */
-/* #undef LZMA_SUPPORT */
+#define LZMA_SUPPORT 1
 
 /* Name of package */
 #define PACKAGE "LibTIFF Software"
@@ -95,7 +95,7 @@
 #define PACKAGE_NAME "LibTIFF Software"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "LibTIFF Software 4.3.0"
+#define PACKAGE_STRING "LibTIFF Software 4.5.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "tiff"
@@ -104,7 +104,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.3.0"
+#define PACKAGE_VERSION "4.5.0"
 
 /* Size of size_t */
 #define SIZEOF_SIZE_T 4
@@ -112,17 +112,20 @@
 /* Default size of the strip in bytes (when strip chopping enabled) */
 #define STRIP_SIZE_DEFAULT 8192
 
+/** Maximum number of TIFF IFDs that libtiff can iterate through in a file. */
+#define TIFF_MAX_DIR_COUNT 1048576
+
 /* define to use win32 IO system */
 /* #undef USE_WIN32_FILEIO */
 
 /* Version number of package */
-#define VERSION "4.3.0"
+#define VERSION "4.5.0"
 
 /* Support WEBP compression */
 #define WEBP_SUPPORT 1
 
 /* Support ZSTD compression */
-/* #undef ZSTD_SUPPORT */
+#define ZSTD_SUPPORT 1
 
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most

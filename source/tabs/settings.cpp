@@ -44,7 +44,7 @@ namespace Tabs {
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             ImGui::Text("libpng version: %s", PNG_LIBPNG_VER_STRING);
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-            ImGui::Text("LibTIFF version: %d", TIFFLIB_VERSION);
+            ImGui::Text("LibTIFF version: %d.%d.%d", TIFFLIB_MAJOR_VERSION, TIFFLIB_MINOR_VERSION, TIFFLIB_MICRO_VERSION);
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             ImGui::Text("libwebp version: %d.%d.%d", (WebPGetDecoderVersion() >> 16) & 0xFF, (WebPGetDecoderVersion() >> 8) & 0xFF, WebPGetDecoderVersion() & 0xFF);
             
