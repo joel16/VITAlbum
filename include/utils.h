@@ -1,5 +1,4 @@
-#ifndef _VITALBUM_UTILS_H_
-#define _VITALBUM_UTILS_H_
+#pragma once
 
 #include <psp2/ctrl.h>
 
@@ -20,5 +19,3 @@ namespace Utils {
     int GetCancelButton(void);
     void GetSizeString(char *string, double size);
 }
-
-#endif

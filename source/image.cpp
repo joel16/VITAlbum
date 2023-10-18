@@ -1,11 +1,10 @@
 #include <psp2/kernel/threadmgr.h>
 
 #include "config.h"
-#include "imgui.h"
-#include "windows.h"
-
 #define IMGUI_DEFINE_MATH_OPERATORS
+#include "imgui.h"
 #include "imgui_internal.h"
+#include "windows.h"
 
 namespace Windows {
     void ImageViewer(WindowData &data) {
@@ -21,17 +20,19 @@ namespace Windows {
             if (data.textures.size() > 1) {
                 sceKernelDelayThread(data.textures[data.frame_count].delay);
 
-                ImGui::Image(reinterpret_cast<ImTextureID>(data.textures[data.frame_count].id), ImVec2(data.textures[0].width * data.zoom_factor,
+                ImGui::Image(reinterpret_cast<ImTextureID>(data.textures[data.frame_count].ptr), ImVec2(data.textures[0].width * data.zoom_factor,
                     data.textures[0].height * data.zoom_factor));
                 
                 data.frame_count++;
                 
                 // Reset frame counter
-                if (data.frame_count == data.textures.size() - 1)
+                if (data.frame_count == data.textures.size() - 1) {
                     data.frame_count = 0;
+                }
             }
-            else
-                ImGui::Image(reinterpret_cast<ImTextureID>(data.textures[0].id), ImVec2(data.textures[0].width * data.zoom_factor, data.textures[0].height * data.zoom_factor));
+            else {
+                ImGui::Image(reinterpret_cast<ImTextureID>(data.textures[0].ptr), ImVec2(data.textures[0].width * data.zoom_factor, data.textures[0].height * data.zoom_factor));
+            }
         }
         
         Windows::ExitWindow();

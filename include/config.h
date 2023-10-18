@@ -1,5 +1,4 @@
-#ifndef _VITALBUM_CONFIG_H_
-#define _VITALBUM_CONFIG_H_
+#pragma once
 
 #include <string>
 
@@ -16,5 +15,3 @@ namespace Config {
     int Save(config_t &config);
     int Load(void);
 }
-
-#endif

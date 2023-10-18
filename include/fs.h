@@ -1,5 +1,4 @@
-#ifndef _VITALBUM_FS_H_
-#define _VITALBUM_FS_H_
+#pragma once
 
 #include <psp2/io/dirent.h>
 #include <psp2/types.h>
@@ -21,5 +20,3 @@ namespace FS {
     int ReadFile(const std::string &path, unsigned char **buffer, SceOff &size);
     int WriteFile(const std::string &path, const void *data, SceSize size);
 }
-
-#endif

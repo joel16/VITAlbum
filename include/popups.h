@@ -1,5 +1,4 @@
-#ifndef _VITALBUM_POPUPS_H_
-#define _VITALBUM_POPUPS_H_
+#pragma once
 
 #include "imgui.h"
 #include "textures.h"
@@ -19,5 +18,3 @@ namespace Popups {
     
     void ImageProperties(bool &state, WindowData &data, Tex &texture);
 }
-
-#endif

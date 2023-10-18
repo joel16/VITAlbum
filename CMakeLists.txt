@@ -26,10 +26,14 @@ add_definitions(
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -ffast-math -mtune=cortex-a9 -mfpu=neon -Wall -Wno-psabi -Wno-unused-function -fno-rtti -std=gnu++17")
 set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1")
 
+find_package(SDL2 REQUIRED)
+
 include_directories(
     ${VITASDK}/arm-vita-eabi/include/freetype2/
+    ${SDL2_INCLUDE_DIR}
     libs/giflib
     libs/imgui
+    libs/imgui/backends
     libs/libnsbmp
     libs/libtiff
     libs
@@ -46,13 +50,14 @@ add_executable(${PROJECT_NAME}
     libs/imgui/imgui_draw.cpp
     libs/imgui/imgui_tables.cpp
     libs/imgui/imgui_widgets.cpp
+    libs/imgui/backends/imgui_impl_sdl2.cpp
+    libs/imgui/backends/imgui_impl_sdlrenderer2.cpp
     libs/imgui/misc/freetype/imgui_freetype.cpp
     libs/libnsbmp/libnsbmp.c
     source/config.cpp
     source/fs.cpp
     source/gui.cpp
     source/image.cpp
-    source/imgui_impl_vitagl.cpp
     source/keyboard.cpp
     source/log.cpp
     source/main.cpp
@@ -66,6 +71,7 @@ add_executable(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     freetype
+    bz2
     gif
     tiff
     webpdemux
@@ -78,22 +84,8 @@ target_link_libraries(${PROJECT_NAME}
     lzma
     z
     zstd
-    vitaGL
-    vitashark
-    mathneon
-    SceShaccCgExt
-    SceAppMgr_stub
-    SceAppUtil_stub
-    SceCommonDialog_stub
-    SceCtrl_stub
-    SceDisplay_stub
-    SceGxm_stub
-    SceKernelDmacMgr_stub
+    SDL2::SDL2-static
     SceLibJson_stub
-    SceLibKernel_stub
-    SceShaccCg_stub
-    SceSysmodule_stub
-    taihen_stub
 )
 
 vita_create_self(${PROJECT_NAME}.self ${PROJECT_NAME} UNSAFE)

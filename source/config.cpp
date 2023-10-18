@@ -20,7 +20,6 @@ namespace Config {
     class Allocator : public sce::Json::MemAllocator {
         public:
             Allocator() {
-                
             }
             
             virtual void *allocateMemory(size_t size, void *unk) override {
@@ -38,8 +37,9 @@ namespace Config {
         SceSize len = std::snprintf(buffer.get(), 512, config_file, CONFIG_VERSION,  config.cwd.c_str(), config.device.c_str(),
             config.image_filename? "true" : "false", config.sort);
         
-        if (R_FAILED(ret = FS::WriteFile(config_path, buffer.get(), len)))
+        if (R_FAILED(ret = FS::WriteFile(config_path, buffer.get(), len))) {
             return ret;
+        }
         
         return 0;
     }

@@ -1,5 +1,4 @@
-#ifndef _VITALBUM_WINDOWS_H_
-#define _VITALBUM_WINDOWS_H_
+#pragma once
 
 #include <psp2/ctrl.h>
 #include <psp2/io/dirent.h>
@@ -38,5 +37,3 @@ namespace Windows {
     void MainWindow(WindowData &data, SceCtrlData &pad);
     void ImageViewer(WindowData &data);
 }
-
-#endif

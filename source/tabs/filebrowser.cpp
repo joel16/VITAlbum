@@ -24,16 +24,20 @@ namespace Tabs {
             descending = (column_sort_spec->SortDirection == ImGuiSortDirection_Descending);
 
             // Make sure ".." stays at the top regardless of sort direction
-            if (strcasecmp(entryA.d_name, "..") == 0)
+            if (strcasecmp(entryA.d_name, "..") == 0) {
                 return true;
+            }
             
-            if (strcasecmp(entryB.d_name, "..") == 0)
+            if (strcasecmp(entryB.d_name, "..") == 0) {
                 return false;
+            }
             
-            if ((SCE_S_ISDIR(entryA.d_stat.st_mode)) && !(SCE_S_ISDIR(entryB.d_stat.st_mode)))
+            if ((SCE_S_ISDIR(entryA.d_stat.st_mode)) && !(SCE_S_ISDIR(entryB.d_stat.st_mode))) {
                 return true;
-            else if (!(SCE_S_ISDIR(entryA.d_stat.st_mode)) && (SCE_S_ISDIR(entryB.d_stat.st_mode)))
+            }
+            else if (!(SCE_S_ISDIR(entryA.d_stat.st_mode)) && (SCE_S_ISDIR(entryB.d_stat.st_mode))) {
                 return false;
+            }
             else {
                 switch (column_sort_spec->ColumnIndex) {
                     case 0: // filename
@@ -72,8 +76,9 @@ namespace Tabs {
                         sort = -1;
                     }
                         
-                    if (is_selected)
+                    if (is_selected) {
                         ImGui::SetItemDefaultFocus();
+                    }
                 }
 
                 ImGui::EndCombo();
@@ -98,8 +103,9 @@ namespace Tabs {
                 ImGui::TableHeadersRow();
 
                 if (ImGuiTableSortSpecs *sorts_specs = ImGui::TableGetSortSpecs()) {
-                    if (sort == -1)
+                    if (sort == -1) {
                         sorts_specs->SpecsDirty = true;
+                    }
                     
                     if (sorts_specs->SpecsDirty) {
                         std::sort(data.entries.begin(), data.entries.end(), Tabs::Sort);
@@ -111,10 +117,12 @@ namespace Tabs {
                     ImGui::TableNextRow();
 
                     ImGui::TableNextColumn();
-                    if (SCE_S_ISDIR(data.entries[i].d_stat.st_mode))
-                        ImGui::Image(reinterpret_cast<ImTextureID>(icons[FOLDER].id), tex_size);
-                    else
-                        ImGui::Image(reinterpret_cast<ImTextureID>(icons[IMAGE].id), tex_size);
+                    if (SCE_S_ISDIR(data.entries[i].d_stat.st_mode)) {
+                        ImGui::Image(reinterpret_cast<ImTextureID>(icons[FOLDER].ptr), tex_size);
+                    }
+                    else {
+                        ImGui::Image(reinterpret_cast<ImTextureID>(icons[IMAGE].ptr), tex_size);
+                    }
                     
                     ImGui::SameLine();
 
@@ -143,8 +151,9 @@ namespace Tabs {
                         }
                     }
 
-                    if (ImGui::IsItemHovered())
+                    if (ImGui::IsItemHovered()) {
                         data.selected = i;
+                    }
 
                     ImGui::TableNextColumn();
                     if ((data.entries[i].d_stat.st_size != 0) && (!SCE_S_ISDIR(data.entries[i].d_stat.st_mode))) {

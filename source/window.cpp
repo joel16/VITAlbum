@@ -23,16 +23,18 @@ namespace Windows {
     };
 
     static void ClearTextures(WindowData &data) {
-        for (unsigned int i = 0; i < data.textures.size(); i++)
+        for (unsigned int i = 0; i < data.textures.size(); i++) {
             Textures::Free(data.textures[i]);
+        }
         
         data.textures.clear();
         data.frame_count = 0;
     }
 
     static bool HandleScroll(WindowData &data, int index) {
-        if (SCE_S_ISDIR(data.entries[index].d_stat.st_mode))
+        if (SCE_S_ISDIR(data.entries[index].d_stat.st_mode)) {
             return false;
+        }
         else {
             data.selected = index;
             std::string path = FS::BuildPath(data.entries[index]);
@@ -49,13 +51,16 @@ namespace Windows {
 
         for (int i = data.selected - 1; i > 0; i--) {
             std::string filename = data.entries[i].d_name;
-            if (filename.empty())
+            if (filename.empty()) {
                 continue;
+            }
                 
-            if (!(ret = Windows::HandleScroll(data, i)))
+            if (!(ret = Windows::HandleScroll(data, i))) {
                 continue;
-            else
+            }
+            else {
                 break;
+            }
         }
 
         return ret;
@@ -64,14 +69,17 @@ namespace Windows {
     static bool HandleNext(WindowData &data) {
         bool ret = false;
 
-        if (data.selected == data.entries.size())
+        if (data.selected == data.entries.size()) {
             return ret;
+        }
         
         for (unsigned int i = data.selected + 1; i < data.entries.size(); i++) {
-            if (!(ret = Windows::HandleScroll(data, i)))
+            if (!(ret = Windows::HandleScroll(data, i))) {
                 continue;
-            else
+            }
+            else {
                 break;
+            }
         }
 
         return ret;
@@ -91,25 +99,29 @@ namespace Windows {
 
             switch (data.state) {
                 case WINDOW_STATE_FILEBROWSER:
-                    if (pressed & SCE_CTRL_SELECT)
+                    if (pressed & SCE_CTRL_SELECT) {
                         data.state = WINDOW_STATE_SETTINGS;
+                    }
                     break;
                 
                 case WINDOW_STATE_IMAGEVIEWER:
-                    if (pressed & SCE_CTRL_TRIANGLE)
+                    if (pressed & SCE_CTRL_TRIANGLE) {
                         properties = !properties;
+                    }
 
                     if (pad.ly > 170) {
                         data.zoom_factor -= 0.5f * ImGui::GetIO().DeltaTime;
                         
-                        if (data.zoom_factor < 0.1f)
+                        if (data.zoom_factor < 0.1f) {
                             data.zoom_factor = 0.1f;
+                        }
                     }
                     else if (pad.ly < 70) {
                         data.zoom_factor += 0.5f * ImGui::GetIO().DeltaTime;
 
-                        if (data.zoom_factor > 5.0f)
+                        if (data.zoom_factor > 5.0f) {
                             data.zoom_factor = 5.0f;
+                        }
                     }
 
                     if (!properties) {
@@ -123,20 +135,23 @@ namespace Windows {
                             Windows::ClearTextures(data);
                             sceKernelDelayThread(100000);
 
-                            if (!Windows::HandlePrev(data))
+                            if (!Windows::HandlePrev(data)) {
                                 data.state = WINDOW_STATE_FILEBROWSER;
+                            }
                         }
                         else if (pressed & SCE_CTRL_RTRIGGER) {
                             Windows::ClearTextures(data);
                             sceKernelDelayThread(100000);
 
-                            if (!Windows::HandleNext(data))
+                            if (!Windows::HandleNext(data)) {
                                 data.state = WINDOW_STATE_FILEBROWSER;
+                            }
                         }
                     }
                     else {
-                        if (pressed & SCE_CTRL_CANCEL)
+                        if (pressed & SCE_CTRL_CANCEL) {
                             properties = false;
+                        }
                     }
                     
                     break;

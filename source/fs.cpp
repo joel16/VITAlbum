@@ -45,8 +45,9 @@ namespace FS {
             current_level += level; // append folder to the current level
             
             // create current level
-            if (!FS::DirExists(current_level) && sceIoMkdir(current_level.c_str(), 0777) != 0)
+            if (!FS::DirExists(current_level) && sceIoMkdir(current_level.c_str(), 0777) != 0) {
                 return -1;
+            }
                 
             current_level += "/"; // don't forget to append a slash
         }
@@ -78,8 +79,9 @@ namespace FS {
         
         if ((!ext.compare(".BMP")) || (!ext.compare(".GIF")) || (!ext.compare(".ICO")) || (!ext.compare(".JPG")) || (!ext.compare(".JPEG"))
             || (!ext.compare(".PGM")) || (!ext.compare(".PPM")) || (!ext.compare(".PNG")) || (!ext.compare(".PSD")) || (!ext.compare(".SVG"))
-            || (!ext.compare(".TGA")) || (!ext.compare(".TIFF")) || (!ext.compare(".WEBP")))
+            || (!ext.compare(".TGA")) || (!ext.compare(".TIFF")) || (!ext.compare(".WEBP"))) {
             return true;
+        }
 
         return false;
 
@@ -113,11 +115,13 @@ namespace FS {
             }
 
             if (ret) {
-                if ((!FS::IsImageType(entry.d_name)) && (!SCE_S_ISDIR(entry.d_stat.st_mode)))
+                if ((!FS::IsImageType(entry.d_name)) && (!SCE_S_ISDIR(entry.d_stat.st_mode))) {
                     continue;
+                }
             }
-            else
+            else {
                 break;
+            }
 
             entries.push_back(entry);
         }
@@ -132,8 +136,9 @@ namespace FS {
         std::vector<SceIoDirent> new_entries;
         const std::string new_path = cfg.device + path;
         
-        if (R_FAILED(ret = FS::GetDirList(new_path, new_entries)))
+        if (R_FAILED(ret = FS::GetDirList(new_path, new_entries))) {
             return ret;
+        }
             
         // Free entries and change the current working directory.
         entries.clear();
@@ -144,15 +149,17 @@ namespace FS {
     }
 
     static int GetPrevPath(char path[256]) {
-        if (cfg.cwd == "")
+        if (cfg.cwd == "") {
             return -1;
+        }
             
         // Remove upmost directory
         bool copy = false;
         int len = 0;
         for (ssize_t i = cfg.cwd.length(); i >= 0; i--) {
-            if (cfg.cwd.c_str()[i] == '/')
+            if (cfg.cwd.c_str()[i] == '/') {
                 copy = true;
+            }
             if (copy) {
                 path[i] = cfg.cwd.c_str()[i];
                 len++;
@@ -160,8 +167,9 @@ namespace FS {
         }
         
         // remove trailing slash
-        if (len > 1 && path[len - 1] == '/')
+        if (len > 1 && path[len - 1] == '/') {
             len--;
+        }
             
         path[len] = '\0';
         return 0;
@@ -170,8 +178,9 @@ namespace FS {
     int ChangeDirNext(const std::string &path, std::vector<SceIoDirent> &entries) {
         std::string new_path = cfg.cwd;
         
-        if (new_path != "/")
+        if (new_path != "/") {
             new_path.append("/");
+        }
             
         new_path.append(path);
         return FS::ChangeDir(new_path, entries);
@@ -179,8 +188,9 @@ namespace FS {
     
     int ChangeDirPrev(std::vector<SceIoDirent> &entries) {
         char new_path[256];
-        if (FS::GetPrevPath(new_path) < 0)
+        if (FS::GetPrevPath(new_path) < 0) {
             return -1;
+        }
         
         return FS::ChangeDir(std::string(new_path), entries);
     }

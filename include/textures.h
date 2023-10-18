@@ -1,12 +1,12 @@
-#ifndef _VITALBUM_TEXTURES_H_
-#define _VITALBUM_TEXTURES_H_
+#pragma once
 
 #include <string>
 #include <vector>
-#include <vitaGL.h>
+#include <psp2common/types.h>
+#include <SDL.h>
 
 typedef struct {
-    GLuint id = 0;
+    SDL_Texture *ptr;
     int width = 0;
     int height = 0;
     SceUInt delay = 0; // microseconds
@@ -21,5 +21,3 @@ namespace Textures {
     void Init(void);
     void Exit(void);
 }
-
-#endif

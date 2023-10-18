@@ -74,10 +74,12 @@ namespace Utils {
             return ret;
         }
         
-        if (button == SCE_SYSTEM_PARAM_ENTER_BUTTON_CIRCLE)
+        if (button == SCE_SYSTEM_PARAM_ENTER_BUTTON_CIRCLE) {
             return SCE_CTRL_CIRCLE;
-        else
+        }
+        else {
             return SCE_CTRL_CROSS;
+        }
         
         return 0;
     }
@@ -89,10 +91,12 @@ namespace Utils {
             return ret;
         }
         
-        if (button == SCE_SYSTEM_PARAM_ENTER_BUTTON_CIRCLE)
+        if (button == SCE_SYSTEM_PARAM_ENTER_BUTTON_CIRCLE) {
             return SCE_CTRL_CROSS;
-        else
+        }
+        else {
             return SCE_CTRL_CIRCLE;
+        }
         
         return 0;
     }

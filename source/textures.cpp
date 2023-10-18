@@ -1,6 +1,6 @@
 #include <cstring>
-#include <psp2/kernel/clib.h>
 #include <memory>
+#include <psp2/kernel/clib.h>
 
 // BMP
 #include "libnsbmp.h"
@@ -49,6 +49,7 @@
 #include <webp/demux.h>
 
 #include "fs.h"
+#include "gui.h"
 #include "imgui.h"
 #include "log.h"
 #include "textures.h"
@@ -63,8 +64,9 @@ unsigned const FOLDER = 0, IMAGE = 1;
 namespace BMP {
     static void *bitmap_create(int width, int height, [[maybe_unused]] unsigned int state) {
         /* ensure a stupidly large (>50Megs or so) bitmap is not created */
-        if ((static_cast<long long>(width) * static_cast<long long>(height)) > (MAX_IMAGE_BYTES/BYTES_PER_PIXEL))
+        if ((static_cast<long long>(width) * static_cast<long long>(height)) > (MAX_IMAGE_BYTES/BYTES_PER_PIXEL)) {
             return nullptr;
+        }
         
         return std::calloc(width * height, BYTES_PER_PIXEL);
     }
@@ -105,31 +107,59 @@ namespace ICO {
 }
 
 namespace Textures {
-    static bool Create(unsigned char *data, GLint format, Tex &texture) {    
-        // Create a OpenGL texture identifier
-        glGenTextures(1, &texture.id);
-        glBindTexture(GL_TEXTURE_2D, texture.id);
+    int GL_RGB = 3, GL_RGBA = 4;
+
+    static bool Create(unsigned char *data, int format, Tex &texture) {   
+        SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(
+                (void *)data,
+                texture.width,
+                texture.height,
+                format * 8,
+                format * texture.width,
+                0x000000FF,
+                0x0000FF00,
+                0x00FF0000,
+                0xFF000000
+        );
         
-        // Setup filtering parameters for display
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        if (surface == nullptr) {
+            Log::Error("Failed to create SDL surface: %s\n", SDL_GetError());
+            return false;
+        }
         
-        // Upload pixels into texture
-        glTexImage2D(GL_TEXTURE_2D, 0, format, texture.width, texture.height, 0, format, GL_UNSIGNED_BYTE, data);
+        texture.ptr = SDL_CreateTextureFromSurface(GUI::GetRenderer(), surface);
+        if ((texture.ptr) == nullptr) {
+            Log::Error("Failed to create SDL texture: %s\n", SDL_GetError());
+        }
+        
+        SDL_FreeSurface(surface);
         return true;
     }
 
-    static bool Create(unsigned char *data, GLint format, Tex &texture, int width, int height) {    
-        // Create a OpenGL texture identifier
-        glGenTextures(1, &texture.id);
-        glBindTexture(GL_TEXTURE_2D, texture.id);
+    static bool Create(unsigned char *data, int format, Tex &texture, int width, int height) {   
+        SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(
+                (void *)data,
+                width,
+                height,
+                format * 8,
+                format * width,
+                0x000000FF,
+                0x0000FF00,
+                0x00FF0000,
+                0xFF000000
+        );
         
-        // Setup filtering parameters for display
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        if (surface == nullptr) {
+            Log::Error("Failed to create SDL surface: %s\n", SDL_GetError());
+            return false;
+        }
         
-        // Upload pixels into texture
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        texture.ptr = SDL_CreateTextureFromSurface(GUI::GetRenderer(), surface);
+        if (texture.ptr == nullptr) {
+            Log::Error("Failed to create SDL texture: %s\n", SDL_GetError());
+        }
+        
+        SDL_FreeSurface(surface);
         return true;
     }
 
@@ -211,8 +241,9 @@ namespace Textures {
         textures[0].height = gif->SHeight;
         std::unique_ptr<SceUInt32[]> pixels(new SceUInt32[textures[0].width * textures[0].height]);
         
-        for (int i = 0; i < textures[0].width * textures[0].height; ++i)
+        for (int i = 0; i < textures[0].width * textures[0].height; ++i) {
             pixels[i] = gif->SBackGroundColor;
+        }
             
         for (int i = 0; i < gif->ImageCount; ++i) {
             const SavedImage &frame = gif->SavedImages[i];
@@ -224,8 +255,9 @@ namespace Textures {
             for (int j = 0; j < frame.ExtensionBlockCount; ++j) {
                 const ExtensionBlock &block = frame.ExtensionBlocks[j];
                 
-                if (block.Function != GRAPHICS_EXT_FUNC_CODE)
+                if (block.Function != GRAPHICS_EXT_FUNC_CODE) {
                     continue;
+                }
                     
                 // Here's the metadata for this frame.
                 char dispose = (block.Bytes[0] >> 2) & 7;
@@ -254,8 +286,9 @@ namespace Textures {
                     unsigned char byte = frame.RasterBits[x + y * fw];
 
                     // Transparent pixel.
-                    if (transparency && byte == transparency_byte)
+                    if (transparency && byte == transparency_byte) {
                         continue;
+                    }
                         
                     // Draw to canvas.
                     const GifColorType &c = map->Colors[byte];
@@ -375,8 +408,9 @@ namespace Textures {
                 png_image_free(&image);
             }
         }
-        else
+        else {
             Log::Error("png_image_begin_read_from_memory failed: %s\n", image.message);
+        }
         
         return ret;
     }
@@ -425,8 +459,9 @@ namespace Textures {
             TIFFClose(tif);
             return true;
         }
-        else
+        else {
             Log::Error("TIFFOpen failed\n");
+        }
         
         return false;
     }
@@ -437,8 +472,9 @@ namespace Textures {
         WebPBitstreamFeatures features = {0};
         
         status = WebPGetFeatures(*data, size, &features);
-        if (status != VP8_STATUS_OK)
+        if (status != VP8_STATUS_OK) {
             return ret;
+        }
 
         if (features.has_animation) {
             int frame_index = 0, prev_timestamp = 0;
@@ -487,7 +523,7 @@ namespace Textures {
     }
 
     void Free(Tex &texture) {
-        glDeleteTextures(1, &texture.id);
+        SDL_DestroyTexture(texture.ptr);
     }
 
     bool LoadImageFile(const std::string &path, std::vector<Tex> &textures) {
@@ -498,31 +534,41 @@ namespace Textures {
         textures.resize(1);
         
         // Because TIFF does not load via buffer, but directly from the path.
-        if (ext == ".TIFF")
+        if (ext == ".TIFF") {
             ret = Textures::LoadImageTIFF(path, textures[0]);
-        else if (ext == ".GIF")
+        }
+        else if (ext == ".GIF") {
             ret = Textures::LoadImageGIF(path, textures);
+        }
         else {
             unsigned char *data = nullptr;
             SceOff size = 0;
             FS::ReadFile(path, &data, size);
             
-            if (ext == ".BMP")
+            if (ext == ".BMP") {
                 ret = Textures::LoadImageBMP(&data, size, textures[0]);
-            else if ((ext == ".PGM") || (ext == ".PPM") || (ext == ".PSD") || (ext == ".TGA"))
+            }
+            else if ((ext == ".PGM") || (ext == ".PPM") || (ext == ".PSD") || (ext == ".TGA")) {
                 ret = Textures::LoadImageOther(&data, size, textures[0]);
-            else if (ext == ".ICO")
+            }
+            else if (ext == ".ICO") {
                 ret = Textures::LoadImageICO(&data, size, textures[0]);
-            else if ((ext == ".JPG") || (ext == ".JPEG"))
+            }
+            else if ((ext == ".JPG") || (ext == ".JPEG")) {
                 ret = Textures::LoadImageJPEG(&data, size, textures[0]);
-            else if (ext == ".PCX")
+            }
+            else if (ext == ".PCX") {
                 ret = Textures::LoadImagePCX(&data, size, textures[0]);
-            else if (ext == ".PNG")
+            }
+            else if (ext == ".PNG") {
                 ret = Textures::LoadImagePNG(&data, size, textures[0]);
-            else if (ext == ".SVG")
+            }
+            else if (ext == ".SVG") {
                 ret = Textures::LoadImageSVG(&data, textures[0]);
-            else if (ext == ".WEBP")
+            }
+            else if (ext == ".WEBP") {
                 ret = Textures::LoadImageWEBP(&data, size, textures);
+            }
             
             delete[] data;
         }
@@ -540,8 +586,9 @@ namespace Textures {
         };
 
         for (int i = 0; i < num_icons; i++) {
-            if (R_FAILED(FS::ReadFile(filenames[i], &data[i], size[i])))
+            if (R_FAILED(FS::ReadFile(filenames[i], &data[i], size[i]))) {
                 break;
+            }
         }
 
         icons.resize(num_icons);
@@ -552,13 +599,15 @@ namespace Textures {
         IM_ASSERT(ret);
 
         for (int i = 0; i < num_icons; i++) {
-            if (data[i])
+            if (data[i]) {
                 delete[] data[i];
+            }
         }
     }
 
     void Exit(void) {
-        for (unsigned int i = 0; i < icons.size(); i++)
+        for (unsigned int i = 0; i < icons.size(); i++) {
             Textures::Free(icons[i]);
+        }
     }
 }

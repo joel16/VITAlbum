@@ -10,16 +10,19 @@ namespace Log {
     void Init(void) {
         constexpr char log_path[] = "ux0:data/VITAlbum/debug.log";
 
-        if (!FS::FileExists(log_path))
+        if (!FS::FileExists(log_path)) {
             FS::CreateFile(log_path);
+        }
             
-        if (R_FAILED(log_file = sceIoOpen(log_path, SCE_O_WRONLY | SCE_O_APPEND, 0)))
+        if (R_FAILED(log_file = sceIoOpen(log_path, SCE_O_WRONLY | SCE_O_APPEND, 0))) {
             return;
+        }
     }
 
     void Exit(void) {
-        if (R_FAILED(sceIoClose(log_file)))
+        if (R_FAILED(sceIoClose(log_file))) {
             return;
+        }
     }
     
     void Error(const char *data, ...) {
@@ -33,7 +36,8 @@ namespace Log {
         error_string.append(buf);
         
         sceClibPrintf("%s", error_string.c_str());
-        if (R_FAILED(sceIoWrite(log_file, error_string.data(), error_string.length())))
+        if (R_FAILED(sceIoWrite(log_file, error_string.data(), error_string.length()))) {
             return;
+        }
     }
 }
