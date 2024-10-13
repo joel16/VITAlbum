@@ -145,7 +145,7 @@ namespace Tabs {
                         }
                         else {
                             std::string path = FS::BuildPath(data.entries[i]);
-                            bool ret = Textures::LoadImageFile(path, data.textures);
+                            bool ret = Textures::LoadImageFile(path, data.texture);
                             IM_ASSERT(ret);
                             data.state = WINDOW_STATE_IMAGEVIEWER;
                         }

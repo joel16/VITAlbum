@@ -20,7 +20,7 @@ add_definitions(-DAPP_VERSION="${VITA_VERSION}")
 add_definitions(
     -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -DIMGUI_DISABLE_DEMO_WINDOWS -DIMGUI_DISABLE_DEBUG_TOOLS
     -DIMGUI_DISABLE_WIN32_DEFAULT_CLIPBOARD_FUNCTIONS -DIMGUI_DISABLE_WIN32_DEFAULT_IME_FUNCTIONS
-    -DIMGUI_DISABLE_WIN32_FUNCTIONS -DIMGUI_DISABLE_STB_TRUETYPE_IMPLEMENTATION
+    -DIMGUI_DISABLE_WIN32_FUNCTIONS -DIMGUI_DISABLE_STB_TRUETYPE_IMPLEMENTATION -DIMGUI_DISABLE_SSE
     -DIMGUI_DISABLE_DEFAULT_SHELL_FUNCTIONS -DIMGUI_ENABLE_FREETYPE
 )
 
@@ -32,10 +32,9 @@ find_package(SDL2 REQUIRED)
 include_directories(
     ${VITASDK}/arm-vita-eabi/include/freetype2/
     ${SDL2_INCLUDE_DIR}
-    libs/giflib
+    ${SDL2_IMAGE_INCLUDE_DIRS}
     libs/imgui
     libs/imgui/backends
-    libs/libnsbmp
     libs/libtiff
     libs
     include
@@ -54,7 +53,6 @@ add_executable(${PROJECT_NAME}
     libs/imgui/backends/imgui_impl_sdl2.cpp
     libs/imgui/backends/imgui_impl_sdlrenderer2.cpp
     libs/imgui/misc/freetype/imgui_freetype.cpp
-    libs/libnsbmp/libnsbmp.c
     source/config.cpp
     source/fs.cpp
     source/gui.cpp
@@ -73,7 +71,6 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     freetype
     bz2
-    gif
     tiff
     webpdemux
     webp
@@ -85,6 +82,8 @@ target_link_libraries(${PROJECT_NAME}
     lzma
     z
     zstd
+    SDL2_image
+    webpdemux
     SDL2::SDL2-static
     SceLibJson_stub
 )

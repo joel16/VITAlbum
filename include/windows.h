@@ -24,7 +24,7 @@ typedef struct {
     WINDOW_STATES state = WINDOW_STATE_FILEBROWSER;
     SceOff selected = 0;
     std::vector<SceIoDirent> entries;
-    std::vector<Tex> textures;
+    Tex texture;
     unsigned int frame_count = 0;
     float zoom_factor = 1.0f;
 } WindowData;

@@ -23,12 +23,7 @@ namespace Windows {
     };
 
     static void ClearTextures(WindowData &data) {
-        for (unsigned int i = 0; i < data.textures.size(); i++) {
-            Textures::Free(data.textures[i]);
-        }
-        
-        data.textures.clear();
-        data.frame_count = 0;
+        Textures::Free(data.texture);
     }
 
     static bool HandleScroll(WindowData &data, int index) {
@@ -38,7 +33,7 @@ namespace Windows {
         else {
             data.selected = index;
             std::string path = FS::BuildPath(data.entries[index]);
-            bool ret = Textures::LoadImageFile(path, data.textures);
+            bool ret = Textures::LoadImageFile(path, data.texture);
             IM_ASSERT(ret);
             return true;
         }
