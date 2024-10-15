@@ -1,0 +1,28 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: vitasdk/vitasdk:latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Build
+      run: |
+        mkdir build && cd build && cmake ..
+        make
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: VITAlbum.vpk
+        path: build/VITAlbum.vpk
