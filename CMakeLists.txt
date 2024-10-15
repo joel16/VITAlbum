@@ -72,19 +72,18 @@ target_link_libraries(${PROJECT_NAME}
     freetype
     bz2
     tiff
-    webpdemux
-    webp
-    sharpyuv
     turbojpeg
     jpeg
     png
-    pthread
     lzma
     z
     zstd
     SDL2_image
-    webpdemux
     SDL2::SDL2-static
+    webpdemux
+    webp
+    sharpyuv
+    pthread
     SceLibJson_stub
 )
 
