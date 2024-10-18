@@ -10,8 +10,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container: vitasdk/vitasdk:latest
+    
 
     steps:
+
+    - name: Update git
+      run: |
+        apt update
+        apt install -y git
+
     - name: Checkout
       uses: actions/checkout@v4
       with:
