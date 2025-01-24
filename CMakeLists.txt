@@ -14,7 +14,7 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "VITAlbum")
 set(VITA_TITLEID "VITALBUM0")
-set(VITA_VERSION "01.40")
+set(VITA_VERSION "01.41")
 
 add_definitions(-DAPP_VERSION="${VITA_VERSION}")
 add_definitions(
@@ -87,8 +87,8 @@ target_link_libraries(${PROJECT_NAME}
     SceLibJson_stub
 )
 
-vita_create_self(${PROJECT_NAME}.self ${PROJECT_NAME} UNSAFE)
-vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} ${PROJECT_NAME}.self
+vita_create_self(eboot.bin ${PROJECT_NAME} UNSAFE)
+vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
     VERSION ${VITA_VERSION}
     NAME ${VITA_APP_NAME}
     FILE sce_sys/icon0.png sce_sys/icon0.png
