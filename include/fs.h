@@ -10,8 +10,7 @@ namespace FS {
     bool DirExists(const std::string &path);
     int MakeDir(const std::string &path);
     int GetFileSize(const std::string &path, SceOff &size);
-    std::string GetFileExt(const std::string &filename);
-    bool IsImageType(const std::string &filename);
+    const char *GetFileExt(const char *filename);
     int GetDirList(const std::string &path, std::vector<SceIoDirent> &entries);
     int ChangeDirNext(const std::string &path, std::vector<SceIoDirent> &entries);
     int ChangeDirPrev(std::vector<SceIoDirent> &entries);

@@ -159,18 +159,21 @@ namespace Textures {
 
     bool LoadImageFile(const std::string &path, Tex &texture) {
         bool ret = false;
-        std::string ext = FS::GetFileExt(path);
+        const char *ext = FS::GetFileExt(path.c_str());
         
         // Because TIFF does not load via buffer, but directly from the path.
-        if ((ext == ".GIF") || (ext == ".WEBP")) {
+        if ((strncasecmp(ext, ".GIF", 4) == 0) || (strncasecmp(ext, ".WEBP", 5) == 0)) {
             ret = Textures::LoadImageAnim(path, texture);
         }
-        else if ((ext == ".BMP") || (ext == ".JPEG") || (ext == ".JPG") || (ext == ".LBM") || (ext == ".PCX") ||
-            (ext == ".PNG") || (ext == ".PNM") || (ext == ".PPM") || (ext == ".PGM") || (ext == ".PBM") || 
-            (ext == ".QOI") || (ext == ".TGA") || (ext == ".XCF") || (ext == ".XPM") || (ext == ".SVG")) {
+        else if ((strncasecmp(ext, ".BMP", 4) == 0) || (strncasecmp(ext, ".JPG", 4) == 0) || (strncasecmp(ext, ".JPEG", 5) == 0)
+            || (strncasecmp(ext, ".LBM", 4) == 0) || (strncasecmp(ext, ".PCX", 4) == 0) || (strncasecmp(ext, ".LBM", 4) == 0)
+            || (strncasecmp(ext, ".PNG", 4) == 0) || (strncasecmp(ext, ".PNM", 4) == 0) || (strncasecmp(ext, ".PPM", 4) == 0)
+            || (strncasecmp(ext, ".PGM", 4) == 0) || (strncasecmp(ext, ".PBM", 4) == 0) || (strncasecmp(ext, ".QOI", 4) == 0)
+            || (strncasecmp(ext, ".TGA", 4) == 0) || (strncasecmp(ext, ".XCF", 4) == 0) || (strncasecmp(ext, ".XPM", 4) == 0)
+            || (strncasecmp(ext, ".SVG", 4) == 0)) {
             ret = Textures::LoadImage(path, texture);
         }
-        else if (ext == ".TIFF") {
+        else if (strncasecmp(ext, ".TIFF", 5) == 0) {
             ret = Textures::LoadImageTIFF(path, texture);
         }
         else {
@@ -178,7 +181,7 @@ namespace Textures {
             SceOff size = 0;
             FS::ReadFile(path, &data, size);
 
-            if (ext == ".PSD") {
+            if (strncasecmp(ext, ".PSD", 4) == 0) {
                 ret = Textures::LoadImageOther(&data, size, texture);
             }
         }

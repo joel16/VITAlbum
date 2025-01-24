@@ -1,10 +1,9 @@
 #include <psp2/io/fcntl.h>
 #include <psp2/io/stat.h>
 #include <psp2/kernel/clib.h>
-#include <algorithm>
 #include <cstdio>
 #include <cstring>
-#include <filesystem>
+#include <sstream>
 
 #include "config.h"
 #include "fs.h"
@@ -67,24 +66,31 @@ namespace FS {
         size = stat.st_size;
         return 0;
     }
-
-    std::string GetFileExt(const std::string &filename) {
-        std::string ext = std::filesystem::path(filename).extension();
-        std::transform(ext.begin(), ext.end(), ext.begin(), ::toupper);
+    
+    const char *GetFileExt(const char *filename) {
+        const char *dot = std::strrchr(filename, '.');
+        if (!dot || dot == filename) {
+            return "";
+        }
+        
+        static char ext[10];
+        std::strncpy(ext, dot, sizeof(ext) - 1);
+        ext[sizeof(ext) - 1] = '\0'; // Ensure null termination
         return ext;
     }
-
-    bool IsImageType(const std::string &filename) {
-        std::string ext = FS::GetFileExt(filename);
+    
+    static bool IsImageType(const char *filename) {
+        const char *ext = FS::GetFileExt(filename);
         
-        if ((!ext.compare(".BMP")) || (!ext.compare(".GIF")) || (!ext.compare(".ICO")) || (!ext.compare(".JPG")) || (!ext.compare(".JPEG"))
-            || (!ext.compare(".PGM")) || (!ext.compare(".PPM")) || (!ext.compare(".PNG")) || (!ext.compare(".PSD")) || (!ext.compare(".SVG"))
-            || (!ext.compare(".TGA")) || (!ext.compare(".TIFF")) || (!ext.compare(".WEBP"))) {
+        if ((strncasecmp(ext, ".BMP", 4) == 0) || (strncasecmp(ext, ".GIF", 4) == 0) || (strncasecmp(ext, ".ICO", 4) == 0)
+            || (strncasecmp(ext, ".JPG", 4) == 0) || (strncasecmp(ext, ".JPEG", 5) == 0) || (strncasecmp(ext, ".PGM", 4) == 0)
+            || (strncasecmp(ext, ".PPM", 4) == 0) || (strncasecmp(ext, ".PNG", 4) == 0) || (strncasecmp(ext, ".PSD", 4) == 0)
+            || (strncasecmp(ext, ".SVG", 4) == 0) || (strncasecmp(ext, ".TGA", 4) == 0) || (strncasecmp(ext, ".TIFF", 5) == 0)
+            || (strncasecmp(ext, ".WEBP", 5) == 0)) {
             return true;
         }
-
+        
         return false;
-
     }
 
     int GetDirList(const std::string &path, std::vector<SceIoDirent> &entries) {
