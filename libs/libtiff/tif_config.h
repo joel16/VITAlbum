@@ -1,5 +1,11 @@
-/* libtiff/tif_config.h.cmake.in.  Not generated, but originated from autoheader.  */
-/* This file must be kept up-to-date with needed substitutions from libtiff/tif_config.h.in. */
+/* libtiff/tif_config.h.  Generated from tif_config.h.in by configure.  */
+/* clang-format off */
+/* clang-format disabled because CMake scripts are very sensitive to the
+ * formatting of this file. configure_file variables of type "@VAR@" are
+ * modified by clang-format and won't be substituted.
+ */
+
+/* libtiff/tif_config.h.in.  Not generated, but originated from autoheader.  */
 
 #include "tiffconf.h"
 
@@ -16,20 +22,21 @@
 /* Support C++ stream API (requires C++ compiler) */
 #define CXX_SUPPORT 1
 
-/* enable deferred strip/tile offset/size loading (experimental) */
+/* enable deferred strip/tile offset/size loading */
 /* #undef DEFER_STRILE_LOAD */
 
 /* Define to 1 if you have the <assert.h> header file. */
 #define HAVE_ASSERT_H 1
 
-/* Define to 1 if you have the declaration of `optarg', and to 0 if you don't. */
+/* Define to 1 if you have the declaration of `optarg', and to 0 if you don't.
+   */
 #define HAVE_DECL_OPTARG 1
 
 /* Define to 1 if you have the <fcntl.h> header file. */
 #define HAVE_FCNTL_H 1
 
 /* Define to 1 if fseeko (and presumably ftello) exists and is declared. */
-/* #undef HAVE_FSEEKO */
+#define HAVE_FSEEKO 1
 
 /* Define to 1 if you have the `getopt' function. */
 #define HAVE_GETOPT 1
@@ -44,7 +51,7 @@
 /* #undef HAVE_GL_GLU_H */
 
 /* Define to 1 if you have the <GL/gl.h> header file. */
-#define HAVE_GL_GL_H 1
+/* #undef HAVE_GL_GL_H */
 
 /* Define to 1 if you have the <io.h> header file. */
 /* #undef HAVE_IO_H */
@@ -64,6 +71,9 @@
 /* Define to 1 if you have the `setmode' function. */
 /* #undef HAVE_SETMODE */
 
+/* Define to 1 if you have the `snprintf' function. */
+/* #undef HAVE_SNPRINTF */
+
 /* Define to 1 if you have the <strings.h> header file. */
 #define HAVE_STRINGS_H 1
 
@@ -80,22 +90,19 @@
 /* #undef LERC_SUPPORT */
 
 /* 12bit libjpeg primary include file with path */
-#define LIBJPEG_12_PATH ""
+/* #undef LIBJPEG_12_PATH */
 
 /* Support LZMA2 compression */
 #define LZMA_SUPPORT 1
 
 /* Name of package */
-#define PACKAGE "LibTIFF Software"
+#define PACKAGE "tiff"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "tiff@lists.maptools.org"
+#define PACKAGE_BUGREPORT "tiff@lists.osgeo.org"
 
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "LibTIFF Software"
-
-/* Define to the full name and version of this package. */
-#define PACKAGE_STRING "LibTIFF Software 4.5.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "tiff"
@@ -103,30 +110,20 @@
 /* Define to the home page for this package. */
 #define PACKAGE_URL ""
 
-/* Define to the version of this package. */
-#define PACKAGE_VERSION "4.5.0"
-
-/* Size of size_t */
+/* The size of `size_t', as computed by sizeof. */
 #define SIZEOF_SIZE_T 4
 
 /* Default size of the strip in bytes (when strip chopping enabled) */
 #define STRIP_SIZE_DEFAULT 8192
 
-/** Maximum number of TIFF IFDs that libtiff can iterate through in a file. */
+/* Maximum number of TIFF IFDs that libtiff can iterate through in a file. */
 #define TIFF_MAX_DIR_COUNT 1048576
 
 /* define to use win32 IO system */
 /* #undef USE_WIN32_FILEIO */
 
-/* Version number of package */
-#define VERSION "4.5.0"
-
-/* Support WEBP compression */
-#define WEBP_SUPPORT 1
-
-/* Support ZSTD compression */
-#define ZSTD_SUPPORT 1
-
+/* Support webp compression */
+/* #undef WEBP_SUPPORT */
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
@@ -136,9 +133,26 @@
 # endif
 #else
 # ifndef WORDS_BIGENDIAN
-#  undef WORDS_BIGENDIAN
+/* #  undef WORDS_BIGENDIAN */
 # endif
 #endif
+
+/* Support zstd compression */
+#define ZSTD_SUPPORT 1
+
+/* Enable large inode numbers on Mac OS X 10.5.  */
+#ifndef _DARWIN_USE_64_BIT_INODE
+# define _DARWIN_USE_64_BIT_INODE 1
+#endif
+
+/* Number of bits in a file offset, on hosts where this is settable. */
+/* #undef _FILE_OFFSET_BITS */
+
+/* Define to 1 to make fseeko visible on some hosts (e.g. glibc 2.2). */
+/* #undef _LARGEFILE_SOURCE */
+
+/* Define for large files, on AIX-style hosts. */
+/* #undef _LARGE_FILES */
 
 #if !defined(__MINGW32__)
 #  define TIFF_SIZE_FORMAT "zu"
@@ -156,3 +170,5 @@
 #else
 #  error "Unsupported size_t size; please submit a bug report"
 #endif
+
+/* clang-format on */

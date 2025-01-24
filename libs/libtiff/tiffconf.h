@@ -1,8 +1,15 @@
+/* libtiff/tiffconf.h.  Generated from tiffconf.h.in by configure.  */
 /*
   Configuration defines for installed libtiff.
   This file maintained for backward compatibility. Do not use definitions
   from this file in your programs.
 */
+
+/* clang-format off */
+/* clang-format disabled because CMake scripts are very sensitive to the
+ * formatting of this file. configure_file variables of type "@VAR@" are
+ * modified by clang-format and won't be substituted.
+ */
 
 #ifndef _TIFFCONF_
 #define _TIFFCONF_
@@ -14,28 +21,28 @@
 
 
 /* Signed 16-bit type */
-#define TIFF_INT16_T int16_t
+/* #undef TIFF_INT16_T */
 
 /* Signed 32-bit type */
-#define TIFF_INT32_T int32_t
+/* #undef TIFF_INT32_T */
 
 /* Signed 64-bit type */
-#define TIFF_INT64_T int64_t
+/* #undef TIFF_INT64_T */
 
 /* Signed 8-bit type */
-#define TIFF_INT8_T int8_t
+/* #undef TIFF_INT8_T */
 
 /* Unsigned 16-bit type */
-#define TIFF_UINT16_T uint16_t
+/* #undef TIFF_UINT16_T */
 
 /* Unsigned 32-bit type */
-#define TIFF_UINT32_T uint32_t
+/* #undef TIFF_UINT32_T */
 
 /* Unsigned 64-bit type */
-#define TIFF_UINT64_T uint64_t
+/* #undef TIFF_UINT64_T */
 
 /* Unsigned 8-bit type */
-#define TIFF_UINT8_T uint8_t
+/* #undef TIFF_UINT8_T */
 
 /* Signed size type */
 #define TIFF_SSIZE_T int32_t
@@ -46,7 +53,16 @@
    machine */
 #define HAVE_IEEEFP 1
 
-/* Set the native cpu bit order (FILLORDER_LSB2MSB or FILLORDER_MSB2LSB) */
+/* The concept of HOST_FILLORDER is broken. Since libtiff 4.5.1
+ * this macro will always be hardcoded to FILLORDER_LSB2MSB on all
+ * architectures, to reflect past long behavior of doing so on x86 architecture.
+ * Note however that the default FillOrder used by libtiff is FILLORDER_MSB2LSB,
+ * as mandated per the TIFF specification.
+ * The influence of HOST_FILLORDER is only when passing the 'H' mode in
+ * TIFFOpen().
+ * You should NOT rely on this macro to decide the CPU endianness!
+ * This macro will be removed in libtiff 4.6
+ */
 #define HOST_FILLORDER FILLORDER_LSB2MSB
 
 /* Native cpu byte order: 1 if big-endian (Motorola) or 0 if little-endian
@@ -125,3 +141,5 @@
 #define IPTC_SUPPORT
 
 #endif /* _TIFFCONF_ */
+
+/* clang-format on */
