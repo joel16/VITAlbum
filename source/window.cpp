@@ -22,11 +22,11 @@ namespace Windows {
         ImGui::PopStyleVar();
     };
 
-    static void ClearTextures(WindowData &data) {
+    static void ClearTextures(WindowData& data) {
         Textures::Free(data.texture);
     }
 
-    static bool HandleScroll(WindowData &data, int index) {
+    static bool HandleScroll(WindowData& data, int index) {
         if (SCE_S_ISDIR(data.entries[index].d_stat.st_mode)) {
             return false;
         }
@@ -41,7 +41,7 @@ namespace Windows {
         return false;
     }
 
-    static bool HandlePrev(WindowData &data) {
+    static bool HandlePrev(WindowData& data) {
         bool ret = false;
 
         for (int i = data.selected - 1; i > 0; i--) {
@@ -61,7 +61,7 @@ namespace Windows {
         return ret;
     }
 
-    static bool HandleNext(WindowData &data) {
+    static bool HandleNext(WindowData& data) {
         bool ret = false;
 
         if (data.selected == data.entries.size()) {
@@ -80,7 +80,67 @@ namespace Windows {
         return ret;
     }
 
-    void MainWindow(WindowData &data, SceCtrlData &pad) {
+    void HandleInput(WindowData& data, SDL_Event& event) {
+        int button = event.cbutton.button;
+
+        switch (data.state) {
+            case WINDOW_STATE_IMAGEVIEWER:
+                if (button == SDL_CONTROLLER_BUTTON_Y) {
+                    properties = !properties;
+                }
+                
+                if (!properties) {
+                    if ((event.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY) && (event.caxis.value < -8000)) {
+                        data.zoom_factor += 0.5f * ImGui::GetIO().DeltaTime;
+
+                        if (data.zoom_factor > 5.0f) {
+                            data.zoom_factor = 5.0f;
+                        }
+                    }
+                    else if ((event.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY) && (event.caxis.value > 8000)) {
+                        data.zoom_factor -= 0.5f * ImGui::GetIO().DeltaTime;
+
+                        if (data.zoom_factor < 0.1f) {
+                            data.zoom_factor = 0.1f;
+                        }
+                    }
+                    if (button == SDL_CONTROLLER_AXIS_TRIGGERLEFT) {
+                        Windows::ClearTextures(data);
+                        sceKernelDelayThread(100000);
+
+                        if (!Windows::HandlePrev(data)) {
+                            data.state = WINDOW_STATE_FILEBROWSER;
+                        }
+                    }
+                    else if (button == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
+                        Windows::ClearTextures(data);
+                        sceKernelDelayThread(100000);
+
+                        if (!Windows::HandleNext(data)) {
+                            data.state = WINDOW_STATE_FILEBROWSER;
+                        }
+                    }
+                    
+                    if (button == SDL_CONTROLLER_BUTTON_B) {
+                        Windows::ClearTextures(data);
+                        data.zoom_factor = 1.0f;
+                        data.state = WINDOW_STATE_FILEBROWSER;
+                    }
+                }
+                else {
+                    if (button == SDL_CONTROLLER_BUTTON_B) {
+                        properties = false;
+                    }
+                }
+                
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    void MainWindow(WindowData& data) {
         Windows::SetupWindow();
         if (ImGui::Begin("VITAlbum", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
             if (ImGui::BeginTabBar("VITAlbum-tabs")) {
@@ -89,84 +149,15 @@ namespace Windows {
                 ImGui::EndTabBar();
             }
 
-            if (data.state == WINDOW_STATE_IMAGEVIEWER)
+            if (data.state == WINDOW_STATE_IMAGEVIEWER) {
                 Windows::ImageViewer(data);
-
-            switch (data.state) {
-                case WINDOW_STATE_FILEBROWSER:
-                    if (pressed & SCE_CTRL_SELECT) {
-                        data.state = WINDOW_STATE_SETTINGS;
-                    }
-                    break;
-                
-                case WINDOW_STATE_IMAGEVIEWER:
-                    if (pressed & SCE_CTRL_TRIANGLE) {
-                        properties = !properties;
-                    }
-
-                    if (pad.ly > 170) {
-                        data.zoom_factor -= 0.5f * ImGui::GetIO().DeltaTime;
-                        
-                        if (data.zoom_factor < 0.1f) {
-                            data.zoom_factor = 0.1f;
-                        }
-                    }
-                    else if (pad.ly < 70) {
-                        data.zoom_factor += 0.5f * ImGui::GetIO().DeltaTime;
-
-                        if (data.zoom_factor > 5.0f) {
-                            data.zoom_factor = 5.0f;
-                        }
-                    }
-
-                    if (!properties) {
-                        if (pressed & SCE_CTRL_CANCEL) {
-                            Windows::ClearTextures(data);
-                            data.zoom_factor = 1.0f;
-                            data.state = WINDOW_STATE_FILEBROWSER;
-                        }
-
-                        if (pressed & SCE_CTRL_LTRIGGER) {
-                            Windows::ClearTextures(data);
-                            sceKernelDelayThread(100000);
-
-                            if (!Windows::HandlePrev(data)) {
-                                data.state = WINDOW_STATE_FILEBROWSER;
-                            }
-                        }
-                        else if (pressed & SCE_CTRL_RTRIGGER) {
-                            Windows::ClearTextures(data);
-                            sceKernelDelayThread(100000);
-
-                            if (!Windows::HandleNext(data)) {
-                                data.state = WINDOW_STATE_FILEBROWSER;
-                            }
-                        }
-                    }
-                    else {
-                        if (pressed & SCE_CTRL_CANCEL) {
-                            properties = false;
-                        }
-                    }
-                    
-                    break;
-                
-                case WINDOW_STATE_SETTINGS:
-                    if (pressed & SCE_CTRL_CANCEL) {
-                        Config::Save(cfg);
-                        data.entries.clear();
-                        const std::string path = cfg.device + cfg.cwd;
-                        FS::GetDirList(path, data.entries);
-                        data.state = WINDOW_STATE_FILEBROWSER;
-                    }
-
-                    break;
-
-                default:
-                    break;
             }
         }
 
         Windows::ExitWindow();
+
+        if (properties) {
+            Popups::ImageProperties(properties, data);
+        }
     }
 }

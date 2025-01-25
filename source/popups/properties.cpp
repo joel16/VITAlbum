@@ -5,7 +5,7 @@
 #include "utils.h"
 
 namespace Popups {
-    void ImageProperties(bool &state, WindowData &data, Tex &texture) {
+    void ImageProperties(bool& state, WindowData& data) {
         ImGui::OpenPopup("Properties");
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(20, 20));
         ImGui::SetNextWindowPos(ImVec2(480.0f, 272.0f), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -35,22 +35,22 @@ namespace Popups {
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 
             std::string width_text = "Width: ";
-            width_text.append(std::to_string(texture.width));
+            width_text.append(std::to_string(data.texture.width));
             width_text.append("px");
             ImGui::Text(width_text.c_str());
             /*ImGui::SameLine(0.0f, 10.0f);
             if (ImGui::Button("Edit width"))
-                new_width = Keyboard::GetText("Enter width", std::to_string(texture.width));*/
+                new_width = Keyboard::GetText("Enter width", std::to_string(data.texture.width));*/
 
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 
             std::string height_text = "Height: ";
-            height_text.append(std::to_string(texture.height));
+            height_text.append(std::to_string(data.texture.height));
             height_text.append("px");
             ImGui::Text(height_text.c_str());
             /*ImGui::SameLine(0.0f, 10.0f);
             if (ImGui::Button("Edit height"))
-                new_height = Keyboard::GetText("Enter height", std::to_string(texture.height));*/
+                new_height = Keyboard::GetText("Enter height", std::to_string(data.texture.height));*/
 
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
 
@@ -58,8 +58,8 @@ namespace Popups {
                 // int new_width_int = std::stoi(new_width);
                 // int new_height_int = std::stoi(new_height);
                 if ((!new_height.empty()) || (!new_width.empty())) {
-                    if (new_width != std::to_string(texture.width))
-                    else if (new_height != std::to_string(texture.height))
+                    if (new_width != std::to_string(data.texture.width))
+                    else if (new_height != std::to_string(data.texture.height))
                     
                 }
             }
@@ -70,10 +70,9 @@ namespace Popups {
                 ImGui::CloseCurrentPopup();
                 state = false;
             }
-            
-            ImGui::EndPopup();
         }
 
+        ImGui::EndPopup();
         ImGui::PopStyleVar();
     }
 }

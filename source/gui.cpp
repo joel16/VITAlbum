@@ -89,10 +89,6 @@ namespace GUI {
         colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
         colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
         colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
-        
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-        io.IniFilename = nullptr;
     }
 
     int Init(void) {
@@ -116,6 +112,7 @@ namespace GUI {
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+        io.IniFilename = nullptr;
         
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
@@ -155,8 +152,7 @@ namespace GUI {
         ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
         WindowData data;
-        SceCtrlData pad = { 0 };
-        
+
         int ret = 0;
         const std::string path = cfg.device + cfg.cwd;
 
@@ -170,23 +166,32 @@ namespace GUI {
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
                 ImGui_ImplSDL2_ProcessEvent(&event);
-                
-                if (event.type == SDL_QUIT) {
-                    done = true;
-                }
-                if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window)) {
-                    done = true;
+
+                switch (event.type) {
+                    case SDL_QUIT:
+                        done = true;
+                        break;
+
+                    case SDL_WINDOWEVENT:
+                        if (event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window)) {
+                            done = true;
+                        }
+                        break;
+                        
+                    case SDL_CONTROLLERAXISMOTION:
+                    case SDL_CONTROLLERBUTTONDOWN:
+                        Windows::HandleInput(data, event);
+
+                        if (event.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
+                            done = true;
+                        }
+                        break;
                 }
             }
 
             Renderer::Start();
-            pad = Utils::ReadControls();
-            Windows::MainWindow(data, pad);
+            Windows::MainWindow(data);
             Renderer::End(io, clear_color, renderer);
-
-            if (pressed & SCE_CTRL_START) {
-                done = true;
-            }
         }
         
         data.entries.clear();

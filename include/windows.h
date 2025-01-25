@@ -2,6 +2,7 @@
 
 #include <psp2/ctrl.h>
 #include <psp2/io/dirent.h>
+#include <SDL.h>
 
 #include "gui.h"
 #include "imgui.h"
@@ -34,6 +35,7 @@ extern int sort;
 namespace Windows {
     void SetupWindow(void);
     void ExitWindow(void);
-    void MainWindow(WindowData &data, SceCtrlData &pad);
-    void ImageViewer(WindowData &data);
+    void HandleInput(WindowData& data, SDL_Event& event);
+    void MainWindow(WindowData& data);
+    void ImageViewer(WindowData& data);
 }

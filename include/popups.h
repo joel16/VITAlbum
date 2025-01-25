@@ -16,5 +16,5 @@ namespace Popups {
         ImGui::PopStyleVar();
     };
     
-    void ImageProperties(bool &state, WindowData &data, Tex &texture);
+    void ImageProperties(bool& state, WindowData& data);
 }
