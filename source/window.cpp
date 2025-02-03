@@ -81,30 +81,30 @@ namespace Windows {
     }
 
     void HandleInput(WindowData& data, SDL_Event& event) {
-        int button = event.cbutton.button;
+        int button = event.gbutton.button;
 
         switch (data.state) {
             case WINDOW_STATE_IMAGEVIEWER:
-                if (button == SDL_CONTROLLER_BUTTON_Y) {
+                if (button == SDL_GAMEPAD_BUTTON_NORTH) {
                     properties = !properties;
                 }
                 
                 if (!properties) {
-                    if ((event.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY) && (event.caxis.value < -8000)) {
+                    if ((event.jaxis.axis == SDL_GAMEPAD_AXIS_RIGHTY) && (event.jaxis.value < -8000)) {
                         data.zoom_factor += 0.5f * ImGui::GetIO().DeltaTime;
 
                         if (data.zoom_factor > 5.0f) {
                             data.zoom_factor = 5.0f;
                         }
                     }
-                    else if ((event.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY) && (event.caxis.value > 8000)) {
+                    else if ((event.jaxis.axis == SDL_GAMEPAD_AXIS_RIGHTY) && (event.jaxis.value > 8000)) {
                         data.zoom_factor -= 0.5f * ImGui::GetIO().DeltaTime;
 
                         if (data.zoom_factor < 0.1f) {
                             data.zoom_factor = 0.1f;
                         }
                     }
-                    if (button == SDL_CONTROLLER_AXIS_TRIGGERLEFT) {
+                    if (button == SDL_GAMEPAD_AXIS_LEFT_TRIGGER) {
                         Windows::ClearTextures(data);
                         sceKernelDelayThread(100000);
 
@@ -112,7 +112,7 @@ namespace Windows {
                             data.state = WINDOW_STATE_FILEBROWSER;
                         }
                     }
-                    else if (button == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
+                    else if (button == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) {
                         Windows::ClearTextures(data);
                         sceKernelDelayThread(100000);
 
@@ -121,14 +121,14 @@ namespace Windows {
                         }
                     }
                     
-                    if (button == SDL_CONTROLLER_BUTTON_B) {
+                    if (button == SDL_GAMEPAD_BUTTON_EAST) {
                         Windows::ClearTextures(data);
                         data.zoom_factor = 1.0f;
                         data.state = WINDOW_STATE_FILEBROWSER;
                     }
                 }
                 else {
-                    if (button == SDL_CONTROLLER_BUTTON_B) {
+                    if (button == SDL_GAMEPAD_BUTTON_EAST) {
                         properties = false;
                     }
                 }
@@ -156,8 +156,8 @@ namespace Windows {
 
         Windows::ExitWindow();
 
-        if (properties) {
-            Popups::ImageProperties(properties, data);
-        }
+        // if (properties) {
+        //     Popups::ImageProperties(properties, data);
+        // }
     }
 }

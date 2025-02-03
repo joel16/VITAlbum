@@ -2,11 +2,7 @@
 
 #include <string>
 #include <vector>
-#include <psp2common/types.h>
-#include <string>
-#include <vector>
-#include <psp2common/types.h>
-#include <SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 
 typedef struct {
     SDL_Texture *ptr = nullptr;

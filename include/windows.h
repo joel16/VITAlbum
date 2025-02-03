@@ -2,7 +2,7 @@
 
 #include <psp2/ctrl.h>
 #include <psp2/io/dirent.h>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #include "gui.h"
 #include "imgui.h"

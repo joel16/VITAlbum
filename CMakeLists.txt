@@ -27,12 +27,12 @@ add_definitions(
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -ffast-math -mtune=cortex-a9 -mfpu=neon -Wall -Wno-psabi -Wno-unused-function -fno-rtti -std=gnu++17")
 set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1")
 
-find_package(SDL2 REQUIRED)
+find_package(SDL3 REQUIRED)
 
 include_directories(
     ${VITASDK}/arm-vita-eabi/include/freetype2/
-    ${SDL2_INCLUDE_DIR}
-    ${SDL2_IMAGE_INCLUDE_DIRS}
+    ${SDL3_INCLUDE_DIR}
+    ${SDL3_IMAGE_INCLUDE_DIRS}
     libs/imgui
     libs/imgui/backends
     libs/libtiff
@@ -50,8 +50,8 @@ add_executable(${PROJECT_NAME}
     libs/imgui/imgui_draw.cpp
     libs/imgui/imgui_tables.cpp
     libs/imgui/imgui_widgets.cpp
-    libs/imgui/backends/imgui_impl_sdl2.cpp
-    libs/imgui/backends/imgui_impl_sdlrenderer2.cpp
+    libs/imgui/backends/imgui_impl_sdl3.cpp
+    libs/imgui/backends/imgui_impl_sdlrenderer3.cpp
     libs/imgui/misc/freetype/imgui_freetype.cpp
     source/config.cpp
     source/fs.cpp
@@ -78,8 +78,8 @@ target_link_libraries(${PROJECT_NAME}
     lzma
     z
     zstd
-    SDL2_image
-    SDL2::SDL2-static
+    SDL3_image
+    SDL3::SDL3-static
     webpdemux
     webp
     sharpyuv

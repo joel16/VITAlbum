@@ -1,25 +1,24 @@
 #include "config.h"
 #include "fs.h"
 #include "gui.h"
-#include "imgui_impl_sdl2.h"
-#include "imgui_impl_sdlrenderer2.h"
+#include "imgui_impl_sdl3.h"
+#include "imgui_impl_sdlrenderer3.h"
 #include "log.h"
 #include "utils.h"
 #include "windows.h"
 
 namespace Renderer {
     static void Start(void) {
-        ImGui_ImplSDLRenderer2_NewFrame();
-        ImGui_ImplSDL2_NewFrame();
+        ImGui_ImplSDLRenderer3_NewFrame();
+        ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
     }
     
     static void End(ImGuiIO &io, ImVec4 clear_color, SDL_Renderer *renderer) {
         ImGui::Render();
-        SDL_RenderSetScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
-        SDL_SetRenderDrawColor(renderer, (Uint8)(clear_color.x * 255), (Uint8)(clear_color.y * 255), (Uint8)(clear_color.z * 255), (Uint8)(clear_color.w * 255));
+        SDL_SetRenderDrawColorFloat(renderer, clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         SDL_RenderClear(renderer);
-        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
+        ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
         SDL_RenderPresent(renderer);
     }
 }
@@ -92,33 +91,39 @@ namespace GUI {
     }
 
     int Init(void) {
-        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
+        if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
             Log::Error("SDL_Init failed: %s\n", SDL_GetError());
             return -1;
         }
         
         // Create window with SDL_Renderer graphics context
-        SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-        window = SDL_CreateWindow("VITA Customizer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 960, 544, window_flags);
-        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
+        window = SDL_CreateWindow("VITAlbum", 960, 544, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
+        if (window == nullptr) {
+            Log::Error("SDL_CreateWindow failed: %s\n", SDL_GetError());
+        }
+
+        renderer = SDL_CreateRenderer(window, nullptr);
+        SDL_SetRenderVSync(renderer, 1);
         if (renderer == nullptr) {
             Log::Error("SDL_CreateRenderer failed: %s\n", SDL_GetError());
             return 0;
         }
         
+        SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+        SDL_ShowWindow(window);
+        
         // Setup Dear ImGui context
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
         io.IniFilename = nullptr;
         
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
 
-        ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
-        ImGui_ImplSDLRenderer2_Init(renderer);
+        ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
+        ImGui_ImplSDLRenderer3_Init(renderer);
 
         // Build font atlas
         unsigned char *pixels = nullptr;
@@ -138,8 +143,8 @@ namespace GUI {
     }
 
     void Exit(void) {
-        ImGui_ImplSDLRenderer2_Shutdown();
-        ImGui_ImplSDL2_Shutdown();
+        ImGui_ImplSDLRenderer3_Shutdown();
+        ImGui_ImplSDL3_Shutdown();
         ImGui::DestroyContext();
         
         SDL_DestroyRenderer(renderer);
@@ -165,24 +170,25 @@ namespace GUI {
         while (!done) {
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
-                ImGui_ImplSDL2_ProcessEvent(&event);
+                ImGui_ImplSDL3_ProcessEvent(&event);
 
                 switch (event.type) {
-                    case SDL_QUIT:
+                    case SDL_EVENT_QUIT:
                         done = true;
                         break;
 
-                    case SDL_WINDOWEVENT:
-                        if (event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window)) {
+                    case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+                        if (event.window.windowID == SDL_GetWindowID(window)) {
                             done = true;
                         }
                         break;
                         
-                    case SDL_CONTROLLERAXISMOTION:
-                    case SDL_CONTROLLERBUTTONDOWN:
+                    case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+                    case SDL_EVENT_GAMEPAD_BUTTON_UP:
+                    case SDL_EVENT_GAMEPAD_AXIS_MOTION:
                         Windows::HandleInput(data, event);
 
-                        if (event.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
+                        if (event.gbutton.button == SDL_GAMEPAD_BUTTON_START) {
                             done = true;
                         }
                         break;

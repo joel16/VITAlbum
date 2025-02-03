@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 namespace GUI {
     SDL_Renderer *GetRenderer(void);

@@ -1,6 +1,6 @@
 #include <jconfig.h>
 #include <png.h>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <tiffvers.h>
 #include <webp/decode.h>
 
@@ -13,7 +13,6 @@
 #define TO_STRING(x) STRINGIFY(x)
 
 namespace Tabs {
-    static SDL_version sdlVersion;
     static std::string vitalbum_ver = APP_VERSION;
 
     void Settings(void) {
@@ -49,8 +48,7 @@ namespace Tabs {
             ImGui::Text("Dear imGui version: %s", ImGui::GetVersion());
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             
-            SDL_GetVersion(&sdlVersion);
-            ImGui::Text("SDL2 version: %u.%u.%u", sdlVersion.major, sdlVersion.minor, sdlVersion.patch);
+            ImGui::Text("SDL2 version: %u.%u.%u", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             
             ImGui::Text("libjpeg-turbo version: %s", TO_STRING(LIBJPEG_TURBO_VERSION));

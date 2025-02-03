@@ -32,16 +32,12 @@ unsigned const FOLDER = 0, IMAGE = 1;
 
 namespace Textures {
     static bool Create(unsigned char *data, Tex &texture) {
-        SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(
-                data,
-                texture.width,
-                texture.height,
-                32,
-                texture.width * 4,
-                0x000000FF,
-                0x0000FF00,
-                0x00FF0000,
-                0xFF000000
+        SDL_Surface *surface = SDL_CreateSurfaceFrom(
+            texture.width,
+            texture.height,
+            SDL_PIXELFORMAT_RGBA8888,
+            data,
+            texture.width * 4
         );
         
         if (surface == nullptr) {
@@ -52,11 +48,11 @@ namespace Textures {
         texture.ptr = SDL_CreateTextureFromSurface(GUI::GetRenderer(), surface);
         if (texture.ptr == nullptr) {
             Log::Error("Failed to create SDL texture: %s\n", SDL_GetError());
-            SDL_FreeSurface(surface);
+            SDL_DestroySurface(surface);
             return false;
         }
         
-        SDL_FreeSurface(surface);
+        SDL_DestroySurface(surface);
         return true;
     }
 
@@ -99,7 +95,9 @@ namespace Textures {
             return false;
         }
 
-        SDL_QueryTexture(texture.ptr, nullptr, nullptr, &texture.width, &texture.height);
+        SDL_PropertiesID properties = SDL_GetTextureProperties(texture.ptr);
+        texture.width = SDL_GetNumberProperty(properties, SDL_PROP_TEXTURE_WIDTH_NUMBER, -1);
+        texture.height = SDL_GetNumberProperty(properties, SDL_PROP_TEXTURE_HEIGHT_NUMBER, -1);
         return true;
     }
 
