@@ -48,7 +48,7 @@ namespace Tabs {
             ImGui::Text("Dear imGui version: %s", ImGui::GetVersion());
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             
-            ImGui::Text("SDL2 version: %u.%u.%u", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
+            ImGui::Text("SDL version: %u.%u.%u", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION);
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             
             ImGui::Text("libjpeg-turbo version: %s", TO_STRING(LIBJPEG_TURBO_VERSION));
