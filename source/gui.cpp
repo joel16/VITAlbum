@@ -167,6 +167,14 @@ namespace GUI {
 
         ImGuiIO& io = ImGui::GetIO(); (void)io;
 
+        // Get gamepad for right analog stick
+        int count = 0;
+        SDL_GetGamepads(std::addressof(count));
+        if (count > 0) {
+            SDL_Gamepad *gamepad = SDL_OpenGamepad(1);
+            data.gamepad = gamepad;
+        }
+
         while (!done) {
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
@@ -184,8 +192,6 @@ namespace GUI {
                         break;
                         
                     case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
-                    case SDL_EVENT_GAMEPAD_BUTTON_UP:
-                    case SDL_EVENT_GAMEPAD_AXIS_MOTION:
                         Windows::HandleInput(data, event);
 
                         if (event.gbutton.button == SDL_GAMEPAD_BUTTON_START) {
@@ -195,9 +201,15 @@ namespace GUI {
                 }
             }
 
+            Windows::HandleAnalogInput(data);
+
             Renderer::Start();
             Windows::MainWindow(data);
             Renderer::End(io, clear_color, renderer);
+        }
+        
+        if (data.gamepad) {
+            SDL_CloseGamepad(data.gamepad);
         }
         
         data.entries.clear();

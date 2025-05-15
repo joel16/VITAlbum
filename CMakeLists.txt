@@ -31,8 +31,6 @@ find_package(SDL3 REQUIRED)
 
 include_directories(
     ${VITASDK}/arm-vita-eabi/include/freetype2/
-    ${SDL3_INCLUDE_DIR}
-    ${SDL3_IMAGE_INCLUDE_DIRS}
     libs/imgui
     libs/imgui/backends
     libs/libtiff

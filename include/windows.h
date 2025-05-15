@@ -28,6 +28,7 @@ typedef struct {
     Tex texture;
     unsigned int frame_count = 0;
     float zoom_factor = 1.0f;
+    SDL_Gamepad *gamepad;
 } WindowData;
 
 extern int sort;
@@ -35,6 +36,7 @@ extern int sort;
 namespace Windows {
     void SetupWindow(void);
     void ExitWindow(void);
+    void HandleAnalogInput(WindowData& data);
     void HandleInput(WindowData& data, SDL_Event& event);
     void MainWindow(WindowData& data);
     void ImageViewer(WindowData& data);

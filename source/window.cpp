@@ -1,3 +1,4 @@
+#include <cmath>
 #include <psp2/kernel/threadmgr.h>
 
 #include "config.h"
@@ -78,6 +79,28 @@ namespace Windows {
         }
 
         return ret;
+    }
+
+    void HandleAnalogInput(WindowData& data) {
+        if (!data.gamepad || properties || data.state != WINDOW_STATE_IMAGEVIEWER) {
+            return;
+        }
+        
+        Sint16 axisValue = SDL_GetGamepadAxis(data.gamepad, SDL_GAMEPAD_AXIS_RIGHTY);
+        float value = axisValue / 32767.0f;
+        const float deadzone = 0.2f;
+        
+        if (std::fabs(value) > deadzone) {
+            float zoomSpeed = 0.5f * ImGui::GetIO().DeltaTime;
+            data.zoom_factor -= value * zoomSpeed;
+            
+            if (data.zoom_factor > 5.0f) {
+                data.zoom_factor = 5.0f;
+            }
+            if (data.zoom_factor < 0.1f) {
+                data.zoom_factor = 0.1f;
+            }
+        }
     }
 
     void HandleInput(WindowData& data, SDL_Event& event) {
