@@ -28,6 +28,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -ffast-math -mtune=cortex-a9 -mfpu=n
 set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1")
 
 find_package(SDL3 REQUIRED)
+find_package(SDL3_image REQUIRED)
 
 include_directories(
     ${VITASDK}/arm-vita-eabi/include/freetype2/
@@ -70,14 +71,10 @@ target_link_libraries(${PROJECT_NAME}
     freetype
     bz2
     tiff
-    turbojpeg
-    jpeg
-    png
     lzma
-    z
     zstd
-    SDL3_image
-    SDL3::SDL3-static
+    SDL3_image::SDL3_image
+    SDL3::SDL3
     webpdemux
     webp
     sharpyuv
