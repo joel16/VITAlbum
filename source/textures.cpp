@@ -32,27 +32,25 @@ unsigned const FOLDER = 0, IMAGE = 1;
 
 namespace Textures {
     static bool Create(unsigned char *data, Tex &texture) {
-        SDL_Surface *surface = SDL_CreateSurfaceFrom(
-            texture.width,
-            texture.height,
+        texture.ptr = SDL_CreateTexture(
+            GUI::GetRenderer(),
             SDL_PIXELFORMAT_RGBA8888,
-            data,
-            texture.width * 4
+            SDL_TEXTUREACCESS_STREAMING,
+            texture.width,
+            texture.height
         );
         
-        if (surface == nullptr) {
-            Log::Error("Failed to create SDL surface: %s\n", SDL_GetError());
-            return false;
-        }
-        
-        texture.ptr = SDL_CreateTextureFromSurface(GUI::GetRenderer(), surface);
-        if (texture.ptr == nullptr) {
+        if (!texture.ptr) {
             Log::Error("Failed to create SDL texture: %s\n", SDL_GetError());
-            SDL_DestroySurface(surface);
             return false;
         }
         
-        SDL_DestroySurface(surface);
+        if (SDL_UpdateTexture(texture.ptr, nullptr, data, texture.width * 4) != 0) {
+            Log::Error("Failed to update texture: %s\n", SDL_GetError());
+            SDL_DestroyTexture(texture.ptr);
+            return false;
+        }
+        
         return true;
     }
 
