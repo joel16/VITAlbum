@@ -18,7 +18,7 @@ namespace Keyboard {
     static uint16_t buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
     std::string text = std::string();
 
-    int Init(const std::string &title, const std::string &initial_text) {
+    int Init(const std::string &title, const std::string &initialText) {
         if (running)
             return -1;
 
@@ -27,7 +27,7 @@ namespace Keyboard {
 
         // UTF8 -> UTF16
         std::u16string title_u16 = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(title.data());
-        std::u16string initial_text_u16 = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(initial_text.data());
+        std::u16string initialText_u16 = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(initialText.data());
 
         SceImeDialogParam param;
         sceImeDialogParamInit(&param);
@@ -39,7 +39,7 @@ namespace Keyboard {
             
         param.title = (const SceWChar16 *)title_u16.c_str();
         param.maxTextLength = SCE_IME_DIALOG_MAX_TEXT_LENGTH;
-        param.initialText = (SceWChar16 *)initial_text_u16.c_str();
+        param.initialText = (SceWChar16 *)initialText_u16.c_str();
         param.inputTextBuffer = buffer;
         
         int ret = 0;
@@ -76,8 +76,8 @@ namespace Keyboard {
         return status;
     }
 
-    std::string GetText(const std::string &title, const std::string &initial_text) {
-        if (R_FAILED(Init(title, initial_text)))
+    std::string GetText(const std::string &title, const std::string &initialText) {
+        if (R_FAILED(Init(title, initialText)))
             return std::string();
         
         bool done = false;

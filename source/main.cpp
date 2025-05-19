@@ -4,6 +4,7 @@
 #include "fs.h"
 #include "gui.h"
 #include "log.h"
+#include "reader.h"
 #include "textures.h"
 #include "utils.h"
 
@@ -22,14 +23,13 @@ namespace Services {
         GUI::Init();
         Textures::Init();
         Utils::InitAppUtil();
-        
-        SCE_CTRL_ENTER = Utils::GetEnterButton();
-        SCE_CTRL_CANCEL = Utils::GetCancelButton();
+        Reader::Init();
         return 0;
     }
     
     void Exit(void) {
         // Clean up
+        Reader::Exit();
         Utils::EndAppUtil();
         Textures::Exit();
         Log::Exit();

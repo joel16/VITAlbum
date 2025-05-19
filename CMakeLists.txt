@@ -55,12 +55,13 @@ add_executable(${PROJECT_NAME}
     source/config.cpp
     source/fs.cpp
     source/gui.cpp
-    source/image.cpp
     source/keyboard.cpp
     source/log.cpp
     source/main.cpp
+    source/reader.cpp
     source/textures.cpp
     source/utils.cpp
+    source/viewer.cpp
     source/window.cpp
     source/popups/properties.cpp
     source/tabs/filebrowser.cpp
@@ -68,6 +69,8 @@ add_executable(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
+    mupdf
+    mupdf-third
     freetype
     bz2
     tiff
@@ -91,5 +94,6 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
     FILE sce_sys/livearea/contents/startup.png sce_sys/livearea/contents/startup.png
     FILE sce_sys/livearea/contents/template.xml sce_sys/livearea/contents/template.xml
     FILE res/folder.png res/folder.png
+    FILE res/book.png res/book.png
     FILE res/image.png res/image.png
 )

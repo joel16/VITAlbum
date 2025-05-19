@@ -5,12 +5,20 @@
 #include <string>
 #include <vector>
 
+typedef enum FileType {
+    FileTypeNone,
+    FileTypeImage,
+    FileTypeBook
+} FileType;
+
 namespace FS {
     bool FileExists(const std::string &path);
     bool DirExists(const std::string &path);
     int MakeDir(const std::string &path);
     int GetFileSize(const std::string &path, SceOff &size);
     const char *GetFileExt(const char *filename);
+    bool IsBookType(const char *filename);
+    bool IsImageType(const char *filename);
     int GetDirList(const std::string &path, std::vector<SceIoDirent> &entries);
     int ChangeDirNext(const std::string &path, std::vector<SceIoDirent> &entries);
     int ChangeDirPrev(std::vector<SceIoDirent> &entries);

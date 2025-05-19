@@ -13,7 +13,7 @@ typedef struct {
 } Tex;
 
 extern std::vector<Tex> icons;
-extern unsigned const FOLDER, IMAGE;
+extern unsigned const FOLDER, BOOK, IMAGE;
 
 namespace Textures {
     bool LoadImageFile(const std::string &path, Tex &texture);

@@ -6,11 +6,13 @@
 
 #include "gui.h"
 #include "imgui.h"
+#include "reader.h"
 #include "textures.h"
 
 enum WINDOW_STATES {
     WINDOW_STATE_FILEBROWSER = 0,
     WINDOW_STATE_IMAGEVIEWER,
+    WINDOW_STATE_BOOKVIEWER,
     WINDOW_STATE_SETTINGS
 };
 
@@ -29,6 +31,7 @@ typedef struct {
     unsigned int frame_count = 0;
     float zoom_factor = 1.0f;
     SDL_Gamepad *gamepad;
+    Book book;
 } WindowData;
 
 extern int sort;
@@ -36,8 +39,8 @@ extern int sort;
 namespace Windows {
     void SetupWindow(void);
     void ExitWindow(void);
-    void HandleAnalogInput(WindowData& data);
+    void HandleAnalogInput(WindowData& data, bool isBook);
     void HandleInput(WindowData& data, SDL_Event& event);
     void MainWindow(WindowData& data);
-    void ImageViewer(WindowData& data);
+    void Viewer(WindowData &data, bool isBook);
 }

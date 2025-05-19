@@ -5,23 +5,24 @@
 #include "fs.h"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "reader.h"
 #include "utils.h"
 #include "windows.h"
 
 int sort = 0;
 
 namespace Tabs {
-    static const ImVec2 tex_size = ImVec2(22, 22);
+    static const ImVec2 texSize = ImVec2(22, 22);
     static const char *devices[] = { "os0:", "pd0:", "sa0:", "tm0:", "ud0:", "ur0:", "ux0:", "vd0:", "vs0:"};
 
     // Sort using ImGuiTableSortSpecs
     bool Sort(const SceIoDirent &entryA, const SceIoDirent &entryB) {
         bool descending = false;
-        ImGuiTableSortSpecs *table_sort_specs = ImGui::TableGetSortSpecs();
+        ImGuiTableSortSpecs *tableSortSpecs = ImGui::TableGetSortSpecs();
         
-        for (int i = 0; i < table_sort_specs->SpecsCount; ++i) {
-            const ImGuiTableColumnSortSpecs *column_sort_spec = &table_sort_specs->Specs[i];
-            descending = (column_sort_spec->SortDirection == ImGuiSortDirection_Descending);
+        for (int i = 0; i < tableSortSpecs->SpecsCount; ++i) {
+            const ImGuiTableColumnSortSpecs *columnSortSpec = &tableSortSpecs->Specs[i];
+            descending = (columnSortSpec->SortDirection == ImGuiSortDirection_Descending);
 
             // Make sure ".." stays at the top regardless of sort direction
             if (strcasecmp(entryA.d_name, "..") == 0) {
@@ -39,7 +40,7 @@ namespace Tabs {
                 return false;
             }
             else {
-                switch (column_sort_spec->ColumnIndex) {
+                switch (columnSortSpec->ColumnIndex) {
                     case 0: // filename
                         sort = descending? FS_SORT_ALPHA_DESC : FS_SORT_ALPHA_ASC;
                         return descending? (strcasecmp(entryB.d_name, entryA.d_name) < 0) : (strcasecmp(entryA.d_name, entryB.d_name) < 0);
@@ -118,10 +119,15 @@ namespace Tabs {
 
                     ImGui::TableNextColumn();
                     if (SCE_S_ISDIR(data.entries[i].d_stat.st_mode)) {
-                        ImGui::Image(reinterpret_cast<ImTextureID>(icons[FOLDER].ptr), tex_size);
+                        ImGui::Image(reinterpret_cast<ImTextureID>(icons[FOLDER].ptr), texSize);
                     }
                     else {
-                        ImGui::Image(reinterpret_cast<ImTextureID>(icons[IMAGE].ptr), tex_size);
+                        if (FS::IsBookType(data.entries[i].d_name)) {
+                            ImGui::Image(reinterpret_cast<ImTextureID>(icons[BOOK].ptr), texSize);
+                        }
+                        else {
+                            ImGui::Image(reinterpret_cast<ImTextureID>(icons[IMAGE].ptr), texSize);
+                        }
                     }
                     
                     ImGui::SameLine();
@@ -145,9 +151,16 @@ namespace Tabs {
                         }
                         else {
                             std::string path = FS::BuildPath(data.entries[i]);
-                            bool ret = Textures::LoadImageFile(path, data.texture);
-                            IM_ASSERT(ret);
-                            data.state = WINDOW_STATE_IMAGEVIEWER;
+
+                            if (FS::IsBookType(data.entries[i].d_name)) {
+                                Reader::OpenDocument(path, data.book);
+                                data.state = WINDOW_STATE_BOOKVIEWER;
+                            }
+                            else {
+                                bool ret = Textures::LoadImageFile(path, data.texture);
+                                IM_ASSERT(ret);
+                                data.state = WINDOW_STATE_IMAGEVIEWER;   
+                            }
                         }
                     }
 

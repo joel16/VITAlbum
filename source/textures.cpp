@@ -28,7 +28,7 @@
 #include "utils.h"
 
 std::vector<Tex> icons;
-unsigned const FOLDER = 0, IMAGE = 1;
+unsigned const FOLDER = 0, BOOK = 1, IMAGE = 2;
 
 namespace Textures {
     static bool Create(unsigned char *data, Tex &texture) {
@@ -186,13 +186,14 @@ namespace Textures {
     }
     
     void Init(void) {
-        const int num_icons = 2;
-        std::string filenames[num_icons] = {
+        const int numIcons = 3;
+        std::string filenames[numIcons] = {
             "app0:res/folder.png",
+            "app0:res/book.png",
             "app0:res/image.png"
         };
 
-        for (int i = 0; i < num_icons; i++) {
+        for (int i = 0; i < numIcons; i++) {
             Tex texture;
             bool ret = Textures::LoadImage(filenames[i], texture);
             IM_ASSERT(ret);

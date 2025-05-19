@@ -201,7 +201,12 @@ namespace GUI {
                 }
             }
 
-            Windows::HandleAnalogInput(data);
+            if (data.state == WINDOW_STATE_BOOKVIEWER) {
+                Windows::HandleAnalogInput(data, true);
+            }
+            else if (data.state == WINDOW_STATE_IMAGEVIEWER) {
+                Windows::HandleAnalogInput(data, false);
+            }
 
             Renderer::Start();
             Windows::MainWindow(data);

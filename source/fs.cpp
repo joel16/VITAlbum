@@ -78,8 +78,20 @@ namespace FS {
         ext[sizeof(ext) - 1] = '\0'; // Ensure null termination
         return ext;
     }
+
+    bool IsBookType(const char *filename) {
+        const char *ext = FS::GetFileExt(filename);
+
+        if ((strncasecmp(ext, ".CBT", 4) == 0) || (strncasecmp(ext, ".CBZ", 4) == 0) || (strncasecmp(ext, ".EPUB", 5) == 0)
+            || (strncasecmp(ext, ".FB2", 4) == 0) || (strncasecmp(ext, ".MOBI", 5) == 0) || (strncasecmp(ext, ".PDF", 4) == 0)
+            || (strncasecmp(ext, ".XPS", 4) == 0)) {
+            return true;
+        }
+        
+        return false;
+    }
     
-    static bool IsImageType(const char *filename) {
+    bool IsImageType(const char *filename) {
         const char *ext = FS::GetFileExt(filename);
         
         if ((strncasecmp(ext, ".BMP", 4) == 0) || (strncasecmp(ext, ".GIF", 4) == 0) || (strncasecmp(ext, ".ICO", 4) == 0)
@@ -87,6 +99,26 @@ namespace FS {
             || (strncasecmp(ext, ".PPM", 4) == 0) || (strncasecmp(ext, ".PNG", 4) == 0) || (strncasecmp(ext, ".PSD", 4) == 0)
             || (strncasecmp(ext, ".SVG", 4) == 0) || (strncasecmp(ext, ".TGA", 4) == 0) || (strncasecmp(ext, ".TIFF", 5) == 0)
             || (strncasecmp(ext, ".WEBP", 5) == 0)) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    static bool IsSupportedType(const char *filename) {
+        const char *ext = FS::GetFileExt(filename);
+        
+        if ((strncasecmp(ext, ".BMP", 4) == 0) || (strncasecmp(ext, ".GIF", 4) == 0) || (strncasecmp(ext, ".ICO", 4) == 0)
+            || (strncasecmp(ext, ".JPG", 4) == 0) || (strncasecmp(ext, ".JPEG", 5) == 0) || (strncasecmp(ext, ".PGM", 4) == 0)
+            || (strncasecmp(ext, ".PPM", 4) == 0) || (strncasecmp(ext, ".PNG", 4) == 0) || (strncasecmp(ext, ".PSD", 4) == 0)
+            || (strncasecmp(ext, ".SVG", 4) == 0) || (strncasecmp(ext, ".TGA", 4) == 0) || (strncasecmp(ext, ".TIFF", 5) == 0)
+            || (strncasecmp(ext, ".WEBP", 5) == 0)) {
+            return true;
+        }
+
+        if ((strncasecmp(ext, ".CBT", 4) == 0) || (strncasecmp(ext, ".CBZ", 4) == 0) || (strncasecmp(ext, ".EPUB", 5) == 0)
+            || (strncasecmp(ext, ".FB2", 4) == 0) || (strncasecmp(ext, ".MOBI", 5) == 0) || (strncasecmp(ext, ".PDF", 4) == 0)
+            || (strncasecmp(ext, ".XPS", 4) == 0)) {
             return true;
         }
         
@@ -121,7 +153,7 @@ namespace FS {
             }
 
             if (ret) {
-                if ((!FS::IsImageType(entry.d_name)) && (!SCE_S_ISDIR(entry.d_stat.st_mode))) {
+                if ((!FS::IsSupportedType(entry.d_name)) && (!SCE_S_ISDIR(entry.d_stat.st_mode))) {
                     continue;
                 }
             }

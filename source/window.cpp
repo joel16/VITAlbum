@@ -24,7 +24,14 @@ namespace Windows {
     };
 
     static void ClearTextures(WindowData& data) {
-        Textures::Free(data.texture);
+        if (data.texture.ptr || data.texture.frames) {
+            Textures::Free(data.texture);
+        }
+
+        if (data.book.page != nullptr) {
+            SDL_DestroyTexture(data.book.page);
+            data.book.page = nullptr;
+        }
     }
 
     static bool HandleScroll(WindowData& data, int index) {
@@ -42,47 +49,42 @@ namespace Windows {
         return false;
     }
 
-    static bool HandlePrev(WindowData& data) {
-        bool ret = false;
+    static bool NavigatePage(WindowData &data, int direction) {
+        int new_page = data.book.page_number + direction;
+        
+        if (new_page < 0 || new_page >= data.book.page_count) {
+            data.book.page_count = 0;
+            data.book.page_number = 0;
+            return false;
+        }
+        
+        data.book.page_number = new_page;
+        Reader::RenderPage(data.book);
+        Reader::ResetPosition(data.book);
+        return true;
+    }
 
-        for (int i = data.selected - 1; i > 0; i--) {
-            std::string filename = data.entries[i].d_name;
+    static bool NavigateImage(WindowData& data, int direction) {
+        int start = data.selected + direction;
+        int end = direction > 0 ? data.entries.size() : -1;
+        
+        for (int i = start; i != end; i += direction) {
+            const std::string& filename = data.entries[i].d_name;
+            
             if (filename.empty()) {
                 continue;
             }
-                
-            if (!(ret = Windows::HandleScroll(data, i))) {
-                continue;
+            
+            if (Windows::HandleScroll(data, i)) {
+                return true;
             }
-            else {
-                break;
-            }
-        }
-
-        return ret;
-    }
-
-    static bool HandleNext(WindowData& data) {
-        bool ret = false;
-
-        if (data.selected == data.entries.size()) {
-            return ret;
         }
         
-        for (unsigned int i = data.selected + 1; i < data.entries.size(); i++) {
-            if (!(ret = Windows::HandleScroll(data, i))) {
-                continue;
-            }
-            else {
-                break;
-            }
-        }
-
-        return ret;
+        return false;
     }
-
-    void HandleAnalogInput(WindowData& data) {
-        if (!data.gamepad || properties || data.state != WINDOW_STATE_IMAGEVIEWER) {
+    
+    void HandleAnalogInput(WindowData& data, bool isBook) {
+        if (!data.gamepad) {
             return;
         }
         
@@ -92,13 +94,21 @@ namespace Windows {
         
         if (std::fabs(value) > deadzone) {
             float zoomSpeed = 0.5f * ImGui::GetIO().DeltaTime;
-            data.zoom_factor -= value * zoomSpeed;
             
-            if (data.zoom_factor > 5.0f) {
-                data.zoom_factor = 5.0f;
+            if (isBook) {
+                float newZoom = data.book.zoom - value * zoomSpeed;
+                Reader::SetZoom(data.book, newZoom);
             }
-            if (data.zoom_factor < 0.1f) {
-                data.zoom_factor = 0.1f;
+            else {
+                data.zoom_factor -= value * zoomSpeed;
+
+                if (data.zoom_factor > 5.0f) {
+                    data.zoom_factor = 5.0f;
+                }
+
+                if (data.zoom_factor < 0.1f) {
+                    data.zoom_factor = 0.1f;
+                }
             }
         }
     }
@@ -107,39 +117,59 @@ namespace Windows {
         int button = event.gbutton.button;
 
         switch (data.state) {
+            case WINDOW_STATE_BOOKVIEWER:
+                if (button == SDL_GAMEPAD_BUTTON_WEST) {
+                    data.book.rotate += 90.f;
+                    if (data.book.rotate > 360.f) {
+                        data.book.rotate = 0.f;
+                    }
+                    
+                    Reader::RenderPage(data.book);
+                }
+                else if (button == SDL_GAMEPAD_BUTTON_EAST) {
+                    Windows::ClearTextures(data);
+                    data.book.page_count = 0;
+                    data.book.page_number = 0;
+                    data.zoom_factor = 1.0f;
+                    data.state = WINDOW_STATE_FILEBROWSER;
+                }
+                else if (button == SDL_GAMEPAD_BUTTON_LEFT_SHOULDER) {
+                    Windows::ClearTextures(data);
+                    sceKernelDelayThread(100000);
+                    
+                    if (!Windows::NavigatePage(data, -1)) {
+                        data.state = WINDOW_STATE_FILEBROWSER;
+                    }
+                }
+                else if (button == SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER) {
+                    Windows::ClearTextures(data);
+                    sceKernelDelayThread(100000);
+                    
+                    if (!Windows::NavigatePage(data, 1)) {
+                        data.state = WINDOW_STATE_FILEBROWSER;
+                    }
+                }
+
+                break;
             case WINDOW_STATE_IMAGEVIEWER:
                 if (button == SDL_GAMEPAD_BUTTON_NORTH) {
                     properties = !properties;
                 }
                 
                 if (!properties) {
-                    if ((event.jaxis.axis == SDL_GAMEPAD_AXIS_RIGHTY) && (event.jaxis.value < -8000)) {
-                        data.zoom_factor += 0.5f * ImGui::GetIO().DeltaTime;
-
-                        if (data.zoom_factor > 5.0f) {
-                            data.zoom_factor = 5.0f;
-                        }
-                    }
-                    else if ((event.jaxis.axis == SDL_GAMEPAD_AXIS_RIGHTY) && (event.jaxis.value > 8000)) {
-                        data.zoom_factor -= 0.5f * ImGui::GetIO().DeltaTime;
-
-                        if (data.zoom_factor < 0.1f) {
-                            data.zoom_factor = 0.1f;
-                        }
-                    }
-                    if (button == SDL_GAMEPAD_AXIS_LEFT_TRIGGER) {
+                    if (button == SDL_GAMEPAD_BUTTON_LEFT_SHOULDER) {
                         Windows::ClearTextures(data);
                         sceKernelDelayThread(100000);
 
-                        if (!Windows::HandlePrev(data)) {
+                        if (!Windows::NavigateImage(data, -1)) {
                             data.state = WINDOW_STATE_FILEBROWSER;
                         }
                     }
-                    else if (button == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) {
+                    else if (button == SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER) {
                         Windows::ClearTextures(data);
                         sceKernelDelayThread(100000);
 
-                        if (!Windows::HandleNext(data)) {
+                        if (!Windows::NavigateImage(data, 1)) {
                             data.state = WINDOW_STATE_FILEBROWSER;
                         }
                     }
@@ -172,8 +202,11 @@ namespace Windows {
                 ImGui::EndTabBar();
             }
 
-            if (data.state == WINDOW_STATE_IMAGEVIEWER) {
-                Windows::ImageViewer(data);
+            if (data.state == WINDOW_STATE_BOOKVIEWER) {
+                Windows::Viewer(data, true);
+            }
+            else if (data.state == WINDOW_STATE_IMAGEVIEWER) {
+                Windows::Viewer(data, false);
             }
         }
 

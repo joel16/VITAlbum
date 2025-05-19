@@ -8,11 +8,7 @@
 #include "log.h"
 #include "utils.h"
 
-int SCE_CTRL_ENTER, SCE_CTRL_CANCEL;
-unsigned int pressed;
-
 namespace Utils {
-    static SceCtrlData pad, old_pad;
 
     int InitAppUtil(void) {
         SceAppUtilInitParam init;
@@ -54,48 +50,6 @@ namespace Utils {
         if (R_FAILED(ret = sceAppUtilShutdown())) {
             Log::Error("sceAppUtilShutdown failed: 0x%lx\n", ret);
             return ret;
-        }
-        
-        return 0;
-    }
-
-    SceCtrlData ReadControls(void) {
-        sceClibMemset(&pad, 0, sizeof(SceCtrlData));
-        sceCtrlPeekBufferPositive(0, &pad, 1);
-        pressed = pad.buttons & ~old_pad.buttons;
-        old_pad = pad;
-        return pad;
-    }
-
-    int GetEnterButton(void) {
-        int button = 0, ret = 0;
-        if (R_FAILED(ret = sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON, &button))) {
-            Log::Error("sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON) failed: 0x%lx\n", ret);
-            return ret;
-        }
-        
-        if (button == SCE_SYSTEM_PARAM_ENTER_BUTTON_CIRCLE) {
-            return SCE_CTRL_CIRCLE;
-        }
-        else {
-            return SCE_CTRL_CROSS;
-        }
-        
-        return 0;
-    }
-
-    int GetCancelButton(void) {
-        int button = 0, ret = 0;
-        if (R_FAILED(ret = sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON, &button))) {
-            Log::Error("sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON) failed: 0x%lx\n", ret);
-            return ret;
-        }
-        
-        if (button == SCE_SYSTEM_PARAM_ENTER_BUTTON_CIRCLE) {
-            return SCE_CTRL_CROSS;
-        }
-        else {
-            return SCE_CTRL_CIRCLE;
         }
         
         return 0;

@@ -1,3 +1,4 @@
+#include <mupdf/fitz/version.h>
 #include <jconfig.h>
 #include <png.h>
 #include <SDL3/SDL.h>
@@ -20,11 +21,23 @@ namespace Tabs {
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             ImGui::Indent(5.f);
 
+            ImGui::TextColored(ImVec4(0.00f, 0.50f, 0.50f, 1.0f), "Book Viewer:");
+            ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+            ImGui::Indent(15.f);
+            
+            if (ImGui::Checkbox(" Display book filename", &cfg.bookFilename)) {
+                Config::Save(cfg);
+            }
+
+            ImGui::Unindent();
+            ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+            ImGui::Indent(5.f);
+            
             ImGui::TextColored(ImVec4(0.00f, 0.50f, 0.50f, 1.0f), "Image Viewer:");
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             ImGui::Indent(15.f);
             
-            if (ImGui::Checkbox(" Display filename", &cfg.image_filename)) {
+            if (ImGui::Checkbox(" Display image filename", &cfg.imageFilename)) {
                 Config::Save(cfg);
             }
             
@@ -61,6 +74,9 @@ namespace Tabs {
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             
             ImGui::Text("libwebp version: %d.%d.%d", (WebPGetDecoderVersion() >> 16) & 0xFF, (WebPGetDecoderVersion() >> 8) & 0xFF, WebPGetDecoderVersion() & 0xFF);
+            ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
+
+            ImGui::Text("MuPDF version: %s", FZ_VERSION);
 
             ImGui::Unindent();
             ImGui::EndTabItem();
