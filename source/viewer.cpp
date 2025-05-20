@@ -29,7 +29,7 @@ namespace Windows {
     void Viewer(WindowData &data, bool isBook) {
         Windows::SetupWindow();
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-        ImGuiWindowFlags_ fileNameFlag = !cfg.imageFilename ? ImGuiWindowFlags_NoTitleBar : ImGuiWindowFlags_None;
+        ImGuiWindowFlags_ fileNameFlag = !cfg.filename ? ImGuiWindowFlags_NoTitleBar : ImGuiWindowFlags_None;
         
         const char* window_title = data.entries[data.selected].d_name;
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |

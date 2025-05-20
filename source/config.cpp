@@ -8,14 +8,14 @@
 #include "log.h"
 #include "utils.h"
 
-#define CONFIG_VERSION 4
+#define CONFIG_VERSION 3
 
 config_t cfg;
 
 namespace Config {
-    static constexpr char configPath[] = "ux0:data/VITAlbum/config.json";
-    static const char *configFile = "{\n\t\"version\": %d,\n\t\"cwd\": \"%s\",\n\t\"device\": \"%s\",\n\t\"bookname\": %s,\n\t\"imagename\": %s,\n\t\"sort\": %d\n}";
-    static int configVersionHolder = 0;
+    static constexpr char config_path[] = "ux0:data/VITAlbum/config.json";
+    static const char *config_file = "{\n\t\"version\": %d,\n\t\"cwd\": \"%s\",\n\t\"device\": \"%s\",\n\t\"filename\": %s,\n\t\"sort\": %d\n}";
+    static int config_version_holder = 0;
     
     class Allocator : public sce::Json::MemAllocator {
         public:
@@ -33,11 +33,11 @@ namespace Config {
     
     int Save(config_t &config) {
         int ret = 0;
-        std::unique_ptr<char[]> buffer(new char[512]);
-        SceSize len = std::snprintf(buffer.get(), 512, configFile, CONFIG_VERSION,  config.cwd.c_str(), config.device.c_str(),
-            config.bookFilename? "true" : "false", config.imageFilename? "true" : "false", config.sort);
+        char buf[512];
+        SceSize len = std::snprintf(buf, 512, config_file, CONFIG_VERSION,  config.cwd.c_str(), config.device.c_str(),
+            config.filename? "true" : "false", config.sort);
         
-        if (R_FAILED(ret = FS::WriteFile(configPath, buffer.get(), len))) {
+        if (R_FAILED(ret = FS::WriteFile(config_path, buf, len))) {
             return ret;
         }
         
@@ -45,9 +45,6 @@ namespace Config {
     }
     
     static void SetDefault(config_t &config) {
-        config.sort = 0;
-        config.bookFilename = true;
-        config.imageFilename = false;
         config.device = "ux0:";
         config.cwd = "/";
     }
@@ -55,14 +52,14 @@ namespace Config {
     int Load(void) {
         int ret = 0;
             
-        if (!FS::FileExists(configPath)) {
+        if (!FS::FileExists(config_path)) {
             Config::SetDefault(cfg);
             return Config::Save(cfg);
         }
             
         SceUID file = 0;
-        if (R_FAILED(ret = file = sceIoOpen(configPath, SCE_O_RDONLY, 0))) {
-            Log::Error("sceIoOpen(%s) failed: 0x%lx\n", configPath, ret);
+        if (R_FAILED(ret = file = sceIoOpen(config_path, SCE_O_RDONLY, 0))) {
+            Log::Error("sceIoOpen(%s) failed: 0x%lx\n", config_path, ret);
             return ret;
         }
             
@@ -70,13 +67,13 @@ namespace Config {
         std::unique_ptr<char[]> buffer(new char[size]);
         
         if (R_FAILED(ret = sceIoPread(file, buffer.get(), size, SCE_SEEK_SET))) {
-            Log::Error("sceIoRead(%s) failed: 0x%lx\n", configPath, ret);
+            Log::Error("sceIoRead(%s) failed: 0x%lx\n", config_path, ret);
             sceIoClose(file);
             return ret;
         }
         
         if (R_FAILED(ret = sceIoClose(file))) {
-            Log::Error("sceIoClose(%s) failed: 0x%lx\n", configPath, ret);
+            Log::Error("sceIoClose(%s) failed: 0x%lx\n", config_path, ret);
             return ret;
         }
 
@@ -105,10 +102,9 @@ namespace Config {
         // We know sceJson API loops through the child values in root alphabetically.
         cfg.cwd = value.getValue(0).getString().c_str();
         cfg.device = value.getValue(1).getString().c_str();
-        cfg.bookFilename = value.getValue(2).getBoolean();
-        cfg.imageFilename = value.getValue(3).getBoolean();
+        cfg.filename = value.getValue(2).getBoolean();
         cfg.sort = value.getValue(3).getInteger();
-        configVersionHolder = value.getValue(4).getInteger();
+        config_version_holder = value.getValue(4).getInteger();
 
         // Build path with device + cwd
         const std::string path = cfg.device + cfg.cwd;
@@ -122,8 +118,8 @@ namespace Config {
         }
             
         // Delete config file if config file is updated. This will rarely happen.
-        if (configVersionHolder < CONFIG_VERSION) {
-            sceIoRemove(configPath);
+        if (config_version_holder < CONFIG_VERSION) {
+            sceIoRemove(config_path);
             Config::SetDefault(cfg);
             return Config::Save(cfg);
         }

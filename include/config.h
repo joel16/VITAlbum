@@ -4,8 +4,7 @@
 
 typedef struct {
     int sort = 0;
-    bool bookFilename = true;
-    bool imageFilename = false;
+    bool filename = true;
     std::string device;
     std::string cwd;
 } config_t;

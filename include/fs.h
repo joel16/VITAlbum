@@ -18,7 +18,6 @@ namespace FS {
     int GetFileSize(const std::string &path, SceOff &size);
     const char *GetFileExt(const char *filename);
     bool IsBookType(const char *filename);
-    bool IsImageType(const char *filename);
     int GetDirList(const std::string &path, std::vector<SceIoDirent> &entries);
     int ChangeDirNext(const std::string &path, std::vector<SceIoDirent> &entries);
     int ChangeDirPrev(std::vector<SceIoDirent> &entries);

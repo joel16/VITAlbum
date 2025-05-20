@@ -20,24 +20,12 @@ namespace Tabs {
         if (ImGui::BeginTabItem("Settings")) {
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             ImGui::Indent(5.f);
-
-            ImGui::TextColored(ImVec4(0.00f, 0.50f, 0.50f, 1.0f), "Book Viewer:");
+            
+            ImGui::TextColored(ImVec4(0.00f, 0.50f, 0.50f, 1.0f), "Image/Book Viewer:");
             ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
             ImGui::Indent(15.f);
             
-            if (ImGui::Checkbox(" Display book filename", &cfg.bookFilename)) {
-                Config::Save(cfg);
-            }
-
-            ImGui::Unindent();
-            ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-            ImGui::Indent(5.f);
-            
-            ImGui::TextColored(ImVec4(0.00f, 0.50f, 0.50f, 1.0f), "Image Viewer:");
-            ImGui::Dummy(ImVec2(0.0f, 5.0f)); // Spacing
-            ImGui::Indent(15.f);
-            
-            if (ImGui::Checkbox(" Display image filename", &cfg.imageFilename)) {
+            if (ImGui::Checkbox(" Display filename", &cfg.filename)) {
                 Config::Save(cfg);
             }
             

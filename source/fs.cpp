@@ -79,50 +79,39 @@ namespace FS {
         return ext;
     }
 
-    bool IsBookType(const char *filename) {
-        const char *ext = FS::GetFileExt(filename);
-
-        if ((strncasecmp(ext, ".CBT", 4) == 0) || (strncasecmp(ext, ".CBZ", 4) == 0) || (strncasecmp(ext, ".EPUB", 5) == 0)
-            || (strncasecmp(ext, ".FB2", 4) == 0) || (strncasecmp(ext, ".MOBI", 5) == 0) || (strncasecmp(ext, ".PDF", 4) == 0)
-            || (strncasecmp(ext, ".XPS", 4) == 0)) {
-            return true;
+    static bool MatchExtension(const char* ext, const char* const* extList, std::size_t count) {
+        for (std::size_t i = 0; i < count; ++i) {
+            if (strncasecmp(ext, extList[i], strlen(extList[i])) == 0) {
+                return true;
+            }
         }
         
         return false;
     }
     
-    bool IsImageType(const char *filename) {
-        const char *ext = FS::GetFileExt(filename);
+    static bool IsBookExtension(const char* ext) {
+        static const char* bookExts[] = {
+            ".CBT", ".CBZ", ".EPUB", ".FB2", ".MOBI", ".PDF", ".XPS"
+        };
         
-        if ((strncasecmp(ext, ".BMP", 4) == 0) || (strncasecmp(ext, ".GIF", 4) == 0) || (strncasecmp(ext, ".ICO", 4) == 0)
-            || (strncasecmp(ext, ".JPG", 4) == 0) || (strncasecmp(ext, ".JPEG", 5) == 0) || (strncasecmp(ext, ".PGM", 4) == 0)
-            || (strncasecmp(ext, ".PPM", 4) == 0) || (strncasecmp(ext, ".PNG", 4) == 0) || (strncasecmp(ext, ".PSD", 4) == 0)
-            || (strncasecmp(ext, ".SVG", 4) == 0) || (strncasecmp(ext, ".TGA", 4) == 0) || (strncasecmp(ext, ".TIFF", 5) == 0)
-            || (strncasecmp(ext, ".WEBP", 5) == 0)) {
-            return true;
-        }
+        return FS::MatchExtension(ext, bookExts, sizeof(bookExts) / sizeof(bookExts[0]));
+    }
+    
+    static bool IsImageExtension(const char* ext) {
+        static const char* imageExts[] = {
+            ".BMP", ".GIF", ".ICO", ".JPG", ".JPEG", ".PGM", ".PPM", ".PNG", ".PSD", ".SVG", ".TGA", ".TIFF", ".WEBP"
+        };
         
-        return false;
+        return FS::MatchExtension(ext, imageExts, sizeof(imageExts) / sizeof(imageExts[0]));
+    }
+    
+    bool IsBookType(const char* filename) {
+        return FS::IsBookExtension(FS::GetFileExt(filename));
     }
 
-    static bool IsSupportedType(const char *filename) {
-        const char *ext = FS::GetFileExt(filename);
-        
-        if ((strncasecmp(ext, ".BMP", 4) == 0) || (strncasecmp(ext, ".GIF", 4) == 0) || (strncasecmp(ext, ".ICO", 4) == 0)
-            || (strncasecmp(ext, ".JPG", 4) == 0) || (strncasecmp(ext, ".JPEG", 5) == 0) || (strncasecmp(ext, ".PGM", 4) == 0)
-            || (strncasecmp(ext, ".PPM", 4) == 0) || (strncasecmp(ext, ".PNG", 4) == 0) || (strncasecmp(ext, ".PSD", 4) == 0)
-            || (strncasecmp(ext, ".SVG", 4) == 0) || (strncasecmp(ext, ".TGA", 4) == 0) || (strncasecmp(ext, ".TIFF", 5) == 0)
-            || (strncasecmp(ext, ".WEBP", 5) == 0)) {
-            return true;
-        }
-
-        if ((strncasecmp(ext, ".CBT", 4) == 0) || (strncasecmp(ext, ".CBZ", 4) == 0) || (strncasecmp(ext, ".EPUB", 5) == 0)
-            || (strncasecmp(ext, ".FB2", 4) == 0) || (strncasecmp(ext, ".MOBI", 5) == 0) || (strncasecmp(ext, ".PDF", 4) == 0)
-            || (strncasecmp(ext, ".XPS", 4) == 0)) {
-            return true;
-        }
-        
-        return false;
+    bool IsSupportedType(const char* filename) {
+        const char* ext = FS::GetFileExt(filename);
+        return FS::IsImageExtension(ext) || FS::IsBookExtension(ext);
     }
 
     int GetDirList(const std::string &path, std::vector<SceIoDirent> &entries) {
