@@ -13,9 +13,9 @@
 config_t cfg;
 
 namespace Config {
-    static constexpr char config_path[] = "ux0:data/VITAlbum/config.json";
-    static const char *config_file = "{\n\t\"version\": %d,\n\t\"cwd\": \"%s\",\n\t\"device\": \"%s\",\n\t\"filename\": %s,\n\t\"sort\": %d\n}";
-    static int config_version_holder = 0;
+    static constexpr char configPath[] = "ux0:data/VITAlbum/config.json";
+    static const char *configFile = "{\n\t\"version\": %d,\n\t\"cwd\": \"%s\",\n\t\"device\": \"%s\",\n\t\"filename\": %s,\n\t\"sort\": %d\n}";
+    static int configVersion = 0;
     
     class Allocator : public sce::Json::MemAllocator {
         public:
@@ -34,10 +34,10 @@ namespace Config {
     int Save(config_t &config) {
         int ret = 0;
         char buf[512];
-        SceSize len = std::snprintf(buf, 512, config_file, CONFIG_VERSION,  config.cwd.c_str(), config.device.c_str(),
+        SceSize len = std::snprintf(buf, 512, configFile, CONFIG_VERSION,  config.cwd.c_str(), config.device.c_str(),
             config.filename? "true" : "false", config.sort);
         
-        if (R_FAILED(ret = FS::WriteFile(config_path, buf, len))) {
+        if (R_FAILED(ret = FS::WriteFile(configPath, buf, len))) {
             return ret;
         }
         
@@ -52,14 +52,14 @@ namespace Config {
     int Load(void) {
         int ret = 0;
             
-        if (!FS::FileExists(config_path)) {
+        if (!FS::FileExists(configPath)) {
             Config::SetDefault(cfg);
             return Config::Save(cfg);
         }
             
         SceUID file = 0;
-        if (R_FAILED(ret = file = sceIoOpen(config_path, SCE_O_RDONLY, 0))) {
-            Log::Error("sceIoOpen(%s) failed: 0x%lx\n", config_path, ret);
+        if (R_FAILED(ret = file = sceIoOpen(configPath, SCE_O_RDONLY, 0))) {
+            Log::Error("sceIoOpen(%s) failed: 0x%lx\n", configPath, ret);
             return ret;
         }
             
@@ -67,13 +67,13 @@ namespace Config {
         std::unique_ptr<char[]> buffer(new char[size]);
         
         if (R_FAILED(ret = sceIoPread(file, buffer.get(), size, SCE_SEEK_SET))) {
-            Log::Error("sceIoRead(%s) failed: 0x%lx\n", config_path, ret);
+            Log::Error("sceIoRead(%s) failed: 0x%lx\n", configPath, ret);
             sceIoClose(file);
             return ret;
         }
         
         if (R_FAILED(ret = sceIoClose(file))) {
-            Log::Error("sceIoClose(%s) failed: 0x%lx\n", config_path, ret);
+            Log::Error("sceIoClose(%s) failed: 0x%lx\n", configPath, ret);
             return ret;
         }
 
@@ -104,7 +104,7 @@ namespace Config {
         cfg.device = value.getValue(1).getString().c_str();
         cfg.filename = value.getValue(2).getBoolean();
         cfg.sort = value.getValue(3).getInteger();
-        config_version_holder = value.getValue(4).getInteger();
+        configVersion = value.getValue(4).getInteger();
 
         // Build path with device + cwd
         const std::string path = cfg.device + cfg.cwd;
@@ -118,8 +118,8 @@ namespace Config {
         }
             
         // Delete config file if config file is updated. This will rarely happen.
-        if (config_version_holder < CONFIG_VERSION) {
-            sceIoRemove(config_path);
+        if (configVersion < CONFIG_VERSION) {
+            sceIoRemove(configPath);
             Config::SetDefault(cfg);
             return Config::Save(cfg);
         }
