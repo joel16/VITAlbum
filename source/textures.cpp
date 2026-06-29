@@ -3,6 +3,7 @@
 #include <psp2/kernel/clib.h>
 
 // STB
+#define STBI_NEON
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_NO_STDIO
 #define STBI_NO_BMP
