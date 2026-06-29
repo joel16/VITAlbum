@@ -126,17 +126,12 @@ namespace GUI {
         ImGui_ImplSDLRenderer3_Init(renderer);
 
         // Build font atlas
-        unsigned char *pixels = nullptr;
-        int width = 0, height = 0, bytes_per_pixel = 0;
+        ImFontConfig fontConfig;
+        fontConfig.OversampleH = 1;
+        fontConfig.OversampleV = 1;
+        fontConfig.PixelSnapH = 1;
         
-        ImFontConfig font_config;
-        font_config.OversampleH = 1;
-        font_config.OversampleV = 1;
-        font_config.PixelSnapH = 1;
-        
-        io.Fonts->AddFontFromFileTTF("sa0:/data/font/pvf/jpn0.pvf", 20.0f, std::addressof(font_config), io.Fonts->GetGlyphRangesJapanese());
-        io.Fonts->GetTexDataAsAlpha8(std::addressof(pixels), std::addressof(width), std::addressof(height), std::addressof(bytes_per_pixel));
-        io.Fonts->Build();
+        io.Fonts->AddFontFromFileTTF("sa0:/data/font/pvf/jpn0.pvf", 20.0f, std::addressof(fontConfig));
 
         GUI::SetDefaultTheme();
         return 0;
