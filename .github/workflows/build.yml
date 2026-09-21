@@ -12,11 +12,6 @@ jobs:
     container: vitasdk/vitasdk:latest
     
     steps:
-    - name: Update git
-      run: |
-        apk update
-        apk add git
-
     - name: Checkout
       uses: actions/checkout@v4
       with:
