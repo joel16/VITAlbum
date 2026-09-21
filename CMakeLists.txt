@@ -34,14 +34,12 @@ include_directories(
     ${VITASDK}/arm-vita-eabi/include/freetype2/
     libs/imgui
     libs/imgui/backends
-    libs/libtiff
     libs
     include
 )
 
 link_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/libs/lib
 )
 
 add_executable(${PROJECT_NAME}

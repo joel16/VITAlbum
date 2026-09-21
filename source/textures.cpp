@@ -17,10 +17,6 @@
 #define STBI_ONLY_PSD
 #include "stb_image.h"
 
-// TIFF
-#include "tiffio.h"
-#include "tiffiop.h"
-
 #include "fs.h"
 #include "gui.h"
 #include "imgui.h"
@@ -119,46 +115,10 @@ namespace Textures {
         }
     }
 
-    static bool LoadImageTIFF(const std::string &path, Tex &texture) {
-        TIFF *tif = TIFFOpen(path.c_str(), "r");
-        if (tif) {
-            size_t pixel_count = 0;
-            SceUInt32 *raster = nullptr;
-            
-            TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &texture.width);
-            TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &texture.height);
-            pixel_count = texture.width * texture.height;
-            
-            raster = (SceUInt32 *)_TIFFCheckMalloc(tif, pixel_count, sizeof(SceUInt32), "raster buffer");
-            if (raster != nullptr) {
-                if (TIFFReadRGBAImageOriented(tif, texture.width, texture.height, raster, ORIENTATION_TOPLEFT)) {
-                    Textures::Create(reinterpret_cast<unsigned char*>(raster), texture);
-                    _TIFFfree(raster);
-                }
-                else {
-                    Log::Error("TIFFReadRGBAImage failed\n");
-                }
-
-            }
-            else {
-                Log::Error("_TIFFmalloc failed\n");
-            }
-
-            TIFFClose(tif);
-            return true;
-        }
-        else {
-            Log::Error("TIFFOpen failed\n");
-        }
-        
-        return false;
-    }
-
     bool LoadImageFile(const std::string &path, Tex &texture) {
         bool ret = false;
         const char *ext = FS::GetFileExt(path.c_str());
         
-        // Because TIFF does not load via buffer, but directly from the path.
         if ((strncasecmp(ext, ".GIF", 4) == 0) || (strncasecmp(ext, ".WEBP", 5) == 0)) {
             ret = Textures::LoadImageAnim(path, texture);
         }
@@ -167,11 +127,8 @@ namespace Textures {
             || (strncasecmp(ext, ".PNG", 4) == 0) || (strncasecmp(ext, ".PNM", 4) == 0) || (strncasecmp(ext, ".PPM", 4) == 0)
             || (strncasecmp(ext, ".PGM", 4) == 0) || (strncasecmp(ext, ".PBM", 4) == 0) || (strncasecmp(ext, ".QOI", 4) == 0)
             || (strncasecmp(ext, ".TGA", 4) == 0) || (strncasecmp(ext, ".XCF", 4) == 0) || (strncasecmp(ext, ".XPM", 4) == 0)
-            || (strncasecmp(ext, ".SVG", 4) == 0)) {
+            || (strncasecmp(ext, ".SVG", 4) == 0) ||(strncasecmp(ext, ".TIFF", 5) == 0)) {
             ret = Textures::LoadImage(path, texture);
-        }
-        else if (strncasecmp(ext, ".TIFF", 5) == 0) {
-            ret = Textures::LoadImageTIFF(path, texture);
         }
         else {
             unsigned char *data = nullptr;
