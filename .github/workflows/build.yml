@@ -12,6 +12,10 @@ jobs:
     container: vitasdk/vitasdk:latest
     
     steps:
+    - name: Install libtiff
+      run: |
+        vdpm install libtiff
+
     - name: Checkout
       uses: actions/checkout@v4
       with:
