@@ -138,6 +138,10 @@ namespace Textures {
             if (strncasecmp(ext, ".PSD", 4) == 0) {
                 ret = Textures::LoadImageOther(&data, size, texture);
             }
+
+            if (data) {
+                delete[] data;
+            }
         }
         
         return ret;
