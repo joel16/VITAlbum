@@ -7,9 +7,6 @@
 #include "windows.h"
 
 namespace Windows {
-    static int delay = 0;
-    static int current_frame = 0;
-    
     void ImageViewer(WindowData &data) {
         Windows::SetupWindow();
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
@@ -20,27 +17,27 @@ namespace Windows {
                 ImGui::SetCursorPos((ImGui::GetContentRegionAvail() - ImVec2((data.texture.width * data.zoom_factor),
                     (data.texture.height * data.zoom_factor))) * 0.5f);
 
-            if (data.texture.frames) {
-                ImGui::Image(reinterpret_cast<ImTextureID>(data.texture.frames[current_frame]), ImVec2(data.texture.width * data.zoom_factor, data.texture.height * data.zoom_factor));
-                
-                if (data.texture.anim) {
-                    if (data.texture.anim->delays[current_frame]) {
-                        delay = data.texture.anim->delays[current_frame];
-                    }
-                    else {
-                        delay = 100;
-                    }
-
-                    sceKernelDelayThread(delay * 1000);
+            if (data.texture.anim && data.texture.anim->count > 0) {
+                uint64_t now = SDL_GetTicks();
+                int delay = data.texture.anim->delays[data.texture.frame];
+                if (delay <= 0) {
+                    delay = 100;
                 }
                 
-                current_frame = (current_frame + 1) % data.texture.anim->count;
+                if (now - data.texture.tick >= static_cast<uint64_t>(delay)) {
+                    data.texture.frame = (data.texture.frame + 1) % data.texture.anim->count;
+                    data.texture.tick = now;
+                    
+                    SDL_Surface *frame = data.texture.anim->frames[data.texture.frame];
+                    SDL_UpdateTexture(data.texture.ptr, nullptr, frame->pixels, frame->pitch);
+                }
             }
-            else {
+            
+            if (data.texture.ptr) {
                 ImGui::Image(reinterpret_cast<ImTextureID>(data.texture.ptr), ImVec2(data.texture.width * data.zoom_factor, data.texture.height * data.zoom_factor));
             }
         }
-        
+
         Windows::ExitWindow();
         ImGui::PopStyleVar();
     }

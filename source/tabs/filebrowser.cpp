@@ -1,5 +1,8 @@
 #include <algorithm>
 #include <cstring>
+#include <psp2/kernel/clib.h>
+#include <psp2/kernel/processmgr.h>
+#include <cinttypes>
 
 #include "config.h"
 #include "fs.h"
@@ -145,7 +148,10 @@ namespace Tabs {
                         }
                         else {
                             std::string path = FS::BuildPath(data.entries[i]);
+                            SceUInt64 time_start = sceKernelGetProcessTimeWide();
                             bool ret = Textures::LoadImageFile(path, data.texture);
+                            SceUInt64 time_end = sceKernelGetProcessTimeWide();
+                            sceClibPrintf("cpu_time: %" PRIu64 "ms\n", time_end-time_start);
                             IM_ASSERT(ret);
                             data.state = WINDOW_STATE_IMAGEVIEWER;
                         }

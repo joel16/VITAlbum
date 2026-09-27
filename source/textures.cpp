@@ -28,99 +28,109 @@ std::vector<Tex> icons;
 unsigned const FOLDER = 0, IMAGE = 1;
 
 namespace Textures {
-    static bool Create(unsigned char *data, Tex &texture) {
-        texture.ptr = SDL_CreateTexture(
-            GUI::GetRenderer(),
-            SDL_PIXELFORMAT_RGBA8888,
-            SDL_TEXTUREACCESS_STREAMING,
-            texture.width,
-            texture.height
-        );
+    static bool Create(unsigned char *data, Tex &tex) {
+        tex.ptr = SDL_CreateTexture(GUI::GetRenderer(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, tex.width, tex.height);
         
-        if (!texture.ptr) {
+        if (!tex.ptr) {
             Log::Error("Failed to create SDL texture: %s\n", SDL_GetError());
             return false;
         }
         
-        if (SDL_UpdateTexture(texture.ptr, nullptr, data, texture.width * 4) != 0) {
+        if (SDL_UpdateTexture(tex.ptr, nullptr, data, tex.width * 4) != 0) {
             Log::Error("Failed to update texture: %s\n", SDL_GetError());
-            SDL_DestroyTexture(texture.ptr);
+            SDL_DestroyTexture(tex.ptr);
             return false;
         }
         
         return true;
     }
 
-    static bool LoadImageOther(unsigned char **data, SceOff &size, Tex &texture) {
+    static bool LoadImageOther(unsigned char **data, SceOff &size, Tex &tex) {
         stbi_uc *image = nullptr;
-        image = stbi_load_from_memory(*data, size, &texture.width, &texture.height, nullptr, STBI_rgb_alpha);
-        bool ret = Textures::Create(image, texture);
+        image = stbi_load_from_memory(*data, size, &tex.width, &tex.height, nullptr, STBI_rgb_alpha);
+        bool ret = Textures::Create(image, tex);
         stbi_image_free(image);
         return ret;
     }
-
-    static bool LoadImageAnim(const std::string &path, Tex &texture) {
-        texture.anim = IMG_LoadAnimation(path.c_str());
-        if (!texture.anim) {
-            Log::Error("Couldn't load %s: %s\n", path.c_str(), SDL_GetError());
-        }
+    
+    static bool LoadImageAnim(const std::string &path, Tex &tex) {
+        unsigned char *data = nullptr;
+        SceOff size = 0;
         
-        texture.width = texture.anim->w;
-        texture.height = texture.anim->h;
-        texture.frames = (SDL_Texture **)SDL_calloc(texture.anim->count, sizeof(*texture.frames));
-        
-        if (!texture.frames) {
-            Log::Error("Couldn't allocate textures\n");
-            IMG_FreeAnimation(texture.anim);
+        if (FS::ReadFile(path, &data, size) < 0 || !data) {
+            Log::Error("Failed to read %s into memory\n", path.c_str());
             return false;
         }
         
-        for (int i = 0; i < texture.anim->count; ++i) {
-            texture.frames[i] = SDL_CreateTextureFromSurface(GUI::GetRenderer(), texture.anim->frames[i]);
+        SDL_IOStream *io = SDL_IOFromMem(data, size);
+        if (!io) {
+            delete[] data; 
+            return false;
         }
         
+        tex.anim = IMG_LoadAnimation_IO(io, true);
+        delete[] data;
+
+        if (!tex.anim || tex.anim->count == 0) {
+            Log::Error("Couldn't decode %s: %s\n", path.c_str(), SDL_GetError());
+            return false;
+        }
+        
+        tex.width = tex.anim->w;
+        tex.height = tex.anim->h;
+        
+        SDL_Surface *frame = tex.anim->frames[0];
+        
+        tex.ptr = SDL_CreateTexture(GUI::GetRenderer(), frame->format, SDL_TEXTUREACCESS_STREAMING, tex.width, tex.height);
+        
+        if (!tex.ptr) {
+            Log::Error("Failed to create animation streaming texture: %s\n", SDL_GetError());
+            IMG_FreeAnimation(tex.anim);
+            tex.anim = nullptr;
+            return false;
+        }
+        
+        SDL_UpdateTexture(tex.ptr, nullptr, frame->pixels, frame->pitch);
+        tex.frame = 0;
+        tex.tick = SDL_GetTicks();
         return true;
     }
 
-    static bool LoadImage(const std::string &path, Tex &texture) {
-        texture.ptr = IMG_LoadTexture(GUI::GetRenderer(), path.c_str());
+    static bool LoadImage(const std::string &path, Tex &tex) {
+        tex.ptr = IMG_LoadTexture(GUI::GetRenderer(), path.c_str());
 
-        if (!texture.ptr) {
+        if (!tex.ptr) {
             Log::Error("Couldn't load %s: %s\n", path.c_str(), SDL_GetError());
             return false;
         }
 
-        SDL_PropertiesID properties = SDL_GetTextureProperties(texture.ptr);
-        texture.width = SDL_GetNumberProperty(properties, SDL_PROP_TEXTURE_WIDTH_NUMBER, -1);
-        texture.height = SDL_GetNumberProperty(properties, SDL_PROP_TEXTURE_HEIGHT_NUMBER, -1);
+        SDL_PropertiesID properties = SDL_GetTextureProperties(tex.ptr);
+        tex.width = SDL_GetNumberProperty(properties, SDL_PROP_TEXTURE_WIDTH_NUMBER, -1);
+        tex.height = SDL_GetNumberProperty(properties, SDL_PROP_TEXTURE_HEIGHT_NUMBER, -1);
         return true;
     }
 
-    void Free(Tex &texture) {
-        if (texture.frames) {
-            for (int i = 0; i < texture.anim->count; ++i) {
-                SDL_DestroyTexture(texture.frames[i]);
-            }
-
-            IMG_FreeAnimation(texture.anim);
-
-            // Not sure why we need to specify this? I'd assume Destroy/Free would set it to NULL
-            texture.frames = nullptr;
-            texture.anim = nullptr;
+    void Free(Tex &tex) {
+        if (tex.anim) {
+            IMG_FreeAnimation(tex.anim);
+            tex.anim = nullptr;
+        }
+        
+        if (tex.ptr) {
+            SDL_DestroyTexture(tex.ptr);
+            tex.ptr = nullptr;
         }
 
-        if (texture.ptr) {
-            SDL_DestroyTexture(texture.ptr);
-            texture.ptr = nullptr;
-        }
+        tex.frame = 0;
+        tex.tick = 0;
     }
 
-    bool LoadImageFile(const std::string &path, Tex &texture) {
+    bool LoadImageFile(const std::string &path, Tex &tex) {
         bool ret = false;
         const char *ext = FS::GetFileExt(path.c_str());
         
         if ((strncasecmp(ext, ".GIF", 4) == 0) || (strncasecmp(ext, ".WEBP", 5) == 0)) {
-            ret = Textures::LoadImageAnim(path, texture);
+            ret = Textures::LoadImageAnim(path, tex);
         }
         else if ((strncasecmp(ext, ".BMP", 4) == 0) || (strncasecmp(ext, ".JPG", 4) == 0) || (strncasecmp(ext, ".JPEG", 5) == 0)
             || (strncasecmp(ext, ".LBM", 4) == 0) || (strncasecmp(ext, ".PCX", 4) == 0) || (strncasecmp(ext, ".LBM", 4) == 0)
@@ -128,7 +138,7 @@ namespace Textures {
             || (strncasecmp(ext, ".PGM", 4) == 0) || (strncasecmp(ext, ".PBM", 4) == 0) || (strncasecmp(ext, ".QOI", 4) == 0)
             || (strncasecmp(ext, ".TGA", 4) == 0) || (strncasecmp(ext, ".XCF", 4) == 0) || (strncasecmp(ext, ".XPM", 4) == 0)
             || (strncasecmp(ext, ".SVG", 4) == 0) ||(strncasecmp(ext, ".TIFF", 5) == 0)) {
-            ret = Textures::LoadImage(path, texture);
+            ret = Textures::LoadImage(path, tex);
         }
         else {
             unsigned char *data = nullptr;
@@ -136,7 +146,7 @@ namespace Textures {
             FS::ReadFile(path, &data, size);
 
             if (strncasecmp(ext, ".PSD", 4) == 0) {
-                ret = Textures::LoadImageOther(&data, size, texture);
+                ret = Textures::LoadImageOther(&data, size, tex);
             }
 
             if (data) {
@@ -155,11 +165,11 @@ namespace Textures {
         };
 
         for (int i = 0; i < num_icons; i++) {
-            Tex texture;
-            bool ret = Textures::LoadImage(filenames[i], texture);
+            Tex tex;
+            bool ret = Textures::LoadImage(filenames[i], tex);
             IM_ASSERT(ret);
 
-            icons.push_back(texture);
+            icons.push_back(tex);
         }
     }
 

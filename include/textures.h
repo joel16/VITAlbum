@@ -4,13 +4,14 @@
 #include <vector>
 #include <SDL3_image/SDL_image.h>
 
-typedef struct {
+struct Tex {
     SDL_Texture *ptr = nullptr;
-    SDL_Texture **frames = nullptr;
     IMG_Animation *anim = nullptr;
     int width = 0;
     int height = 0;
-} Tex;
+    int frame = 0;
+    uint64_t tick = 0;
+};
 
 extern std::vector<Tex> icons;
 extern unsigned const FOLDER, IMAGE;
