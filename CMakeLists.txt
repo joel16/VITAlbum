@@ -69,8 +69,6 @@ target_link_libraries(${PROJECT_NAME}
     freetype
     bz2
     tiff
-    lzma
-    zstd
     SDL3_image::SDL3_image
     SDL3::SDL3
     webpdemux
